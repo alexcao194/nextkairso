@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Kairso — Nền tảng thiết kế</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;font-family:'Be Vietnam Pro',ui-sans-serif,system-ui,sans-serif;background:#FAFAF9;color:#1C1C1A;-webkit-font-smoothing:antialiased}
+a{color:#3B5BDB}a:hover{color:#2F49B0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1120px; box-sizing: border-box; padding: 44px 56px; background: #FAFAF9; color: #1C1C1A; display: flex; flex-direction: column; gap: 26px;">
+
+  <header style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">Kairso — Nền tảng thiết kế</h1>
+      <p style="margin: 0; font-size: 13px; color: #62625B;">Token dùng chung cho bản web Next.js. Dense, desktop-first, một accent duy nhất, hai theme.</p>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #6F6F68; border: 1px solid #E6E5E1; background: #FFFFFF; border-radius: 999px; padding: 4px 10px;">Be Vietnam Pro + JetBrains Mono</span>
+    </div>
+  </header>
+
+  <section style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <h2 style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #6F6F68;">Màu nền tảng — Light</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E6E5E1;"></div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #FAFAF9; border: 1px solid #E6E5E1;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Canvas</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#FAFAF9</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #FFFFFF; border: 1px solid #E6E5E1;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Surface</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#FFFFFF</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #F5F5F3; border: 1px solid #E6E5E1;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Sidebar</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#F5F5F3</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #F2F2EF; border: 1px solid #E6E5E1;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Hover</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#F2F2EF</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #E6E5E1;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Viền</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#E6E5E1</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #D6D5CF;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Viền mạnh</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#D6D5CF</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #1C1C1A;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Chữ chính</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#1C1C1A</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #62625B;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Chữ phụ</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#62625B</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #3B5BDB;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Accent</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#3B5BDB</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #EEF1FD; border: 1px solid #C7D0F7;"></div>
+        <div style="font-size: 12px; font-weight: 600;">Accent nhạt</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">#EEF1FD</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <h2 style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #6F6F68;">Màu nền tảng — Dark</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E6E5E1;"></div>
+    </div>
+    <div style="background: #141416; border-radius: 10px; padding: 16px; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #141416; border: 1px solid #2B2B30;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Canvas</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#141416</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #1B1B1E; border: 1px solid #2B2B30;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Surface</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#1B1B1E</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #101012; border: 1px solid #2B2B30;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Sidebar</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#101012</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #232327; border: 1px solid #2B2B30;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Hover</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#232327</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #2B2B30;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Viền</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#2B2B30</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #3A3A41;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Viền mạnh</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#3A3A41</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #EDEDE9;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Chữ chính</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#EDEDE9</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #A3A39C;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Chữ phụ</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#A3A39C</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #8497F7;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Accent</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#8497F7</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="height: 54px; border-radius: 8px; background: #23284A; border: 1px solid #39407A;"></div>
+        <div style="font-size: 12px; font-weight: 600; color: #EDEDE9;">Accent nhạt</div>
+        <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #A3A39C;">#23284A</div>
+      </div>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px;">
+    <section style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <h2 style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #6F6F68;">Trạng thái task</h2>
+        <div style="flex-grow: 1; height: 1px; background: #E6E5E1;"></div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; background: #F0F0EE; color: #57574F; font-size: 12px; font-weight: 500;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #9A9A92;"></span>Backlog</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; background: #EEF0F4; color: #45506B; font-size: 12px; font-weight: 500;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #7C8AA0;"></span>Chờ làm</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; background: #FDF3E2; color: #8A5906; font-size: 12px; font-weight: 500;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #D89A2B;"></span>Đang làm</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; background: #F2EDFD; color: #60369F; font-size: 12px; font-weight: 500;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #8B5CF6;"></span>Chờ duyệt</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; background: #E8F5EE; color: #1B603D; font-size: 12px; font-weight: 500;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #34A06A;"></span>Xong</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; background: #FBEDED; color: #8C3A3A; font-size: 12px; font-weight: 500;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #C06060;"></span>Huỷ</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; margin-top: 6px;">
+        <h2 style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #6F6F68;">Độ ưu tiên</h2>
+        <div style="flex-grow: 1; height: 1px; background: #E6E5E1;"></div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; border: 1px solid #E8C9C7; color: #A5202A; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', ui-monospace, monospace;">P0 Gấp</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; border: 1px solid #ECD7B4; color: #8A5906; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', ui-monospace, monospace;">P1 Cao</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; border: 1px solid #C7D0F7; color: #33499F; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', ui-monospace, monospace;">P2 Vừa</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; border: 1px solid #E6E5E1; color: #62625B; font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', ui-monospace, monospace;">P3 Thấp</span>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <h2 style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #6F6F68;">Thang chữ</h2>
+        <div style="flex-grow: 1; height: 1px; background: #E6E5E1;"></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: baseline; gap: 20px;">
+          <span style="width: 148px; flex-shrink: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">display · 28 / 700</span>
+          <span style="font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">Kairso</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 20px;">
+          <span style="width: 148px; flex-shrink: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">page · 20 / 600</span>
+          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.01em;">Kaizengo Web · Sprint 24</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 20px;">
+          <span style="width: 148px; flex-shrink: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">section · 15 / 600</span>
+          <span style="font-size: 15px; font-weight: 600;">Cần bạn xử lý</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 20px;">
+          <span style="width: 148px; flex-shrink: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">body · 13 / 400</span>
+          <span style="font-size: 13px;">Cỡ mặc định của toàn bộ giao diện</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 20px;">
+          <span style="width: 148px; flex-shrink: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">caption · 12 / 400</span>
+          <span style="font-size: 12px; color: #62625B;">Chú thích, dữ liệu phụ trong bảng</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 20px;">
+          <span style="width: 148px; flex-shrink: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">meta · 11 / 600 caps</span>
+          <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #6F6F68;">Nhãn nhóm</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 20px;">
+          <span style="width: 148px; flex-shrink: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: #6F6F68;">mono · 12 / 500</span>
+          <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; font-weight: 500;">KZW-1042 · 20/09 · 8h</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <h2 style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #6F6F68;">Khoảng cách, bo góc, đổ bóng &amp; mật độ</h2>
+      <div style="flex-grow: 1; height: 1px; background: #E6E5E1;"></div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: 12px; font-weight: 600;">Spacing</span>
+        <div style="display: flex; align-items: flex-end; gap: 8px;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 4px; height: 4px; background: #3B5BDB; border-radius: 2px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">4</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 6px; height: 6px; background: #3B5BDB; border-radius: 2px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">6</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 8px; height: 8px; background: #3B5BDB; border-radius: 2px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">8</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 12px; height: 12px; background: #3B5BDB; border-radius: 2px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">12</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 16px; height: 16px; background: #3B5BDB; border-radius: 2px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">16</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 24px; height: 24px; background: #3B5BDB; border-radius: 2px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">24</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 32px; height: 32px; background: #3B5BDB; border-radius: 2px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">32</span></div>
+        </div>
+        <span style="font-size: 11px; color: #6F6F68;">Bước 4px. 2px chỉ dùng cho khoảng hở trong chip.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: 12px; font-weight: 600;">Bo góc</span>
+        <div style="display: flex; align-items: flex-end; gap: 10px;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 34px; height: 34px; background: #FFFFFF; border: 1px solid #D6D5CF; border-radius: 4px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">4</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 34px; height: 34px; background: #FFFFFF; border: 1px solid #D6D5CF; border-radius: 6px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">6</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 34px; height: 34px; background: #FFFFFF; border: 1px solid #D6D5CF; border-radius: 8px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">8</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 34px; height: 34px; background: #FFFFFF; border: 1px solid #D6D5CF; border-radius: 10px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">10</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;"><div style="width: 34px; height: 34px; background: #FFFFFF; border: 1px solid #D6D5CF; border-radius: 999px;"></div><span style="font-size: 10px; color: #6F6F68; font-family: 'JetBrains Mono', ui-monospace, monospace;">pill</span></div>
+        </div>
+        <span style="font-size: 11px; color: #6F6F68;">6 cho control, 8 cho card/panel, 10 cho overlay.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: 12px; font-weight: 600;">Đổ bóng</span>
+        <div style="display: flex; gap: 12px;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;"><div style="width: 62px; height: 40px; background: #FFFFFF; border: 1px solid #E6E5E1; border-radius: 8px; box-shadow: 0 1px 2px rgba(20,20,18,0.05);"></div><span style="font-size: 10px; color: #6F6F68;">sm</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;"><div style="width: 62px; height: 40px; background: #FFFFFF; border: 1px solid #E6E5E1; border-radius: 8px; box-shadow: 0 4px 12px rgba(20,20,18,0.08);"></div><span style="font-size: 10px; color: #6F6F68;">md</span></div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;"><div style="width: 62px; height: 40px; background: #FFFFFF; border: 1px solid #E6E5E1; border-radius: 10px; box-shadow: 0 12px 32px rgba(20,20,18,0.14);"></div><span style="font-size: 10px; color: #6F6F68;">overlay</span></div>
+        </div>
+        <span style="font-size: 11px; color: #6F6F68;">Mặt phẳng dùng viền, không dùng bóng. Bóng chỉ cho lớp nổi.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span style="font-size: 12px; font-weight: 600;">Mật độ (px)</span>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; font-size: 11px; color: #57574F;">
+          <span>Sidebar</span><span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #1C1C1A;">240</span>
+          <span>Rail thu gọn</span><span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #1C1C1A;">56</span>
+          <span>Thanh trên</span><span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #1C1C1A;">44</span>
+          <span>Thanh công cụ</span><span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #1C1C1A;">40</span>
+          <span>Header bảng</span><span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #1C1C1A;">32</span>
+          <span>Dòng bảng</span><span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #1C1C1A;">36</span>
+          <span>Control md / sm</span><span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #1C1C1A;">32 / 28</span>
+          <span>Icon / avatar</span><span style="font-family: 'JetBrains Mono', ui-monospace, monospace; color: #1C1C1A;">16 / 22</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

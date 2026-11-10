@@ -1,0 +1,26 @@
+services:
+  kairso-web:
+    image: ${WEB_IMAGE:-nextkairso:latest}
+    container_name: kairso-web
+    restart: unless-stopped
+    networks:
+      - edge
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=production
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: nextkairso-cloudflared
+    restart: unless-stopped
+    networks:
+      - edge
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+
+networks:
+  edge:
+    external: true
+    name: kairso-edge

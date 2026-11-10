@@ -1,0 +1,13 @@
+services:
+  kairso-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kairso-web
+    restart: always
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - .env.production
+    environment:
+      - NODE_ENV=production

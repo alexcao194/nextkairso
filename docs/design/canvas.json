@@ -1,0 +1,53 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-09-20T05:10:00Z" },
+  "title": "Kairso — Thiết kế lại giao diện web",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Foundations.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 1120, "title": "01 · Nền tảng (token)" },
+    "Components.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 1840, "title": "02 · Component dùng chung" },
+    "Navigation.dc.html": { "x": 3040, "y": 0, "w": 1440, "h": 1120, "title": "03 · Điều hướng & IA" },
+    "Main.dc.html": { "x": 0, "y": 2240, "w": 1440, "h": 900, "title": "04 · Tổng quan workspace", "is_interactive": true },
+    "ProjectTable.dc.html": { "x": 1520, "y": 2240, "w": 1440, "h": 900, "title": "05 · Dự án — bảng task", "is_interactive": true },
+    "ProjectBoard.dc.html": { "x": 3040, "y": 2240, "w": 1440, "h": 900, "title": "06 · Dự án — board", "is_interactive": true },
+    "TaskDetail.dc.html": { "x": 4560, "y": 2240, "w": 1440, "h": 900, "title": "07 · Chi tiết task (panel)", "is_interactive": true },
+    "MyTasks.dc.html": { "x": 0, "y": 3540, "w": 1440, "h": 900, "title": "08 · Task của tôi", "is_interactive": true },
+    "Inbox.dc.html": { "x": 1520, "y": 3540, "w": 1440, "h": 900, "title": "09 · Hộp thư — duyệt tại chỗ", "is_interactive": true },
+    "Threads.dc.html": { "x": 3040, "y": 3540, "w": 1440, "h": 900, "title": "10 · Thảo luận", "is_interactive": true },
+    "Calendar.dc.html": { "x": 4560, "y": 3540, "w": 1440, "h": 900, "title": "11 · Lịch & chấm công", "is_interactive": true },
+    "Workflow.dc.html": { "x": 0, "y": 4840, "w": 1440, "h": 900, "title": "12 · Quy trình", "is_interactive": true },
+    "WorkflowDesigner.dc.html": { "x": 1520, "y": 4840, "w": 1440, "h": 900, "title": "13 · Thiết kế quy trình", "is_interactive": true },
+    "Analytics.dc.html": { "x": 3040, "y": 4840, "w": 1440, "h": 900, "title": "14 · Phân tích & KPI", "is_interactive": true },
+    "Settings.dc.html": { "x": 4560, "y": 4840, "w": 1440, "h": 900, "title": "15 · Thành viên & cài đặt", "is_interactive": true },
+    "ProjectTableDark.dc.html": { "x": 0, "y": 6140, "w": 1440, "h": 900, "title": "16 · Bảng task — theme tối" },
+    "Mobile.dc.html": { "x": 1520, "y": 6140, "w": 1360, "h": 1000, "title": "17 · Bản web trên điện thoại" }
+  },
+  "order": [
+    "Foundations.dc.html",
+    "Components.dc.html",
+    "Navigation.dc.html",
+    "Main.dc.html",
+    "ProjectTable.dc.html",
+    "ProjectBoard.dc.html",
+    "TaskDetail.dc.html",
+    "MyTasks.dc.html",
+    "Inbox.dc.html",
+    "Threads.dc.html",
+    "Calendar.dc.html",
+    "Workflow.dc.html",
+    "WorkflowDesigner.dc.html",
+    "Analytics.dc.html",
+    "Settings.dc.html",
+    "ProjectTableDark.dc.html",
+    "Mobile.dc.html"
+  ],
+  "notes": {
+    "n1": { "x": 0, "y": -300, "text": "Nền tảng & component", "kind": "title1", "maxW": 4480 },
+    "n2": { "x": 0, "y": 1940, "text": "Dự án & task", "kind": "title1", "maxW": 6000 },
+    "n3": { "x": 0, "y": 3240, "text": "Việc của tôi, hộp thư, thảo luận, chấm công", "kind": "title1", "maxW": 6000 },
+    "n4": { "x": 0, "y": 4540, "text": "Quy trình, phân tích & cài đặt", "kind": "title1", "maxW": 6000 },
+    "n5": { "x": 0, "y": 5840, "text": "Theme tối & điện thoại", "kind": "title1", "maxW": 2880 }
+  },
+  "designSystems": []
+}

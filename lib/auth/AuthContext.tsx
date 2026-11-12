@@ -13,22 +13,24 @@ import {
   firebaseSignOut,
 } from "../firebase/client";
 import { useToast } from "../toast/ToastProvider";
+import { tr } from "../i18n/dict";
 
 export function formatAuthError(error: unknown): string {
   const e = error as { code?: string; message?: string } | null;
   const code = e?.code || e?.message || "";
-  if (typeof code !== "string") return "Đã xảy ra lỗi không xác định.";
+  const t = tr().auth;
+  if (typeof code !== "string") return t.unknown;
   if (code.includes("auth/invalid-credential") || code.includes("auth/wrong-password"))
-    return "Email hoặc mật khẩu không chính xác.";
-  if (code.includes("auth/user-not-found")) return "Tài khoản với email này không tồn tại.";
-  if (code.includes("auth/email-already-in-use")) return "Email này đã được đăng ký trên hệ thống Kairso.";
-  if (code.includes("auth/weak-password")) return "Mật khẩu quá yếu (yêu cầu tối thiểu 6 ký tự).";
-  if (code.includes("auth/invalid-email")) return "Địa chỉ email không đúng định dạng.";
-  if (code.includes("auth/popup-closed-by-user")) return "Đã huỷ đăng nhập Google (cửa sổ đã bị đóng).";
-  if (code.includes("auth/too-many-requests")) return "Quá nhiều lần thử thất bại. Vui lòng thử lại sau vài phút.";
+    return t.badCredentials;
+  if (code.includes("auth/user-not-found")) return t.userNotFound;
+  if (code.includes("auth/email-already-in-use")) return t.emailInUse;
+  if (code.includes("auth/weak-password")) return t.weakPassword;
+  if (code.includes("auth/invalid-email")) return t.invalidEmail;
+  if (code.includes("auth/popup-closed-by-user")) return t.popupClosed;
+  if (code.includes("auth/too-many-requests")) return t.tooMany;
   if (code.includes("auth/network-request-failed"))
-    return "Không thể kết nối đến máy chủ xác thực. Kiểm tra mạng internet của bạn.";
-  return e?.message || "Xác thực thất bại. Vui lòng thử lại.";
+    return t.network;
+  return e?.message || t.failed;
 }
 
 interface AuthContextType {
@@ -61,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         qc.clear();
         setToken(null);
         setUser(null);
-        toast.info("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.");
+        toast.info(tr().auth.sessionExpired);
       }),
     [qc, toast],
   );
@@ -141,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await exchangeFirebaseToken(await fbUser.getIdToken());
             return {
               success: true,
-              message: "Đăng ký thành công! Email xác thực đã được gửi tới hộp thư của bạn.",
+              message: tr().auth.signedUp,
             };
           },
           (message) => ({ success: false, message }),
@@ -185,6 +187,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth phải nằm trong AuthProvider");
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }

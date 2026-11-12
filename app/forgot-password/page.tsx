@@ -5,8 +5,10 @@ import Link from "next/link";
 import { IconChevronLeft, IconSend } from "@/components/icons";
 import { firebaseSendPasswordReset } from "@/lib/firebase/client";
 import { formatAuthError } from "@/lib/auth/AuthContext";
+import { useT } from "@/lib/i18n";
 
 export default function ForgotPasswordPage() {
+const t = useT();
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,16 +39,16 @@ export default function ForgotPasswordPage() {
           className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink cursor-pointer"
         >
           <IconChevronLeft size={14} />
-          Quay lại đăng nhập
+          {t.forgot.back}
         </Link>
 
         <div>
           <div className="flex size-10 items-center justify-center rounded-lg bg-accent/15 text-accent font-bold mb-3">
             🔐
           </div>
-          <h1 className="text-xl font-bold text-ink">Khôi phục mật khẩu</h1>
+          <h1 className="text-xl font-bold text-ink">{t.forgot.title}</h1>
           <p className="text-xs text-ink-muted mt-1 leading-relaxed">
-            Nhập địa chỉ email đăng ký tài khoản Kairso. Chúng tôi sẽ gửi hướng dẫn đặt lại mật khẩu cho bạn.
+            {t.forgot.desc}
           </p>
         </div>
 
@@ -59,28 +61,28 @@ export default function ForgotPasswordPage() {
         {isSubmitted ? (
           <div className="rounded-lg border border-success/30 bg-success/10 p-4 space-y-2">
 
-            <div className="text-xs font-semibold text-success">Đã gửi email khôi phục!</div>
+            <div className="text-xs font-semibold text-success">{t.forgot.sent}</div>
             <p className="text-xs text-ink-2 leading-relaxed">
-              Vui lòng kiểm tra hộp thư đến của <strong>{email}</strong> và làm theo hướng dẫn để thiết lập mật khẩu mới.
+              {t.forgot.checkInboxPrefix} <strong>{email}</strong> {t.forgot.checkInboxSuffix}
             </p>
             <div className="pt-2">
               <Link
                 href="/login"
                 className="inline-block text-xs font-medium text-accent hover:underline cursor-pointer"
               >
-                Trở về trang Đăng nhập
+                {t.forgot.backToLogin}
               </Link>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-ink-2 mb-1.5">Email tài khoản *</label>
+              <label className="block text-xs font-medium text-ink-2 mb-1.5">{t.forgot.email}</label>
               <input
                 type="email"
                 required
                 autoFocus
-                placeholder="ten.ban@kairso.com"
+                placeholder={t.login.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-9 px-3 text-xs bg-surface border border-line rounded-lg text-ink placeholder:text-ink-placeholder outline-none focus:border-accent"
@@ -93,7 +95,7 @@ export default function ForgotPasswordPage() {
               className="w-full h-10 rounded-lg bg-accent hover:bg-accent-hover text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
             >
               <IconSend size={13} />
-              {isLoading ? "Đang gửi liên kết..." : "Gửi liên kết khôi phục"}
+              {isLoading ? t.forgot.sending : t.forgot.send}
             </button>
           </form>
         )}

@@ -1,17 +1,14 @@
 import type { ModuleResponse, PublicModuleResponse } from "../api/schema";
 import { localDateKey } from "./task";
+import { tr } from "../i18n/dict";
+import { liveLabels } from "../i18n/live";
 
 export type ModuleStatus = ModuleResponse["status"];
 export type ModuleSprint = ModuleResponse["sprints"][number];
 export type SprintStatus = ModuleSprint["status"];
 
 export const MODULE_STATUS_ORDER: ModuleStatus[] = ["backlog", "in_progress", "done", "released"];
-export const MODULE_STATUS_LABEL: Record<ModuleStatus, string> = {
-  backlog: "Product Backlog",
-  in_progress: "Đang phát triển",
-  done: "Done",
-  released: "Đã phát hành",
-};
+export const MODULE_STATUS_LABEL: Record<ModuleStatus, string> = liveLabels(() => tr().moduleStatus);
 export const MODULE_STATUS_COLOR: Record<ModuleStatus, string> = {
   backlog: "var(--ink-faint)",
   in_progress: "var(--blue-vivid)",
@@ -19,7 +16,7 @@ export const MODULE_STATUS_COLOR: Record<ModuleStatus, string> = {
   released: "var(--violet-vivid)",
 };
 
-export const SPRINT_STATUS_LABEL: Record<SprintStatus, string> = { planned: "Lên kế hoạch", active: "Đang chạy", completed: "Đã xong" };
+export const SPRINT_STATUS_LABEL: Record<SprintStatus, string> = liveLabels(() => tr().sprintStatus);
 export const SPRINT_STATUS_COLOR: Record<SprintStatus, string> = {
   planned: "var(--ink-faint)",
   active: "var(--blue-vivid)",
@@ -53,24 +50,24 @@ export function nextSprintDraft(m: Pick<ModuleResponse, "sprints">): { name: str
 }
 
 export function sprintProblem(s: Pick<ModuleSprint, "id" | "startDate" | "endDate">, all: ModuleSprint[]): string | null {
-  if (!s.startDate || !s.endDate) return "Chọn ngày bắt đầu và kết thúc.";
-  if (s.endDate < s.startDate) return "Ngày kết thúc phải từ ngày bắt đầu trở đi.";
+  if (!s.startDate || !s.endDate) return tr().sprint.pickDates;
+  if (s.endDate < s.startDate) return tr().sprint.endBeforeStart;
   const days = sprintDays(s);
-  if (days > MAX_SPRINT_DAYS) return `Sprint dài ${days} ngày — tối đa 1 tháng (${MAX_SPRINT_DAYS} ngày).`;
+  if (days > MAX_SPRINT_DAYS) return tr().sprint.tooLong(days, MAX_SPRINT_DAYS);
   const clash = all.find((o) => o.id !== s.id && o.startDate <= s.endDate && s.startDate <= o.endDate);
-  return clash ? `Trùng thời gian với ${clash.name}.` : null;
+  return clash ? tr().sprint.overlaps(clash.name) : null;
 }
 
 export function sprintSummary(m: Pick<ModuleResponse, "sprints">, today = localDateKey()): string {
   const a = activeSprint(m);
   if (a) {
     const left = Math.round((dateOnly(a.endDate).getTime() - dateOnly(today).getTime()) / 86_400_000);
-    return `${a.name} · ${left > 0 ? `còn ${left} ngày` : left === 0 ? "hôm nay kết thúc" : `quá ${-left} ngày`}`;
+    return `${a.name} · ${left > 0 ? tr().sprint.daysLeft(left) : left === 0 ? tr().sprint.endsToday : tr().sprint.overdueDays(-left)}`;
   }
   const next = (m.sprints ?? []).find((s) => s.status === "planned");
-  if (next) return `${next.name} bắt đầu ${next.startDate.slice(8, 10)}/${next.startDate.slice(5, 7)}`;
+  if (next) return tr().sprint.startsOn(next.name, `${next.startDate.slice(8, 10)}/${next.startDate.slice(5, 7)}`);
   const n = (m.sprints ?? []).length;
-  return n ? `${n} sprint đã xong` : "Chưa có sprint";
+  return n ? tr().sprint.doneCount(n) : tr().sprint.none;
 }
 
 export const isSprintOverdue = (s: ModuleSprint, today = localDateKey()) => s.status === "active" && s.endDate < today;
@@ -106,7 +103,7 @@ export function moduleTimelineBars(m: TimelineModule, fmt: (d: Date) => string):
   const release = m.status === "released" && m.releasedAt ? m.releasedAt : m.endDate;
   if (release) {
     const d = new Date(release);
-    bars.push({ start: d, end: d, color: MODULE_STATUS_COLOR.released, label: "Phát hành", hint: `${m.name} · ${m.status === "released" ? "đã phát hành" : "phát hành dự kiến"} ${fmt(d)}` });
+    bars.push({ start: d, end: d, color: MODULE_STATUS_COLOR.released, label: tr().sprint.release, hint: `${m.name} · ${m.status === "released" ? tr().sprint.released : tr().sprint.plannedRelease} ${fmt(d)}` });
   }
   return bars;
 }

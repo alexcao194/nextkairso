@@ -1,6 +1,7 @@
 import type { MeetingItem, MeetingMinutesResponse, MeetingParticipant, TaskResponse } from "../api/schema";
 import { fmtDate } from "./format";
 import { localDateKey } from "./task";
+import { tr } from "../i18n/dict";
 
 export type MeetingSection = MeetingItem["section"];
 
@@ -16,30 +17,30 @@ export const SECTION_ORDER: MeetingSection[] = ["deployed", "planned", "backlog"
 
 export const SECTION_META: Record<MeetingSection, SectionMeta> = {
   deployed: {
-    label: "Hạng mục đã triển khai",
-    hint: "Việc đã làm xong — đánh dấu khi đã cập nhật lên hệ thống.",
-    contentLabel: "Nội dung",
-    status: ["Chờ cập nhật", "Đã cập nhật"],
+    get label() { return tr().meeting.deployed; },
+    get hint() { return tr().meeting.deployedHint; },
+    get contentLabel() { return tr().meeting.content; },
+    get status(): [string, string] { return [tr().meeting.awaitingUpdate, tr().meeting.updated]; },
     tasks: false,
   },
   planned: {
-    label: "Hạng mục cần triển khai",
-    hint: "Việc sẽ làm — tạo task để có người phụ trách và hạn.",
-    contentLabel: "Nội dung yêu cầu",
+    get label() { return tr().meeting.planned; },
+    get hint() { return tr().meeting.plannedHint; },
+    get contentLabel() { return tr().meeting.requestContent; },
     status: null,
     tasks: true,
   },
   backlog: {
-    label: "Backlog",
-    hint: "Ghi nhận, chưa lên kế hoạch.",
-    contentLabel: "Nội dung yêu cầu",
+    get label() { return tr().meeting.backlog; },
+    get hint() { return tr().meeting.backlogHint; },
+    get contentLabel() { return tr().meeting.requestContent; },
     status: null,
     tasks: true,
   },
 };
 
 export function sectionTitle(s: MeetingSection, rows: MeetingItem[]): string {
-  if (s === "deployed" && rows.length && rows.every((r) => r.status !== "done")) return "Hạng mục đã triển khai, chờ cập nhật";
+  if (s === "deployed" && rows.length && rows.every((r) => r.status !== "done")) return tr().meeting.deployedPending;
   return SECTION_META[s].label;
 }
 
@@ -60,15 +61,15 @@ export function meetingSummary(m: Pick<MeetingMinutesResponse, "items">): string
   const count = (s: MeetingSection) => items.filter((i) => i.section === s);
   const parts: string[] = [];
   const dep = count("deployed");
-  if (dep.length) parts.push(`${dep.length} đã triển khai`);
+  if (dep.length) parts.push(tr().meeting.sumDeployed(dep.length));
   const pl = count("planned");
   if (pl.length) {
     const pri = pl.filter((i) => i.priority).length;
-    parts.push(`${pl.length} cần triển khai${pri ? ` (${pri} ưu tiên)` : ""}`);
+    parts.push(tr().meeting.sumPlanned(pl.length, pri));
   }
   const bl = count("backlog");
-  if (bl.length) parts.push(`${bl.length} backlog`);
-  return parts.join(" · ") || "Chưa có nội dung";
+  if (bl.length) parts.push(tr().meeting.sumBacklog(bl.length));
+  return parts.join(" · ") || tr().meeting.empty;
 }
 
 export function meetingLead(m: Pick<MeetingMinutesResponse, "items">): string {
@@ -77,11 +78,11 @@ export function meetingLead(m: Pick<MeetingMinutesResponse, "items">): string {
   const n = (s: MeetingSection) => items.filter((i) => i.section === s).length;
   const modules = new Set(items.map((i) => i.module.trim().toLowerCase()).filter(Boolean)).size;
   const parts: string[] = [];
-  if (n("deployed")) parts.push(`rà soát ${n("deployed")} hạng mục đã triển khai`);
-  if (n("planned")) parts.push(`ghi nhận ${n("planned")} hạng mục cần triển khai`);
-  if (n("backlog")) parts.push(`${n("backlog")} hạng mục backlog`);
-  const joined = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} và ${parts[parts.length - 1]}` : parts[0];
-  return `Cuộc họp ${joined}${modules ? ` trên ${modules} phân hệ` : ""}.`;
+  if (n("deployed")) parts.push(tr().meeting.leadDeployed(n("deployed")));
+  if (n("planned")) parts.push(tr().meeting.leadPlanned(n("planned")));
+  if (n("backlog")) parts.push(tr().meeting.leadBacklog(n("backlog")));
+  const joined = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} ${tr().meeting.and} ${parts[parts.length - 1]}` : parts[0];
+  return tr().meeting.lead(joined, modules);
 }
 
 export function itemAssignment(tasks: Array<TaskResponse | undefined>): { owners: string[]; due?: string } {
@@ -100,15 +101,15 @@ const cell = (s: string) => s.replace(/\|/g, "\\|").replace(/\n+/g, " ");
 export function meetingToMarkdown(m: Pick<MeetingMinutesResponse, "title" | "meetingDate" | "location" | "attendees" | "recorders" | "summary" | "items" | "sectionNotes">): string {
   const out: string[] = [`# ${m.title}`, ""];
   const head: Array<[string, string]> = [
-    ["Thời gian", fmtDate(m.meetingDate)],
-    ["Địa điểm / hình thức", m.location],
-    ["Thành phần tham dự", participantNames(m.attendees)],
-    ["Người ghi biên bản", participantNames(m.recorders)],
+    [tr().meeting.time, fmtDate(m.meetingDate)],
+    [tr().meeting.location, m.location],
+    [tr().meeting.attendees, participantNames(m.attendees)],
+    [tr().meeting.recorders, participantNames(m.recorders)],
   ];
   for (const [k, v] of head) if (v) out.push(`- **${k}:** ${v}`);
   const lead = meetingLead(m);
   if (lead) out.push("", lead);
-  if (m.summary) out.push("", `**Nội dung:** ${m.summary}`);
+  if (m.summary) out.push("", `**${tr().meeting.summary}:** ${m.summary}`);
   for (const s of SECTION_ORDER) {
     const meta = SECTION_META[s];
     const rows = (m.items ?? []).filter((i) => i.section === s);
@@ -117,16 +118,16 @@ export function meetingToMarkdown(m: Pick<MeetingMinutesResponse, "title" | "mee
     out.push("", `## ${sectionTitle(s, rows)}`, "");
     if (rows.length) {
       const cols: Array<[string, (i: MeetingItem) => string]> = [
-        ["STT", () => ""],
-        ["Phân hệ", (i) => i.module],
+        [tr().meeting.no, () => ""],
+        [tr().meeting.module, (i) => i.module],
         [meta.contentLabel, (i) => [i.content, i.note].filter(Boolean).join(" — ")],
       ];
-      if (meta.tasks) cols.push(["Ưu tiên", (i) => (i.priority ? "Ưu tiên" : "")], ["Task", (i) => (i.tasks ?? []).map((t) => t.code).join(", ")]);
-      if (meta.status) cols.push(["Trạng thái", (i) => meta.status![i.status === "done" ? 1 : 0]]);
+      if (meta.tasks) cols.push([tr().meeting.priority, (i) => (i.priority ? tr().meeting.priority : "")], ["Task", (i) => (i.tasks ?? []).map((t) => t.code).join(", ")]);
+      if (meta.status) cols.push([tr().meeting.status, (i) => meta.status![i.status === "done" ? 1 : 0]]);
       out.push(`| ${cols.map((c) => c[0]).join(" | ")} |`, `| ${cols.map(() => "---").join(" | ")} |`);
       rows.forEach((r, idx) => out.push(`| ${cols.map((c, ci) => (ci === 0 ? String(idx + 1) : cell(c[1](r)))).join(" | ")} |`));
     }
-    if (note) out.push("", `> **Ghi chú:** ${note}`);
+    if (note) out.push("", `> **${tr().meeting.note}:** ${note}`);
   }
   return out.join("\n");
 }

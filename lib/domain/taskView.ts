@@ -1,5 +1,7 @@
 import type { TaskResponse } from "../api/schema";
 import { STATUS_META, TASK_STATUSES, priorityLevel, PRIORITY_META } from "./task";
+import { tr } from "../i18n/dict";
+import { liveLabels } from "../i18n/live";
 
 export interface TaskView {
   q: string;
@@ -25,24 +27,9 @@ const DEFAULT_SORT: SortRule[] = [
   { field: "endDate", dir: "desc" },
 ];
 
-export const SORT_LABEL: Record<SortField, string> = {
-  title: "Tiêu đề",
-  status: "Trạng thái",
-  priority: "Ưu tiên",
-  estimation: "Ước tính",
-  module: "Module",
-  returnCount: "Số lần trả lại",
-  startDate: "Bắt đầu",
-  endDate: "Hạn",
-};
+export const SORT_LABEL: Record<SortField, string> = liveLabels(() => tr().sort);
 
-export const GROUP_LABEL: Record<GroupBy, string> = {
-  status: "Trạng thái",
-  priority: "Ưu tiên",
-  module: "Module",
-  assignee: "Người làm",
-  none: "Không nhóm",
-};
+export const GROUP_LABEL: Record<GroupBy, string> = liveLabels(() => tr().group);
 
 const csv = (v: string | null) => (v ? v.split(",").filter(Boolean) : []);
 
@@ -138,7 +125,7 @@ export function groupTasks(
   by: GroupBy,
   ctx: { moduleName: (id?: string) => string; memberName: (id: string) => string },
 ): TaskGroup[] {
-  if (by === "none") return [{ key: "all", label: "Tất cả task", tasks }];
+  if (by === "none") return [{ key: "all", label: tr().groupLabel.allTasks, tasks }];
   const map = new Map<string, TaskGroup>();
   const ensure = (key: string, label: string, dot?: string) => {
     if (!map.has(key)) map.set(key, { key, label, dot, tasks: [] });
@@ -149,12 +136,12 @@ export function groupTasks(
     if (by === "status") ensure(t.status, STATUS_META[t.status].label, STATUS_META[t.status].dot).tasks.push(t);
     else if (by === "priority") {
       const l = priorityLevel(t.priority);
-      ensure(l === null ? "none" : String(l), l === null ? "Chưa đặt ưu tiên" : `${PRIORITY_META[l].tag} · ${PRIORITY_META[l].label}`, l === null ? undefined : PRIORITY_META[l].color).tasks.push(t);
+      ensure(l === null ? "none" : String(l), l === null ? tr().groupLabel.noPriority : `${PRIORITY_META[l].tag} · ${PRIORITY_META[l].label}`, l === null ? undefined : PRIORITY_META[l].color).tasks.push(t);
     } else if (by === "module") {
-      ensure(t.moduleId ?? "none", t.moduleId ? ctx.moduleName(t.moduleId) : "Không thuộc module").tasks.push(t);
+      ensure(t.moduleId ?? "none", t.moduleId ? ctx.moduleName(t.moduleId) : tr().groupLabel.noModule).tasks.push(t);
     } else {
       const ws = t.workers ?? [];
-      if (ws.length === 0) ensure("none", "Chưa giao").tasks.push(t);
+      if (ws.length === 0) ensure("none", tr().groupLabel.unassigned).tasks.push(t);
       else for (const w of ws) ensure(w.user.id, ctx.memberName(w.user.id) || w.user.name).tasks.push(t);
     }
   }
@@ -170,22 +157,22 @@ export type ColumnKey =
 export const DEFAULT_COLUMNS: ColumnKey[] = ["code", "title", "status", "priority", "module", "workers", "due", "estimate"];
 
 export const COLUMN_META: Record<ColumnKey, { label: string; width: string; locked?: boolean }> = {
-  code: { label: "Mã", width: "84px", locked: true },
-  title: { label: "Tiêu đề", width: "minmax(220px,1fr)", locked: true },
-  status: { label: "Trạng thái", width: "116px" },
-  priority: { label: "Ưu tiên", width: "92px" },
-  module: { label: "Module", width: "120px" },
-  workers: { label: "Người làm", width: "96px" },
-  due: { label: "Hạn", width: "76px" },
-  estimate: { label: "Ước tính", width: "72px" },
-  alert: { label: "Cảnh báo", width: "70px" },
-  feedback: { label: "Feedback", width: "80px" },
-  comments: { label: "Bình luận", width: "84px" },
-  labels: { label: "Nhãn", width: "160px" },
-  faultHolders: { label: "Người chịu lỗi", width: "110px" },
-  project: { label: "Dự án", width: "130px" },
-  start: { label: "Bắt đầu", width: "76px" },
-  returnCount: { label: "Trả lại", width: "70px" },
+  code: { get label() { return tr().column.code; }, width: "84px", locked: true },
+  title: { get label() { return tr().column.title; }, width: "minmax(220px,1fr)", locked: true },
+  status: { get label() { return tr().column.status; }, width: "116px" },
+  priority: { get label() { return tr().column.priority; }, width: "92px" },
+  module: { get label() { return tr().column.module; }, width: "120px" },
+  workers: { get label() { return tr().column.workers; }, width: "96px" },
+  due: { get label() { return tr().column.due; }, width: "76px" },
+  estimate: { get label() { return tr().column.estimate; }, width: "72px" },
+  alert: { get label() { return tr().column.alert; }, width: "70px" },
+  feedback: { get label() { return tr().column.feedback; }, width: "80px" },
+  comments: { get label() { return tr().column.comments; }, width: "84px" },
+  labels: { get label() { return tr().column.labels; }, width: "160px" },
+  faultHolders: { get label() { return tr().column.faultHolders; }, width: "110px" },
+  project: { get label() { return tr().column.project; }, width: "130px" },
+  start: { get label() { return tr().column.start; }, width: "76px" },
+  returnCount: { get label() { return tr().column.returnCount; }, width: "70px" },
 };
 
 export const COLUMN_ORDER: ColumnKey[] = [

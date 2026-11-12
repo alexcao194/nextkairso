@@ -1,5 +1,7 @@
 import type { CalendarDayResponse, MemberCalendarDay } from "../api/schema";
 import { localDateKey } from "./task";
+import { tr } from "../i18n/dict";
+import { liveLabels } from "../i18n/live";
 
 interface Interval {
   start: number;
@@ -61,15 +63,7 @@ export function dayInfo(day: CalendarDayResponse | undefined, key: string): DayI
   return { ...base, isLate, isEarlyLeave, state: isLate || isEarlyLeave ? "late" : "full" };
 }
 
-export const DAY_STATE_LABEL: Record<DayState, string> = {
-  full: "Đủ công",
-  late: "Muộn / về sớm",
-  missed: "Thiếu công",
-  off: "Không có ca",
-  extra: "Làm ngoài lịch",
-  upcoming: "Sắp tới",
-  pending: "Chờ duyệt lịch",
-};
+export const DAY_STATE_LABEL: Record<DayState, string> = liveLabels(() => tr().dayState);
 
 export type LiveState = "working" | "done" | "absent" | "waiting" | "off";
 
@@ -141,13 +135,13 @@ export function memberDayTimeline(day: MemberCalendarDay | undefined, key: strin
   else if (schedule.length && !past) state = "waiting";
   else state = "off";
 
+  const L = tr().liveState;
   const label = {
-    working: "Đang làm",
-    done: isToday ? "Đã ra ca" : "Đã chấm công",
-    absent: isToday ? "Chưa vào ca" : "Thiếu công",
-    waiting: isToday ? "Chưa tới ca" : "Có lịch",
-    off: "Không có ca",
-  extra: "Làm ngoài lịch",
+    working: L.working,
+    done: isToday ? L.doneToday : L.done,
+    absent: isToday ? L.absentToday : L.absent,
+    waiting: isToday ? L.waitingToday : L.waiting,
+    off: L.off,
   }[state];
 
   return { state, label, schedule, actual, hours, lateMinutes };

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { IconZap } from "@/components/icons";
+import { useT } from "@/lib/i18n";
+import { LangToggle } from "@/components/shell/LangToggle";
 
 function IconGoogle() {
   return (
@@ -30,6 +32,7 @@ function IconGoogle() {
 }
 
 export default function LoginPage() {
+const t = useT();
   const router = useRouter();
   const {
     loginWithEmail,
@@ -63,11 +66,11 @@ export default function LoginPage() {
 
     if (mode === "register") {
       if (password.length < 6) {
-        setErrorMsg("Mật khẩu phải có tối thiểu 6 ký tự!");
+        setErrorMsg(t.login.pwTooShort);
         return;
       }
       if (password !== confirmPassword) {
-        setErrorMsg("Mật khẩu xác nhận không khớp!");
+        setErrorMsg(t.login.pwMismatch);
         return;
       }
 
@@ -91,12 +94,12 @@ export default function LoginPage() {
     setIsLoading(false);
 
     if (ok) {
-      setSuccessMsg("Đăng nhập thành công! Đang chuyển hướng...");
+      setSuccessMsg(t.login.loginOk);
       setTimeout(() => {
         router.push("/");
       }, 600);
     } else {
-      setErrorMsg(error || "Đăng nhập thất bại. Vui lòng kiểm tra lại email hoặc mật khẩu.");
+      setErrorMsg(error || t.login.loginFailed);
     }
   };
 
@@ -107,15 +110,15 @@ export default function LoginPage() {
     try {
       const ok = await loginWithGoogle();
       if (ok) {
-        setSuccessMsg("Đăng nhập Google thành công! Đang chuyển hướng...");
+        setSuccessMsg(t.login.googleOk);
         setTimeout(() => {
           router.push("/");
         }, 600);
       } else {
-        setErrorMsg(error || "Đăng nhập với Google thất bại.");
+        setErrorMsg(error || t.login.googleFailed);
       }
     } catch (err: any) {
-      setErrorMsg(err.message || "Lỗi đăng nhập Google.");
+      setErrorMsg(err.message || t.login.googleError);
     } finally {
       setIsLoading(false);
     }
@@ -124,7 +127,7 @@ export default function LoginPage() {
   const handleTokenSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tokenInput.trim()) {
-      setErrorMsg("Vui lòng dán chuỗi JWT Access Token");
+      setErrorMsg(t.login.pasteToken);
       return;
     }
     setErrorMsg(null);
@@ -134,12 +137,12 @@ export default function LoginPage() {
     setIsLoading(false);
 
     if (ok) {
-      setSuccessMsg("Kết nối API backend production thành công!");
+      setSuccessMsg(t.login.tokenOk);
       setTimeout(() => {
         router.push("/");
       }, 700);
     } else {
-      setErrorMsg("Token không hợp lệ hoặc đã hết hạn!");
+      setErrorMsg(t.login.tokenInvalid);
     }
   };
 
@@ -161,33 +164,31 @@ export default function LoginPage() {
 
         <div className="relative z-10 max-w-lg space-y-6">
           <h1 className="text-[40px] font-extrabold leading-[1.15] tracking-tight">
-            Làm việc gọn hơn,<br />vui hơn, cùng nhau.
+            {t.login.heroTitle1}<br />{t.login.heroTitle2}
           </h1>
           <p className="text-[15px] leading-relaxed text-white/90">
-            Task theo bảng, board và timeline; phê duyệt quy trình; sáng kiến nội bộ và chấm công — gom về một nơi cho cả nhóm.
+            {t.login.heroDesc}
           </p>
           <ul className="grid grid-cols-2 gap-3 pt-2">
-            {[
-              ["Task & dự án", "Bảng, Board, Timeline"],
-              ["Quy trình", "Thiết kế và phê duyệt"],
-              ["Chấm công", "Lịch, ca làm, bổ sung công"],
-              ["Hiệu suất", "KPI, sáng kiến, phản hồi"],
-            ].map(([t, d]) => (
-              <li key={t} className="rounded-2xl border border-white/25 bg-white/15 p-3.5 backdrop-blur-sm">
-                <p className="text-[13.5px] font-semibold">{t}</p>
+            {t.login.features.map(([title, d]) => (
+              <li key={title} className="rounded-2xl border border-white/25 bg-white/15 p-3.5 backdrop-blur-sm">
+                <p className="text-[13.5px] font-semibold">{title}</p>
                 <p className="mt-0.5 text-[12px] text-white/85">{d}</p>
               </li>
             ))}
           </ul>
         </div>
 
-        <p className="relative z-10 text-xs text-white/75">Kairso · Quản lý công việc cho nhóm nhỏ</p>
+        <p className="relative z-10 text-xs text-white/75">{t.login.tagline}</p>
       </div>
 
       {/* Right Panel: Authentication Card */}
       <div className="flex w-full items-center justify-center bg-surface/80 p-6 backdrop-blur sm:p-12 lg:w-1/2">
         <div className="w-full max-w-[420px] space-y-6">
           {/* Header Mobile Brand */}
+          <div className="flex justify-end">
+            <LangToggle />
+          </div>
           <div className="flex lg:hidden items-center gap-2 mb-4">
             <div style={{ background: "var(--brand-grad)" }} className="flex size-8 items-center justify-center rounded-lg text-white font-bold text-sm shadow-accent">
               K
@@ -197,12 +198,12 @@ export default function LoginPage() {
 
           <div>
             <h2 className="text-2xl font-bold text-ink tracking-tight">
-              {mode === "login" ? "Chào mừng trở lại" : "Tạo tài khoản mới"}
+              {mode === "login" ? t.login.welcomeBack : t.login.createAccount}
             </h2>
             <p className="text-xs text-ink-muted mt-1">
               {mode === "login"
-                ? "Nhập thông tin tài khoản của bạn để tiếp tục"
-                : "Bắt đầu làm việc tinh gọn cùng Kairso ngay hôm nay"}
+                ? t.login.loginSubtitle
+                : t.login.registerSubtitle}
             </p>
           </div>
 
@@ -220,7 +221,7 @@ export default function LoginPage() {
                   : "text-ink-muted hover:text-ink"
               }`}
             >
-              Đăng nhập
+              {t.login.signIn}
             </button>
             <button
               type="button"
@@ -234,18 +235,18 @@ export default function LoginPage() {
                   : "text-ink-muted hover:text-ink"
               }`}
             >
-              Đăng ký
+              {t.login.signUp}
             </button>
           </div>
 
           {isLiveMode && user && (
             <div className="rounded-xl border border-accent/30 bg-accent-soft p-4 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-accent-ink">Phiên làm việc đang hoạt động</span>
+                <span className="text-xs font-semibold text-accent-ink">{t.login.activeSession}</span>
                 <span className="size-2 rounded-full bg-accent animate-pulse" />
               </div>
               <p className="text-xs text-ink-2">
-                Bạn đang đăng nhập với tài khoản <strong>{user.email || user.name}</strong>.
+                {t.login.signedInAs} <strong>{user.email || user.name}</strong>.
               </p>
               <div className="flex items-center gap-2 pt-1">
                 <button
@@ -253,14 +254,14 @@ export default function LoginPage() {
                   onClick={() => router.push("/")}
                   className="flex-1 h-8 rounded-md bg-accent text-white text-xs font-medium hover:bg-accent-hover transition-colors cursor-pointer"
                 >
-                  Vào không gian làm việc
+                  {t.login.enterWorkspace}
                 </button>
                 <button
                   type="button"
                   onClick={logout}
                   className="px-3 h-8 rounded-md border border-line bg-surface hover:bg-hover text-danger text-xs font-medium transition-colors cursor-pointer"
                 >
-                  Đăng xuất
+                  {t.login.signOut}
                 </button>
               </div>
             </div>
@@ -286,13 +287,13 @@ export default function LoginPage() {
             className="w-full h-10 rounded-lg border border-line bg-surface hover:bg-hover text-ink text-xs font-medium flex items-center justify-center gap-2.5 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
           >
             <IconGoogle />
-            <span>Tiếp tục với Google</span>
+            <span>{t.login.google}</span>
           </button>
 
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-line" />
             <span className="text-[11px] text-ink-placeholder uppercase tracking-wider font-medium">
-              hoặc với email
+              {t.login.orEmail}
             </span>
             <div className="h-px flex-1 bg-line" />
           </div>
@@ -300,11 +301,11 @@ export default function LoginPage() {
           {/* Email / Password Form */}
           <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-medium text-ink-2 mb-1">Email công việc</label>
+              <label className="block text-xs font-medium text-ink-2 mb-1">{t.login.workEmail}</label>
               <input
                 type="email"
                 required
-                placeholder="ten.ban@kairso.com"
+                placeholder={t.login.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-9 px-3 text-xs bg-surface border border-line rounded-lg text-ink placeholder:text-ink-placeholder outline-none focus:border-accent"
@@ -313,13 +314,13 @@ export default function LoginPage() {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-medium text-ink-2">Mật khẩu</label>
+                <label className="text-xs font-medium text-ink-2">{t.login.password}</label>
                 {mode === "login" && (
                   <Link
                     href="/forgot-password"
                     className="text-[11px] text-accent hover:underline cursor-pointer"
                   >
-                    Quên mật khẩu?
+                    {t.login.forgot}
                   </Link>
                 )}
               </div>
@@ -336,7 +337,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-2.5 top-2.5 text-ink-placeholder hover:text-ink cursor-pointer"
-                  aria-label="Ẩn/hiện mật khẩu"
+                  aria-label={t.login.togglePassword}
                 >
                   {showPassword ? "🙈" : "👁"}
                 </button>
@@ -346,7 +347,7 @@ export default function LoginPage() {
             {mode === "register" && (
               <div>
                 <label className="block text-xs font-medium text-ink-2 mb-1">
-                  Xác nhận mật khẩu
+                  {t.login.confirmPassword}
                 </label>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -365,10 +366,10 @@ export default function LoginPage() {
               className="mt-2 h-10 w-full cursor-pointer rounded-lg bg-(image:--accent-grad) text-xs font-semibold text-white shadow-accent transition-all hover:bg-(image:--accent-grad-hover) disabled:opacity-50"
             >
               {isLoading
-                ? "Đang xử lý..."
+                ? t.login.processing
                 : mode === "login"
-                ? "Đăng nhập"
-                : "Tạo tài khoản mới"}
+                ? t.login.signIn
+                : t.login.createAccount}
             </button>
           </form>
 
@@ -382,8 +383,8 @@ export default function LoginPage() {
               <IconZap size={13} />
               <span>
                 {showTokenInput
-                  ? "Ẩn kết nối Token trực tiếp"
-                  : "Kết nối nhanh với Backend JWT Token"}
+                  ? t.login.hideToken
+                  : t.login.showToken}
               </span>
             </button>
 
@@ -391,20 +392,20 @@ export default function LoginPage() {
               <form onSubmit={handleTokenSubmit} className="mt-3 space-y-2 animate-in fade-in">
                 <textarea
                   rows={2}
-                  placeholder="Dán chuỗi JWT Access Token từ backend..."
+                  placeholder={t.login.tokenPlaceholder}
                   value={tokenInput}
                   onChange={(e) => setTokenInput(e.target.value)}
                   className="w-full p-2 text-xs bg-surface-sunken border border-line rounded-lg text-ink font-mono placeholder:text-ink-placeholder outline-none focus:border-accent"
                 />
                 <p className="text-[11px] text-warning">
-                  Chỉ dùng access token trực tiếp, không kèm refresh token — phiên sẽ không tự làm mới và cần dán lại khi hết hạn.
+                  {t.login.tokenWarning}
                 </p>
                 <button
                   type="submit"
                   disabled={isLoading}
                   className="w-full h-8 rounded-md bg-surface border border-accent/40 text-accent hover:bg-accent/10 text-xs font-medium transition-colors cursor-pointer"
                 >
-                  Kết nối ngay
+                  {t.login.connect}
                 </button>
               </form>
             )}
@@ -412,15 +413,15 @@ export default function LoginPage() {
 
           {/* Terms & Privacy */}
           <p className="text-center text-[11px] text-ink-muted leading-relaxed">
-            Bằng việc tiếp tục, bạn đồng ý với{" "}
+            {t.login.termsPrefix}{" "}
             <a href="#" className="text-ink-2 hover:underline">
-              Điều khoản dịch vụ
+              {t.login.terms}
             </a>{" "}
-            và{" "}
+            {t.login.and}{" "}
             <a href="#" className="text-ink-2 hover:underline">
-              Chính sách bảo mật
+              {t.login.privacy}
             </a>{" "}
-            của Kairso.
+            {t.login.termsSuffix}
           </p>
         </div>
       </div>

@@ -3,11 +3,13 @@
 // must mirror it (enforced by defineMessages). Access via useT() in components
 // or tr() in non-React code.
 import { getLang } from "./state";
+import { authPages } from "./messages/auth";
 import { core } from "./messages/core";
 import { home } from "./messages/home";
 import { ui } from "./messages/ui";
+import { domain } from "./messages/domain";
 
-const modules = [core, home, ui] as const;
+const modules = [core, home, ui, domain, authPages] as const;
 
 type Merge<M extends readonly { vi: object }[]> = M extends readonly [infer H extends { vi: object }, ...infer R extends readonly { vi: object }[]]
   ? H["vi"] & Merge<R>

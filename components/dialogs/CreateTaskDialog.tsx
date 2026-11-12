@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/form";
 import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 import { DateField, LabelPicker, ModulePicker, PeoplePicker, PriorityPicker, StatusPicker } from "@/components/kairso/pickers";
+import { tr } from "@/lib/i18n";
 
 export interface CreateTaskDefaults {
   projectId?: string;
@@ -47,10 +48,10 @@ interface Seed {
 
 function feedbackSeed(f: ProjectFeedbackResponse): Seed {
   const who = [f.submitterName, f.submitterCompany].filter(Boolean).join(" · ");
-  const images = (f.images ?? []).map((src) => `![Ảnh đính kèm](${src})`).join("\n");
+  const images = (f.images ?? []).map((src) => `![${tr().createTask.attachment}](${src})`).join("\n");
   return {
     title: f.featureName.slice(0, 200),
-    description: [`> Từ phản hồi **${f.code}**${who ? ` của ${who}` : ""}`, f.content, images].filter(Boolean).join("\n\n"),
+    description: [tr().createTask.fromFeedbackNote(f.code, who), f.content, images].filter(Boolean).join("\n\n"),
     priority: f.priority || undefined,
     end: f.expectedFixDate ? f.expectedFixDate.slice(0, 10) : undefined,
   };
@@ -58,7 +59,7 @@ function feedbackSeed(f: ProjectFeedbackResponse): Seed {
 
 export function CreateTaskDialog({ defaults, onClose }: { defaults: CreateTaskDefaults | null; onClose: () => void }) {
   return (
-    <Modal open={!!defaults} onClose={onClose} title={defaults?.parentId ? "Tạo task con" : defaults?.feedbackId ? "Tạo task từ phản hồi" : defaults?.meetingId ? "Tạo task từ biên bản họp" : "Tạo task"} width={1040}>
+    <Modal open={!!defaults} onClose={onClose} title={defaults?.parentId ? tr().createTask.subtask : defaults?.feedbackId ? tr().createTask.fromFeedback : defaults?.meetingId ? tr().createTask.fromMeeting : tr().createTask.create} width={1040}>
       {defaults &&
         (defaults.feedbackId && defaults.projectId ? (
           <FromFeedback defaults={defaults} onClose={onClose} />
@@ -76,10 +77,10 @@ function meetingSeed(m: MeetingMinutesResponse, it: MeetingItem, modules: Module
   return {
     title: it.content.split("\n")[0].slice(0, 200),
     description: [
-      `> Từ biên bản họp **${m.title}** (${fmtDate(m.meetingDate)})`,
-      it.module ? `**Phân hệ:** ${it.module}` : "",
+      tr().createTask.fromMinutesNote(m.title, fmtDate(m.meetingDate)),
+      it.module ? tr().createTask.moduleLine(it.module) : "",
       it.content,
-      it.note ? `**Ghi chú:** ${it.note}` : "",
+      it.note ? tr().createTask.noteLine(it.note) : "",
     ].filter(Boolean).join("\n\n"),
     priority: it.priority ? priorityToApi(1) : undefined,
     moduleId: mod ? modules.find((x) => x.name.trim().toLowerCase() === mod)?.id : undefined,
@@ -90,7 +91,7 @@ function FromMeeting({ defaults, onClose }: { defaults: CreateTaskDefaults; onCl
   const { workspaceId } = useWorkspace();
   const meeting = useMeeting(defaults.meetingId);
   const modules = useProjectModules(workspaceId, defaults.projectId ?? "");
-  if (meeting.isLoading || (defaults.projectId && modules.isLoading)) return <p className="py-6 text-center text-[13px] text-ink-muted">Đang tải biên bản…</p>;
+  if (meeting.isLoading || (defaults.projectId && modules.isLoading)) return <p className="py-6 text-center text-[13px] text-ink-muted">{tr().createTask.loadingMinutes}</p>;
   const it = meeting.data?.items.find((i) => i.id === defaults.meetingItemId);
   return <Form defaults={defaults} seed={meeting.data && it ? meetingSeed(meeting.data, it, modules.data ?? []) : undefined} onClose={onClose} />;
 }
@@ -104,7 +105,7 @@ async function linkMeetingItem(meetingId: string, itemId: string, task: TaskResp
 function FromFeedback({ defaults, onClose }: { defaults: CreateTaskDefaults; onClose: () => void }) {
   const { workspaceId } = useWorkspace();
   const list = useProjectFeedbacks(workspaceId, defaults.projectId!, {});
-  if (list.isLoading) return <p className="py-6 text-center text-[13px] text-ink-muted">Đang tải phản hồi…</p>;
+  if (list.isLoading) return <p className="py-6 text-center text-[13px] text-ink-muted">{tr().createTask.loadingFeedback}</p>;
   const fb = (list.data?.items ?? []).find((f) => f.id === defaults.feedbackId);
   return <Form defaults={defaults} seed={fb ? feedbackSeed(fb) : undefined} onClose={onClose} />;
 }
@@ -136,7 +137,7 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
   const qc = useQueryClient();
 
   const people = (members.data ?? []).map((m) => ({ id: m.userId, name: m.userName, avatar: m.userAvatar, alias: m.userAlias }));
-  const dateError = start && end && end < start ? "Hạn phải sau ngày bắt đầu" : null;
+  const dateError = start && end && end < start ? tr().createTask.dueAfterStart : null;
   const canSubmit = !!projectId && title.trim().length > 0 && !dateError;
 
   const submit = () => {
@@ -163,7 +164,7 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
           if (defaults.feedbackId) {
             try {
               await link.mutateAsync({ id: defaults.feedbackId, taskId: task.id });
-              toast.success(`Đã tạo ${task.code} và liên kết với phản hồi`);
+              toast.success(tr().createTask.createdLinked(task.code));
             } catch (e) {
               toast.error(e);
             }
@@ -174,14 +175,14 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
             try {
               await linkMeetingItem(defaults.meetingId, defaults.meetingItemId, task);
               qc.invalidateQueries({ queryKey: ["meetings"] });
-              toast.success(`Đã tạo ${task.code} và gắn vào biên bản`);
+              toast.success(tr().createTask.createdAttached(task.code));
             } catch (e) {
               toast.error(e);
             }
             onClose();
             return;
           }
-          toast.success(`Đã tạo ${task.code}`);
+          toast.success(tr().createTask.created(task.code));
           onClose();
           router.push(`/projects/${projectId}/tasks?task=${task.id}`);
         },
@@ -202,7 +203,7 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
       className="flex flex-col gap-4"
     >
       {!defaults.projectId && (
-        <Field label="Dự án" required>
+        <Field label={tr().createTask.project} required>
           {(p) => (
             <Select {...p} value={projectId} onChange={(e) => { setProjectId(e.target.value); setModuleId(null); setLabelIds([]); setWorkers({}); setFaultHolders({}); }}>
               {projects.map((pr) => (
@@ -214,34 +215,34 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
           )}
         </Field>
       )}
-      <Field label="Tiêu đề" required>
-        {(p) => <Input {...p} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Việc cần làm…" maxLength={200} />}
+      <Field label={tr().createTask.title} required>
+        {(p) => <Input {...p} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder={tr().createTask.titlePh} maxLength={200} />}
       </Field>
       <div className="flex flex-col gap-1">
-        <span className="text-[12px] font-medium text-ink-2">Mô tả</span>
+        <span className="text-[12px] font-medium text-ink-2">{tr().createTask.description}</span>
         <MarkdownEditor
-          label="Mô tả task"
+          label={tr().createTask.descriptionLabel}
           height={380}
           value={description}
           onChange={setDescription}
           onSubmit={submit}
-          placeholder="Chi tiết, tiêu chí hoàn thành… (hỗ trợ Markdown, dán ảnh để chèn)"
+          placeholder={tr().createTask.descriptionPh}
           onUploadImage={projectId ? async (f) => (await uploadFile(f, "project_file", projectId)).fileUrl : undefined}
         />
       </div>
 
       <div className="grid grid-cols-[108px_1fr] items-center gap-x-3 gap-y-2.5 max-sm:grid-cols-1">
-        <span className="text-[12px] text-ink-muted">Trạng thái</span>
+        <span className="text-[12px] text-ink-muted">{tr().createTask.status}</span>
         <div><StatusPicker value={status} onChange={setStatus} /></div>
-        <span className="text-[12px] text-ink-muted">Ưu tiên</span>
+        <span className="text-[12px] text-ink-muted">{tr().createTask.priority}</span>
         <div><PriorityPicker value={priority} onChange={setPriority} /></div>
         <span className="text-[12px] text-ink-muted">Module</span>
         <div><ModulePicker modules={modules.data ?? []} value={moduleId ?? undefined} onChange={setModuleId} /></div>
-        <span className="text-[12px] text-ink-muted">Người làm</span>
-        <div><PeoplePicker title="Người làm" emptyLabel="Chưa giao" people={people} value={workers} onChange={setWorkers} /></div>
-        <span className="text-[12px] text-ink-muted">Người chịu lỗi</span>
-        <div><PeoplePicker title="Người chịu lỗi" emptyLabel="Chưa chỉ định" people={people} value={faultHolders} onChange={setFaultHolders} /></div>
-        <span className="text-[12px] text-ink-muted">Nhãn</span>
+        <span className="text-[12px] text-ink-muted">{tr().createTask.workers}</span>
+        <div><PeoplePicker title={tr().createTask.workers} emptyLabel={tr().createTask.unassigned} people={people} value={workers} onChange={setWorkers} /></div>
+        <span className="text-[12px] text-ink-muted">{tr().createTask.faultHolders}</span>
+        <div><PeoplePicker title={tr().createTask.faultHolders} emptyLabel={tr().createTask.noneSet} people={people} value={faultHolders} onChange={setFaultHolders} /></div>
+        <span className="text-[12px] text-ink-muted">{tr().createTask.labels}</span>
         <div>
           <LabelPicker
             labels={labels.data ?? []}
@@ -256,22 +257,22 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
             }}
           />
         </div>
-        <span className="text-[12px] text-ink-muted">Bắt đầu / Hạn</span>
+        <span className="text-[12px] text-ink-muted">{tr().createTask.startDue}</span>
         <div className="flex flex-wrap items-center gap-2">
-          <DateField label="Ngày bắt đầu" value={start} onChange={setStart} />
+          <DateField label={tr().createTask.startDate} value={start} onChange={setStart} />
           <span className="text-ink-faint">→</span>
-          <DateField label="Hạn hoàn thành" value={end} onChange={setEnd} min={start || undefined} />
+          <DateField label={tr().createTask.dueDate} value={end} onChange={setEnd} min={start || undefined} />
           {dateError && <span className="text-[12px] text-danger">{dateError}</span>}
         </div>
-        <label htmlFor="ct-est" className="text-[12px] text-ink-muted">Ước tính (giờ)</label>
+        <label htmlFor="ct-est" className="text-[12px] text-ink-muted">{tr().createTask.estimate}</label>
         <div><Input id="ct-est" small type="number" min={0} inputMode="numeric" className="w-24 font-mono" value={estimation} onChange={(e) => setEstimation(e.target.value)} placeholder="0" /></div>
       </div>
 
       <div className="flex items-center justify-end gap-2 border-t border-line pt-3">
-        <span className="mr-auto text-[11px] text-ink-faint max-sm:hidden">Ctrl/⌘ + Enter để tạo</span>
-        <Button onClick={onClose}>Huỷ</Button>
+        <span className="mr-auto text-[11px] text-ink-faint max-sm:hidden">{tr().createTask.shortcut}</span>
+        <Button onClick={onClose}>{tr().createTask.cancel}</Button>
         <Button type="submit" variant="primary" loading={create.isPending} disabled={!canSubmit}>
-          Tạo task
+          {tr().createTask.create}
         </Button>
       </div>
     </form>

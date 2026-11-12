@@ -27,6 +27,8 @@ import { EmptyState, Skeleton } from "@/components/ui/feedback";
 import { MetricStrip } from "@/components/kairso/MetricStrip";
 import { useDialogs } from "@/components/dialogs/DialogProvider";
 import { IconChevronLeft, IconChevronRight, IconClock } from "@/components/icons";
+import { tr } from "@/lib/i18n";
+import { monthTitle } from "@/lib/domain/format";
 
 type Tab = "attendance" | "schedule" | "requests" | "pending" | "team" | "summary" | "late";
 
@@ -48,23 +50,23 @@ export default function CalendarPage() {
   return (
     <>
       <TopBar>
-        <Breadcrumb items={[{ label: "Lịch & chấm công" }]} />
+        <Breadcrumb items={[{ label: tr().calPage.title }]} />
         <TopBarSpacer />
         <Button variant="primary" onClick={openCheckIn}>
           <IconClock size={14} /> {checkedIn && !checkedOut ? "Check out" : "Check in"}
         </Button>
       </TopBar>
       <Tabs
-        label="Lịch & chấm công"
+        label={tr().calPage.title}
         value={t}
         onChange={(v) => setTab(v === "attendance" ? null : v)}
         className="bg-surface px-3"
         tabs={[
-          { value: "attendance", label: "Chấm công" },
-          { value: "schedule", label: "Lịch làm việc" },
-          { value: "requests", label: "Bổ sung công", count: isManager ? pendingR.data?.length : undefined },
-          ...(isManager ? ([{ value: "pending", label: "Lịch chờ duyệt", count: pendingS.data?.length }, { value: "team", label: "Đội nhóm" }, { value: "summary", label: "Tổng hợp" }] as const) : []),
-          { value: "late", label: "Đi muộn" },
+          { value: "attendance", label: tr().calPage.attendance },
+          { value: "schedule", label: tr().calPage.schedule },
+          { value: "requests", label: tr().calPage.requests, count: isManager ? pendingR.data?.length : undefined },
+          ...(isManager ? ([{ value: "pending", label: tr().calPage.pending, count: pendingS.data?.length }, { value: "team", label: tr().calPage.team }, { value: "summary", label: tr().calPage.summary }] as const) : []),
+          { value: "late", label: tr().calPage.late },
         ]}
       />
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -110,14 +112,14 @@ function Attendance() {
     <div className="grid grid-cols-[1fr_320px] gap-5 max-lg:grid-cols-1">
       <section className="min-w-0 overflow-hidden rounded-lg border border-line bg-surface">
         <div className="flex items-center gap-2 border-b border-line px-3 py-2">
-          <IconButton label="Tháng trước" variant="ghost" onClick={() => go(-1)}><IconChevronLeft size={14} /></IconButton>
-          <h2 className="min-w-[130px] text-center text-[14px] font-semibold">Tháng {month.getMonth() + 1}/{month.getFullYear()}</h2>
-          <IconButton label="Tháng sau" variant="ghost" onClick={() => go(1)}><IconChevronRight size={14} /></IconButton>
-          <Button size="sm" variant="ghost" onClick={() => setMonthParam(null)}>Hôm nay</Button>
+          <IconButton label={tr().calPage.prevMonth} variant="ghost" onClick={() => go(-1)}><IconChevronLeft size={14} /></IconButton>
+          <h2 className="min-w-[130px] text-center text-[14px] font-semibold">{monthTitle(month)}</h2>
+          <IconButton label={tr().calPage.nextMonth} variant="ghost" onClick={() => go(1)}><IconChevronRight size={14} /></IconButton>
+          <Button size="sm" variant="ghost" onClick={() => setMonthParam(null)}>{tr().calPage.today}</Button>
           <span className="flex-1" />
           {isManager && (
-            <Select small aria-label="Xem lịch của" className="w-44" value={memberId} onChange={(e) => setMemberId(e.target.value || null)}>
-              <option value="">Của tôi</option>
+            <Select small aria-label={tr().calPage.viewOf} className="w-44" value={memberId} onChange={(e) => setMemberId(e.target.value || null)}>
+              <option value="">{tr().calPage.mine}</option>
               {members.map((m) => <option key={m.userId} value={m.userId}>{m.userName}</option>)}
             </Select>
           )}
@@ -129,30 +131,30 @@ function Attendance() {
         <MetricStrip
           compact
           metrics={[
-            { label: "Giờ làm", value: t ? Math.round(t.attendanceHours * 10) / 10 : statsLoading ? "…" : 0, hint: `/ ${Math.round((t?.registeredHours ?? 0) * 10) / 10}h đăng ký` },
-            { label: "Đi muộn", value: t?.lateDays ?? (statsLoading ? "…" : 0), tone: (t?.lateDays ?? 0) > 0 ? "danger" : "default" },
-            { label: "Về sớm", value: t?.earlyLeaveDays ?? (statsLoading ? "…" : 0), tone: (t?.earlyLeaveDays ?? 0) > 0 ? "danger" : "default" },
+            { label: tr().calPage.hours, value: t ? Math.round(t.attendanceHours * 10) / 10 : statsLoading ? "…" : 0, hint: tr().calPage.registered(Math.round((t?.registeredHours ?? 0) * 10) / 10) },
+            { label: tr().calPage.late, value: t?.lateDays ?? (statsLoading ? "…" : 0), tone: (t?.lateDays ?? 0) > 0 ? "danger" : "default" },
+            { label: tr().calPage.early, value: t?.earlyLeaveDays ?? (statsLoading ? "…" : 0), tone: (t?.earlyLeaveDays ?? 0) > 0 ? "danger" : "default" },
           ]}
         />
         <section aria-labelledby="cal-day" className="rounded-lg border border-line bg-surface p-4">
-          <h3 id="cal-day" className="mb-2 text-[13px] font-semibold">{selected ? `Ngày ${selected.split("-").reverse().join("/")}` : "Chi tiết ngày"}</h3>
-          {!selected ? <p className="text-[13px] text-ink-muted">Chọn một ngày trên lịch để xem ca làm và giờ chấm công.</p> : (
+          <h3 id="cal-day" className="mb-2 text-[13px] font-semibold">{selected ? tr().calPage.dayTitle(selected.split("-").reverse().join("/")) : tr().calPage.dayDetail}</h3>
+          {!selected ? <p className="text-[13px] text-ink-muted">{tr().calPage.pickDay}</p> : (
             <div className="flex flex-col gap-2 text-[13px]">
-              {info && <p><span className="text-ink-muted">Trạng thái:</span> <span className="font-medium">{DAY_STATE_LABEL[info.state]}</span></p>}
+              {info && <p><span className="text-ink-muted">{tr().calPage.status}</span> <span className="font-medium">{DAY_STATE_LABEL[info.state]}</span></p>}
               {info && info.presence > 0 && (
                 <p className="font-mono text-[12px] text-ink-2">
-                  Giờ công {info.hours.toFixed(1)}h · có mặt {info.presence.toFixed(1)}h
-                  {info.presence - info.hours >= 0.05 && <span className="block font-sans text-[11.5px] text-ink-faint">Chỉ tính phần nằm trong ca đã duyệt.</span>}
+                  {tr().calPage.hoursLine(info.hours.toFixed(1), info.presence.toFixed(1))}
+                  {info.presence - info.hours >= 0.05 && <span className="block font-sans text-[11.5px] text-ink-faint">{tr().calPage.inShiftOnly}</span>}
                 </p>
               )}
-              {sel?.schedule && <p className="font-mono text-[12px] text-ink-2">Ca: {(sel.schedule.sessions ?? []).map((s) => `${fmtTime(s.startAt)}–${fmtTime(s.endAt)}`).join(" · ")}</p>}
-              {(sel?.sessions ?? []).map((s, i) => <p key={i} className="font-mono text-[12px] text-ink-2">Vào {s.checkIn ? fmtTime(s.checkIn.recordedAt) : "—"} · Ra {s.checkOut ? fmtTime(s.checkOut.recordedAt) : "—"}</p>)}
+              {sel?.schedule && <p className="font-mono text-[12px] text-ink-2">{tr().calPage.shifts} {(sel.schedule.sessions ?? []).map((s) => `${fmtTime(s.startAt)}–${fmtTime(s.endAt)}`).join(" · ")}</p>}
+              {(sel?.sessions ?? []).map((s, i) => <p key={i} className="font-mono text-[12px] text-ink-2">{tr().calPage.in} {s.checkIn ? fmtTime(s.checkIn.recordedAt) : "—"} · {tr().calPage.out} {s.checkOut ? fmtTime(s.checkOut.recordedAt) : "—"}</p>)}
               {(sel?.events ?? []).map((e) => <p key={e.id} className="text-[12.5px] text-ink-2">• {e.title}</p>)}
-              {!sel && <EmptyState title="Không có dữ liệu" className="py-3" />}
+              {!sel && <EmptyState title={tr().calPage.noData} className="py-3" />}
               {user && (isManager || !memberId) && (
                 <DayEditor key={`${memberId || user.id}-${selected}-${JSON.stringify([sel?.schedule ?? null, sel?.sessions ?? []])}`} date={selected} day={sel} memberId={memberId || user.id} isSelf={!memberId} isManager={isManager} />
               )}
-              {!memberId && !isManager && selected < new Date().toISOString().slice(0, 10) && <Link href={`/calendar?tab=requests&date=${selected}`} className="mt-1 text-[12.5px] font-medium text-accent-ink">Gửi yêu cầu bổ sung công cho ngày này →</Link>}
+              {!memberId && !isManager && selected < new Date().toISOString().slice(0, 10) && <Link href={`/calendar?tab=requests&date=${selected}`} className="mt-1 text-[12.5px] font-medium text-accent-ink">{tr().calPage.requestForDay}</Link>}
             </div>
           )}
         </section>

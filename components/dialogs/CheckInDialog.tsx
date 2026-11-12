@@ -12,10 +12,11 @@ import { Textarea } from "@/components/ui/form";
 import { Alert, Skeleton } from "@/components/ui/feedback";
 import { IconClock } from "@/components/icons";
 import type { AttendanceStatusResponse } from "@/lib/api/schema";
+import { tr } from "@/lib/i18n";
 
 export function CheckInDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Chấm công" width={440}>
+    <Modal open={open} onClose={onClose} title={tr().checkIn.title} width={440}>
       <Body onClose={onClose} />
     </Modal>
   );
@@ -61,7 +62,7 @@ function Body({ onClose }: { onClose: () => void }) {
     const body = { latitude: 0, longitude: 0, wifiBSSID: "", recordedAt: new Date().toISOString() };
     m.checkOut.mutate(body, {
       onSuccess: (r) => {
-        toast.success(`Check-out lúc ${fmtTime(r.recordedAt)}`);
+        toast.success(tr().checkIn.checkOutAt(fmtTime(r.recordedAt)));
         onClose();
       },
       onError: (e) => toast.error(e),
@@ -74,7 +75,7 @@ function Body({ onClose }: { onClose: () => void }) {
       const body = { latitude: 0, longitude: 0, wifiBSSID: "", recordedAt: new Date().toISOString() };
       m.checkIn.mutate(body, {
         onSuccess: (r) => {
-          toast.success(`Check-in lúc ${fmtTime(r.recordedAt)}`);
+          toast.success(tr().checkIn.checkInAt(fmtTime(r.recordedAt)));
           onClose();
         },
         onError: (e) => toast.error(e),
@@ -98,30 +99,30 @@ function Body({ onClose }: { onClose: () => void }) {
         <Skeleton className="h-10 w-full" />
       ) : wifiRequired ? (
         <Alert tone="warning" className="w-full">
-          Workspace yêu cầu xác thực Wi-Fi công ty, mà trình duyệt web không đọc được Wi-Fi. Hãy chấm công trên ứng dụng di động, hoặc{" "}
-          <Link href="/calendar?tab=requests" onClick={onClose} className="font-medium underline">gửi yêu cầu bổ sung công</Link>.
+          {tr().checkIn.wifiRequired}{" "}
+          <Link href="/calendar?tab=requests" onClick={onClose} className="font-medium underline">{tr().checkIn.sendCorrection}</Link>.
         </Alert>
       ) : !status ? (
         <Skeleton className="h-10 w-full" />
       ) : (
         <>
-          {!status.isConfigured && <Alert tone="info" className="w-full">Workspace chưa cấu hình chấm công; bản ghi vẫn được lưu.</Alert>}
+          {!status.isConfigured && <Alert tone="info" className="w-full">{tr().checkIn.notConfigured}</Alert>}
           {!isIn && (
             <div className="flex w-full flex-col gap-3 border-t border-line pt-3">
-              <p className="text-[13px] font-semibold">Báo cáo cuối ngày <span className="font-normal text-ink-muted">· bắt buộc trước khi check-out</span></p>
+              <p className="text-[13px] font-semibold">{tr().checkIn.report} <span className="font-normal text-ink-muted">{tr().checkIn.reportRequired}</span></p>
               <label className="flex flex-col gap-1">
-                <span className="text-[12.5px] text-ink-muted">Hôm nay đã xong tính năng nào?</span>
-                <Textarea rows={2} value={report.done} onChange={(e) => setReport((x) => ({ ...x, done: e.target.value }))} placeholder="VD: Xong màn đăng ký lịch, sửa bug IDOR…" />
+                <span className="text-[12.5px] text-ink-muted">{tr().checkIn.doneQ}</span>
+                <Textarea rows={2} value={report.done} onChange={(e) => setReport((x) => ({ ...x, done: e.target.value }))} placeholder={tr().checkIn.donePh} />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-[12.5px] text-ink-muted">Đang làm tính năng nào?</span>
-                <Textarea rows={2} value={report.inProgress} onChange={(e) => setReport((x) => ({ ...x, inProgress: e.target.value }))} placeholder="VD: Đang làm báo cáo cuối ngày…" />
+                <span className="text-[12.5px] text-ink-muted">{tr().checkIn.doingQ}</span>
+                <Textarea rows={2} value={report.inProgress} onChange={(e) => setReport((x) => ({ ...x, inProgress: e.target.value }))} placeholder={tr().checkIn.doingPh} />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-[12.5px] text-ink-muted">Có vấn đề gì cần trao đổi không? <span className="text-ink-faint">(tuỳ chọn)</span></span>
-                <Textarea rows={2} value={report.issues} onChange={(e) => setReport((x) => ({ ...x, issues: e.target.value }))} placeholder="VD: Cần clarify yêu cầu X với PM…" />
+                <span className="text-[12.5px] text-ink-muted">{tr().checkIn.issuesQ} <span className="text-ink-faint">{tr().checkIn.optional}</span></span>
+                <Textarea rows={2} value={report.issues} onChange={(e) => setReport((x) => ({ ...x, issues: e.target.value }))} placeholder={tr().checkIn.issuesPh} />
               </label>
-              {!reportValid && <p className="text-[12px] text-ink-faint">Điền ít nhất mục &ldquo;đã xong&rdquo; hoặc &ldquo;đang làm&rdquo; để check-out.</p>}
+              {!reportValid && <p className="text-[12px] text-ink-faint">{tr().checkIn.fillReport}</p>}
             </div>
           )}
           <Button variant="primary" className="h-11 w-full text-[14px]" loading={busy} disabled={!status.valid || (!isIn && !reportValid)} onClick={act}>

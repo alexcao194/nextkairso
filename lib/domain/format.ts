@@ -62,3 +62,18 @@ export const addDays = (d: Date, n: number) => {
 };
 
 export const monthKey = (d: Date) => `${d.getFullYear()}-${`${d.getMonth() + 1}`.padStart(2, "0")}`;
+
+/** Localized weekday name, e.g. "Thứ Hai" / "Monday". */
+export const weekdayName = (d: Date, style: "long" | "short" = "long") => d.toLocaleDateString(dateLocale(), { weekday: style });
+
+/** Localized "month/year" heading, e.g. "Tháng 11/2026" / "November 2026". */
+export const monthTitle = (d: Date) =>
+  getLang() === "en" ? d.toLocaleDateString("en-US", { month: "long", year: "numeric" }) : `Tháng ${d.getMonth() + 1}/${d.getFullYear()}`;
+
+const VI_DOW_SHORT = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+/** Compact weekday label for a date: "T2" / "Mon". */
+export const weekdayShort = (d: Date) => (getLang() === "en" ? d.toLocaleDateString("en-US", { weekday: "short" }) : VI_DOW_SHORT[d.getDay()]);
+
+/** Monday-first compact weekday headers for month grids. */
+export const weekHeaders = () => [1, 2, 3, 4, 5, 6, 0].map((dow) => weekdayShort(new Date(2024, 0, 7 + dow)));

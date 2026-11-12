@@ -10,10 +10,11 @@ import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Field, Input, Textarea } from "@/components/ui/form";
+import { tr } from "@/lib/i18n";
 
 export function ProfileDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Thông tin tài khoản" width={480}>
+    <Modal open={open} onClose={onClose} title={tr().profile.title} width={480}>
       <Form onClose={onClose} />
     </Modal>
   );
@@ -47,7 +48,7 @@ function Form({ onClose }: { onClose: () => void }) {
       }),
     onSuccess: (u) => {
       setUser(u);
-      toast.success("Đã cập nhật thông tin");
+      toast.success(tr().profile.saved);
       onClose();
     },
     onError: (e) => toast.error(e),
@@ -78,36 +79,36 @@ function Form({ onClose }: { onClose: () => void }) {
       <div className="flex items-center gap-3">
         <Avatar person={{ id: user?.id, name, avatar }} size="xl" />
         <div className="flex flex-col gap-1.5">
-          <input ref={fileRef} type="file" accept="image/*" className="sr-only" aria-label="Chọn ảnh đại diện" onChange={(e) => pickAvatar(e.target.files?.[0])} />
+          <input ref={fileRef} type="file" accept="image/*" className="sr-only" aria-label={tr().profile.pickAvatar} onChange={(e) => pickAvatar(e.target.files?.[0])} />
           <Button size="sm" loading={uploading} onClick={() => fileRef.current?.click()}>
-            Đổi ảnh
+            {tr().profile.changePhoto}
           </Button>
           {avatar && (
             <Button size="sm" variant="ghost" onClick={() => setAvatar("")}>
-              Gỡ ảnh
+              {tr().profile.removePhoto}
             </Button>
           )}
         </div>
       </div>
-      <Field label="Họ và tên" required>
+      <Field label={tr().profile.fullName} required>
         {(p) => <Input {...p} value={name} onChange={(e) => setName(e.target.value)} />}
       </Field>
       <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-        <Field label="Alias (dùng để @mention)" required error={alias && !aliasOk ? "Tối thiểu 3 ký tự: chữ, số, . _ -" : null}>
+        <Field label={tr().profile.alias} required error={alias && !aliasOk ? tr().profile.aliasHint : null}>
           {(p) => <Input {...p} value={alias} onChange={(e) => setAlias(e.target.value)} />}
         </Field>
-        <Field label="Biệt danh">{(p) => <Input {...p} value={nickname} onChange={(e) => setNickname(e.target.value)} />}</Field>
-        <Field label="Số điện thoại">{(p) => <Input {...p} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />}</Field>
-        <Field label="Ngày sinh">{(p) => <Input {...p} type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} />}</Field>
+        <Field label={tr().profile.nickname}>{(p) => <Input {...p} value={nickname} onChange={(e) => setNickname(e.target.value)} />}</Field>
+        <Field label={tr().profile.phone}>{(p) => <Input {...p} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />}</Field>
+        <Field label={tr().profile.birthday}>{(p) => <Input {...p} type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} />}</Field>
       </div>
-      <Field label="Giới thiệu">{(p) => <Textarea {...p} value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />}</Field>
-      <Field label="Email" hint="Email gắn với tài khoản đăng nhập, không đổi ở đây.">
+      <Field label={tr().profile.bio}>{(p) => <Textarea {...p} value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />}</Field>
+      <Field label="Email" hint={tr().profile.emailHint}>
         {(p) => <Input {...p} value={user?.email ?? ""} disabled readOnly />}
       </Field>
       <div className="flex justify-end gap-2">
-        <Button onClick={onClose}>Huỷ</Button>
+        <Button onClick={onClose}>{tr().profile.cancel}</Button>
         <Button type="submit" variant="primary" loading={save.isPending} disabled={!name.trim() || !aliasOk}>
-          Lưu
+          {tr().profile.save}
         </Button>
       </div>
     </form>

@@ -11,11 +11,13 @@ import { Badge, Skeleton } from "@/components/ui/feedback";
 import { Button, IconButton } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/form";
 import { IconChevronLeft, IconChevronRight, IconClose, IconPlus } from "@/components/icons";
+import { tr } from "@/lib/i18n";
+import { liveLabels } from "@/lib/i18n/live";
+import { weekdayName } from "@/lib/domain/format";
 
 type Session = { start: string; end: string };
 const STATUS_TONE = { pending: "warning", approved: "success", rejected: "danger" } as const;
-const STATUS_LABEL = { pending: "Chờ duyệt", approved: "Đã duyệt", rejected: "Bị từ chối" } as const;
-const DOW = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
+const STATUS_LABEL = liveLabels(() => tr().scheduleStatus);
 const MAX_SESSIONS = 3;
 
 const iso = (dateKey: string, hhmm: string) => {
@@ -75,7 +77,7 @@ export function ScheduleWeek({ memberId: fixedMember }: { memberId?: string }) {
       .filter((d) => d.sessions.length)
       // Gộp theo thứ (một tuần đăng ký không trùng thứ, nhưng vẫn an toàn nếu khung thay đổi).
       .reduce((acc, d) => (acc.some((x) => x.dayOfWeek === d.dayOfWeek) ? acc : [...acc, d]), [] as { dayOfWeek: number; sessions: { startTime: string; endTime: string }[] }[]);
-    m.saveMyWorkWeek.mutate({ days: wkDays }, { onSuccess: () => toast.success("Đã lưu lịch mặc định của bạn"), onError: (e: unknown) => toast.error(e) });
+    m.saveMyWorkWeek.mutate({ days: wkDays }, { onSuccess: () => toast.success(tr().schedWeek.savedDefault), onError: (e: unknown) => toast.error(e) });
   };
   const save = () => {
     const schedules = days
@@ -85,7 +87,7 @@ export function ScheduleWeek({ memberId: fixedMember }: { memberId?: string }) {
         note: notes[localDateKey(d)] || undefined,
         sessions: (draft[localDateKey(d)] ?? []).map((s) => ({ startAt: iso(localDateKey(d), s.start), endAt: iso(localDateKey(d), s.end) })),
       }));
-    const done = { onSuccess: () => toast.success(memberId ? "Đã lưu lịch cho thành viên" : "Đã gửi đăng ký lịch — chờ quản lý duyệt"), onError: (e: unknown) => toast.error(e) };
+    const done = { onSuccess: () => toast.success(memberId ? tr().schedWeek.savedForMember : tr().schedWeek.submitted), onError: (e: unknown) => toast.error(e) };
     if (memberId) m.saveMemberSchedules.mutate({ memberId, schedules, weekNote: weekNote || undefined }, done);
     else m.saveMySchedules.mutate({ schedules, weekNote: weekNote || undefined }, done);
   };
@@ -94,29 +96,29 @@ export function ScheduleWeek({ memberId: fixedMember }: { memberId?: string }) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <IconButton label="Tuần trước" onClick={() => setAnchor((a) => addDays(a, -7))}><IconChevronLeft size={14} /></IconButton>
+        <IconButton label={tr().schedWeek.prevWeek} onClick={() => setAnchor((a) => addDays(a, -7))}><IconChevronLeft size={14} /></IconButton>
         <span className="min-w-[150px] text-center font-mono text-[13px]">{days[0].getDate()}/{days[0].getMonth() + 1} – {days[6].getDate()}/{days[6].getMonth() + 1}/{days[6].getFullYear()}</span>
-        <IconButton label="Tuần sau" onClick={() => setAnchor((a) => addDays(a, 7))}><IconChevronRight size={14} /></IconButton>
-        <Button size="sm" variant="ghost" onClick={() => setAnchor(startOfWeek(new Date()))}>Tuần này</Button>
+        <IconButton label={tr().schedWeek.nextWeek} onClick={() => setAnchor((a) => addDays(a, 7))}><IconChevronRight size={14} /></IconButton>
+        <Button size="sm" variant="ghost" onClick={() => setAnchor(startOfWeek(new Date()))}>{tr().schedWeek.thisWeek}</Button>
         <span className="flex-1" />
         {isManager && !fixedMember && (
-          <Select small aria-label="Thành viên" className="w-48" value={memberId} onChange={(e) => setMemberId(e.target.value)}>
-            <option value="">Lịch của tôi</option>
+          <Select small aria-label={tr().schedWeek.member} className="w-48" value={memberId} onChange={(e) => setMemberId(e.target.value)}>
+            <option value="">{tr().schedWeek.mine}</option>
             {members.map((mm) => <option key={mm.userId} value={mm.userId}>{mm.userName}</option>)}
           </Select>
         )}
-        <Button variant="primary" onClick={save} loading={busy} disabled={!dirty || invalid}>{memberId ? "Lưu lịch" : "Gửi đăng ký"}</Button>
+        <Button variant="primary" onClick={save} loading={busy} disabled={!dirty || invalid}>{memberId ? tr().schedWeek.save : tr().schedWeek.submit}</Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {own && <Button size="sm" onClick={() => applyWeek(myWeek.data?.days)} disabled={!myWeek.data?.days?.length}>Áp dụng lịch mặc định của tôi</Button>}
-        {own && <Button size="sm" variant="ghost" onClick={saveMyDefault} loading={m.saveMyWorkWeek.isPending} disabled={invalid}>Lưu tuần này làm mặc định của tôi</Button>}
-        <Button size="sm" variant="ghost" onClick={() => applyWeek(week.data?.days)} disabled={!week.data}>Áp dụng lịch chuẩn công ty</Button>
+        {own && <Button size="sm" onClick={() => applyWeek(myWeek.data?.days)} disabled={!myWeek.data?.days?.length}>{tr().schedWeek.applyDefault}</Button>}
+        {own && <Button size="sm" variant="ghost" onClick={saveMyDefault} loading={m.saveMyWorkWeek.isPending} disabled={invalid}>{tr().schedWeek.saveAsDefault}</Button>}
+        <Button size="sm" variant="ghost" onClick={() => applyWeek(week.data?.days)} disabled={!week.data}>{tr().schedWeek.applyCompany}</Button>
       </div>
 
       <label className="flex flex-col gap-1">
-        <span className="text-[12.5px] font-medium text-ink-muted">Ghi chú cho cả đợt <span className="text-ink-faint">(tuỳ chọn)</span></span>
-        <Textarea rows={2} value={weekNote} onChange={(e) => setWeekNote(e.target.value)} placeholder="Ghi chú chung cho cả tuần đăng ký này…" />
+        <span className="text-[12.5px] font-medium text-ink-muted">{tr().schedWeek.weekNote} <span className="text-ink-faint">{tr().schedWeek.optional}</span></span>
+        <Textarea rows={2} value={weekNote} onChange={(e) => setWeekNote(e.target.value)} placeholder={tr().schedWeek.weekNotePh} />
       </label>
 
       {q.isLoading ? <Skeleton className="h-64" /> : (
@@ -128,20 +130,20 @@ export function ScheduleWeek({ memberId: fixedMember }: { memberId?: string }) {
             const past = key < localDateKey();
             return (
               <li key={key} className="flex flex-wrap items-start gap-3 border-b border-line-row px-4 py-2.5 last:border-b-0">
-                <div className="w-[120px] shrink-0 pt-1"><p className="text-[13px] font-medium">{DOW[d.getDay()]}</p><p className="font-mono text-[11.5px] text-ink-faint">{d.getDate()}/{d.getMonth() + 1}</p></div>
+                <div className="w-[120px] shrink-0 pt-1"><p className="text-[13px] font-medium">{weekdayName(d)}</p><p className="font-mono text-[11.5px] text-ink-faint">{d.getDate()}/{d.getMonth() + 1}</p></div>
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                   {list.map((ss, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <input type="time" aria-label={`Bắt đầu ca ${i + 1} ${DOW[d.getDay()]}`} disabled={past && !isManagerEdit(memberId)} value={ss.start} onChange={(e) => setDraft((x) => ({ ...x, [key]: list.map((v, j) => (j === i ? { ...v, start: e.target.value } : v)) }))} className="h-ctl-sm rounded-md border border-line-strong bg-surface px-2 font-mono text-[12.5px]" />
+                      <input type="time" aria-label={tr().schedWeek.shiftStart(i + 1, weekdayName(d))} disabled={past && !isManagerEdit(memberId)} value={ss.start} onChange={(e) => setDraft((x) => ({ ...x, [key]: list.map((v, j) => (j === i ? { ...v, start: e.target.value } : v)) }))} className="h-ctl-sm rounded-md border border-line-strong bg-surface px-2 font-mono text-[12.5px]" />
                       <span className="text-ink-faint">→</span>
-                      <input type="time" aria-label={`Kết thúc ca ${i + 1} ${DOW[d.getDay()]}`} disabled={past && !isManagerEdit(memberId)} value={ss.end} onChange={(e) => setDraft((x) => ({ ...x, [key]: list.map((v, j) => (j === i ? { ...v, end: e.target.value } : v)) }))} className={`h-ctl-sm rounded-md border bg-surface px-2 font-mono text-[12.5px] ${ss.end && ss.end <= ss.start ? "border-danger" : "border-line-strong"}`} />
-                      <button type="button" aria-label="Xoá ca" onClick={() => setDraft((x) => ({ ...x, [key]: list.filter((_, j) => j !== i) }))} className="text-ink-faint hover:text-danger"><IconClose size={12} /></button>
+                      <input type="time" aria-label={tr().schedWeek.shiftEnd(i + 1, weekdayName(d))} disabled={past && !isManagerEdit(memberId)} value={ss.end} onChange={(e) => setDraft((x) => ({ ...x, [key]: list.map((v, j) => (j === i ? { ...v, end: e.target.value } : v)) }))} className={`h-ctl-sm rounded-md border bg-surface px-2 font-mono text-[12.5px] ${ss.end && ss.end <= ss.start ? "border-danger" : "border-line-strong"}`} />
+                      <button type="button" aria-label={tr().schedWeek.removeShift} onClick={() => setDraft((x) => ({ ...x, [key]: list.filter((_, j) => j !== i) }))} className="text-ink-faint hover:text-danger"><IconClose size={12} /></button>
                     </div>
                   ))}
-                  {list.length === 0 && <span className="pt-1 text-[12.5px] text-ink-muted">Không làm việc</span>}
+                  {list.length === 0 && <span className="pt-1 text-[12.5px] text-ink-muted">{tr().schedWeek.off}</span>}
                   <div className="flex flex-wrap items-center gap-2">
-                    {list.length < MAX_SESSIONS && <Button size="sm" variant="ghost" onClick={() => setDraft((x) => ({ ...x, [key]: [...list, { start: "08:00", end: "17:00" }] }))}><IconPlus size={12} /> Thêm ca</Button>}
-                    <Input small aria-label={`Ghi chú ${DOW[d.getDay()]}`} className="min-w-0 flex-1" value={notes[key] ?? ""} onChange={(e) => setNotes((x) => ({ ...x, [key]: e.target.value }))} placeholder="Ghi chú ngày (tuỳ chọn)" />
+                    {list.length < MAX_SESSIONS && <Button size="sm" variant="ghost" onClick={() => setDraft((x) => ({ ...x, [key]: [...list, { start: "08:00", end: "17:00" }] }))}><IconPlus size={12} /> {tr().schedWeek.addShift}</Button>}
+                    <Input small aria-label={tr().schedWeek.dayNote(weekdayName(d))} className="min-w-0 flex-1" value={notes[key] ?? ""} onChange={(e) => setNotes((x) => ({ ...x, [key]: e.target.value }))} placeholder={tr().schedWeek.dayNotePh} />
                   </div>
                 </div>
                 {s?.status && <Badge tone={STATUS_TONE[s.status]}>{STATUS_LABEL[s.status]}</Badge>}

@@ -9,25 +9,26 @@ import { projectColor } from "@/lib/domain/format";
 import { Modal } from "@/components/ui/Modal";
 import { StatusChip } from "@/components/kairso/StatusChip";
 import { useDialogs } from "./DialogProvider";
+import { tr } from "@/lib/i18n";
 
 interface Entry {
   key: string;
   label: string;
   hint?: string;
-  section: "Điều hướng" | "Dự án" | "Task" | "Hành động";
+  section: "nav" | "project" | "task" | "action";
   run: () => void;
   extra?: React.ReactNode;
 }
 
-const NAV: Array<[string, string]> = [
-  ["Tổng quan", "/"],
-  ["Hộp thư", "/inbox"],
-  ["Task của tôi", "/my-tasks"],
-  ["Thảo luận", "/threads"],
-  ["Lịch & chấm công", "/calendar"],
-  ["Sáng kiến", "/initiatives"],
-  ["Phân tích", "/analytics"],
-  ["Thành viên & cài đặt", "/settings/members"],
+const NAV: Array<[keyof ReturnType<typeof tr>["sidebar"], string]> = [
+  ["overview", "/"],
+  ["inbox", "/inbox"],
+  ["myTasks", "/my-tasks"],
+  ["threads", "/threads"],
+  ["calendar", "/calendar"],
+  ["initiatives", "/initiatives"],
+  ["analytics", "/analytics"],
+  ["settings", "/settings/members"],
 ];
 
 function useDebounced<T>(v: T, ms = 250) {
@@ -41,7 +42,7 @@ function useDebounced<T>(v: T, ms = 250) {
 
 export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Tìm nhanh" width={560}>
+    <Modal open={open} onClose={onClose} title={tr().palette.title} width={560}>
       <Palette onClose={onClose} />
     </Modal>
   );
@@ -76,13 +77,13 @@ function Palette({ onClose }: { onClose: () => void }) {
     const needle = q.trim().toLowerCase();
     const match = (s: string) => !needle || s.toLowerCase().includes(needle);
     const out: Entry[] = [];
-    out.push({ key: "a-task", section: "Hành động", label: "Tạo task mới", hint: "C", run: () => { onClose(); openCreateTask(); } });
-    out.push({ key: "a-proj", section: "Hành động", label: "Tạo dự án mới", run: () => { onClose(); openCreateProject(); } });
-    NAV.filter(([l]) => match(l)).forEach(([l, href]) => out.push({ key: `n-${href}`, section: "Điều hướng", label: l, run: go(href) }));
+    out.push({ key: "a-task", section: "action", label: tr().palette.newTask, hint: "C", run: () => { onClose(); openCreateTask(); } });
+    out.push({ key: "a-proj", section: "action", label: tr().palette.newProject, run: () => { onClose(); openCreateProject(); } });
+    NAV.map(([k, href]) => [tr().sidebar[k] as string, href] as const).filter(([l]) => match(l)).forEach(([l, href]) => out.push({ key: `n-${href}`, section: "nav", label: l, run: go(href) }));
     projects.filter((p) => match(p.name)).forEach((p) =>
       out.push({
         key: `p-${p.id}`,
-        section: "Dự án",
+        section: "project",
         label: p.name,
         run: go(`/projects/${p.id}/tasks`),
         extra: <span className="size-2 rounded-[2px]" style={{ background: projectColor(p.id) }} />,
@@ -91,14 +92,14 @@ function Palette({ onClose }: { onClose: () => void }) {
     (tasks.data ?? []).forEach(({ t, p }) =>
       out.push({
         key: `t-${t.id}`,
-        section: "Task",
+        section: "task",
         label: t.title,
         hint: t.code,
         run: go(`/projects/${p.id}/tasks?task=${t.id}`),
         extra: <StatusChip status={t.status} size="sm" />,
       }),
     );
-    return needle ? out.filter((e) => e.section !== "Hành động" || match(e.label)) : out;
+    return needle ? out.filter((e) => e.section !== "action" || match(e.label)) : out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, projects, tasks.data]);
 
@@ -117,14 +118,14 @@ function Palette({ onClose }: { onClose: () => void }) {
   return (
     <div onKeyDown={onKey} className="-mx-1 flex flex-col gap-2">
       <label htmlFor="cmd-q" className="sr-only">
-        Tìm trang, dự án hoặc task
+        {tr().palette.label}
       </label>
       <input
         id="cmd-q"
         autoFocus
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Tìm trang, dự án hoặc task…"
+        placeholder={tr().palette.placeholder}
         role="combobox"
         aria-expanded="true"
         aria-controls="cmd-list"
@@ -136,7 +137,7 @@ function Palette({ onClose }: { onClose: () => void }) {
           lastSection = e.section;
           return (
             <li key={e.key} role="presentation">
-              {header && <p className="px-2 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wide text-ink-faint">{header}</p>}
+              {header && <p className="px-2 pb-1 pt-2 text-[11px] font-medium uppercase tracking-wide text-ink-faint">{tr().palette[header]}</p>}
               <button
                 type="button"
                 role="option"
@@ -153,7 +154,7 @@ function Palette({ onClose }: { onClose: () => void }) {
             </li>
           );
         })}
-        {entries.length === 0 && <li className="px-2 py-6 text-center text-[13px] text-ink-muted">{tasks.isFetching ? "Đang tìm…" : "Không có kết quả"}</li>}
+        {entries.length === 0 && <li className="px-2 py-6 text-center text-[13px] text-ink-muted">{tasks.isFetching ? tr().palette.searching : tr().palette.noResults}</li>}
       </ul>
     </div>
   );

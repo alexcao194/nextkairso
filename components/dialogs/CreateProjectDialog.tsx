@@ -9,10 +9,11 @@ import { useToast } from "@/lib/toast/ToastProvider";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/form";
+import { tr } from "@/lib/i18n";
 
 export function CreateProjectDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Tạo dự án" width={440}>
+    <Modal open={open} onClose={onClose} title={tr().createProject.title} width={440}>
       <Form onClose={onClose} />
     </Modal>
   );
@@ -29,7 +30,7 @@ function Form({ onClose }: { onClose: () => void }) {
     mutationFn: () => postWorkspaceProjects(workspaceId, { name: name.trim() }),
     onSuccess: (p) => {
       qc.invalidateQueries({ queryKey: ["projects"] });
-      toast.success(`Đã tạo dự án ${p.name}`);
+      toast.success(tr().createProject.created(p.name));
       onClose();
       router.push(`/projects/${p.id}/tasks`);
     },
@@ -44,13 +45,13 @@ function Form({ onClose }: { onClose: () => void }) {
       }}
       className="flex flex-col gap-4"
     >
-      <Field label="Tên dự án" required>
+      <Field label={tr().createProject.name} required>
         {(p) => <Input {...p} autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="VD: Kairso Web" maxLength={120} />}
       </Field>
       <div className="flex justify-end gap-2">
-        <Button onClick={onClose}>Huỷ</Button>
+        <Button onClick={onClose}>{tr().common.cancel}</Button>
         <Button type="submit" variant="primary" loading={create.isPending} disabled={!name.trim()}>
-          Tạo dự án
+          {tr().createProject.title}
         </Button>
       </div>
     </form>

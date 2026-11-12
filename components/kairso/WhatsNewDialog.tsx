@@ -9,6 +9,7 @@ import { qk } from "@/lib/query/keys";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { ReleaseNotes } from "./ReleaseNotes";
+import { tr } from "@/lib/i18n";
 
 const SEEN_KEY = "kairso-whats-new-seen";
 
@@ -50,15 +51,15 @@ export function WhatsNewDialog() {
     <Modal
       open={open}
       onClose={close}
-      title={`Có gì mới · Phiên bản ${release.version}`}
-      description={`Cập nhật ngày ${fmtDate(release.publishedAt)}`}
+      title={tr().whatsNew.title(release.version)}
+      description={tr().whatsNew.updatedOn(fmtDate(release.publishedAt))}
       width={600}
       footer={
         <>
           <Link href="/settings/whats-new" onClick={close} className="mr-auto text-[12.5px] text-accent-ink hover:underline">
-            Xem các phiên bản trước
+            {tr().whatsNew.previous}
           </Link>
-          <Button variant="primary" onClick={close}>Đã hiểu</Button>
+          <Button variant="primary" onClick={close}>{tr().whatsNew.gotIt}</Button>
         </>
       }
     >

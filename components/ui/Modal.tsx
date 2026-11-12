@@ -3,6 +3,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { IconClose } from "@/components/icons";
 import { IconButton } from "./Button";
+import { tr } from "@/lib/i18n";
 
 export function Modal({
   open,
@@ -53,7 +54,7 @@ export function Modal({
               </h2>
               {description && <p className="mt-0.5 text-[12.5px] text-ink-muted">{description}</p>}
             </div>
-            <IconButton label="Đóng" variant="ghost" size="sm" onClick={onClose}>
+            <IconButton label={tr().ui.close} variant="ghost" size="sm" onClick={onClose}>
               <IconClose size={14} />
             </IconButton>
           </header>

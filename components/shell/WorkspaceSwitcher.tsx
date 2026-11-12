@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { IconCheck, IconChevronDown, IconPlus } from "@/components/icons";
 import { useDialogs } from "@/components/dialogs/DialogProvider";
+import { tr } from "@/lib/i18n";
 
 export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
   const { workspaces, workspace, setWorkspaceId } = useWorkspace();
@@ -28,7 +29,7 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
       qc.invalidateQueries({ queryKey: qk.invitations() });
       if (v.accept) {
         qc.invalidateQueries({ queryKey: qk.workspaces() });
-        toast.success("Đã tham gia workspace");
+        toast.success(tr().wsSwitcher.joined);
       }
     },
     onError: (e) => toast.error(e),
@@ -59,7 +60,7 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
           {!collapsed && (
             <>
               <span className="flex-1 truncate text-[13px] font-semibold">{workspace?.name ?? "Kairso"}</span>
-              {pending.length > 0 && <span className="size-2 rounded-full bg-danger" aria-label="Có lời mời mới" />}
+              {pending.length > 0 && <span className="size-2 rounded-full bg-danger" aria-label={tr().wsSwitcher.newInvite} />}
               <IconChevronDown size={14} className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`} />
             </>
           )}
@@ -93,12 +94,12 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
             <>
               <div className="my-1 h-px bg-line" />
               <p className="px-2 py-1 text-[11px] font-medium uppercase tracking-wide text-ink-faint">
-                Lời mời ({pending.length})
+                {tr().wsSwitcher.invites(pending.length)}
               </p>
               {pending.map((inv) => (
                 <div key={inv.id} className="flex flex-col gap-1.5 rounded-md px-2 py-1.5">
                   <p className="text-[12.5px] text-ink">
-                    <span className="font-medium">{inv.inviterName}</span> mời bạn vào{" "}
+                    <span className="font-medium">{inv.inviterName}</span> {tr().wsSwitcher.invitedYouTo}{" "}
                     <span className="font-medium">{inv.workspaceName}</span>
                   </p>
                   <div className="flex gap-1.5">
@@ -108,14 +109,14 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
                       loading={respond.isPending}
                       onClick={() => respond.mutate({ ws: inv.workspaceId, id: inv.id, accept: true })}
                     >
-                      Tham gia
+                      {tr().wsSwitcher.join}
                     </Button>
                     <Button
                       size="sm"
                       disabled={respond.isPending}
                       onClick={() => respond.mutate({ ws: inv.workspaceId, id: inv.id, accept: false })}
                     >
-                      Từ chối
+                      {tr().wsSwitcher.decline}
                     </Button>
                   </div>
                 </div>
@@ -133,7 +134,7 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed?: boolean }) {
             className="flex h-9 items-center gap-2 rounded-md px-2 text-[13px] text-ink-2 hover:bg-hover"
           >
             <IconPlus size={14} className="text-ink-faint" />
-            Tạo workspace mới
+            {tr().wsSwitcher.createNew}
           </button>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { postUploadsPresignedUrl } from "./api/endpoints";
+import { tr } from "./i18n/dict";
 
 type UploadKind =
   | "user"
@@ -33,7 +34,7 @@ export const isImage = (contentType?: string, name?: string) =>
 export async function uploadFile(file: File, kind: UploadKind, owner?: string): Promise<UploadedFile> {
   const contentType = file.type || EXT_TYPES[file.name.split(".").pop()?.toLowerCase() ?? ""] || "application/octet-stream";
   const presigned = await postUploadsPresignedUrl({ contentType, filename: file.name, kind, owner });
-  if (!presigned.uploadUrl || !presigned.fileUrl) throw new Error("Không tạo được đường dẫn tải lên");
+  if (!presigned.uploadUrl || !presigned.fileUrl) throw new Error(tr().ui.uploadUrlFailed);
 
   const ascii = file.name.replace(/"/g, "'").replace(/[^\x20-\x7E]/g, "_");
   const res = await fetch(presigned.uploadUrl, {
@@ -44,7 +45,7 @@ export async function uploadFile(file: File, kind: UploadKind, owner?: string): 
     },
     body: file,
   });
-  if (!res.ok) throw new Error(`Tải file lên thất bại (${res.status})`);
+  if (!res.ok) throw new Error(tr().ui.uploadFailed(res.status));
   return { fileUrl: presigned.fileUrl, fileName: file.name, contentType, sizeBytes: file.size };
 }
 

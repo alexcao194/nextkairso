@@ -1,7 +1,9 @@
 import type { WhatsNewNoteResponse } from "@/lib/api/schema";
 import { Badge } from "@/components/ui/feedback";
+import { tr } from "@/lib/i18n";
+import { liveLabels } from "@/lib/i18n/live";
 
-const NOTE_LABEL = { new_feature: "Mới", improvement: "Cải tiến", bug_fix: "Sửa lỗi" } as const;
+const NOTE_LABEL = liveLabels(() => tr().releaseNote);
 const NOTE_TONE = { new_feature: "accent", improvement: "neutral", bug_fix: "warning" } as const;
 
 export function ReleaseNotes({ notes }: { notes: WhatsNewNoteResponse[] }) {

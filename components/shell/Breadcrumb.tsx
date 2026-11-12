@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Fragment } from "react";
 import { IconBreadcrumbSep } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 type Crumb = { label: string; href?: string; dotColor?: string };
 
 export function Breadcrumb({ items }: { items: Crumb[] }) {
   return (
-    <nav aria-label="Đường dẫn" className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[12.5px] text-ink-muted">
+    <nav aria-label={tr().ui.breadcrumb} className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[12.5px] text-ink-muted">
       {items.map((item, i) => {
         const last = i === items.length - 1;
         const body = (

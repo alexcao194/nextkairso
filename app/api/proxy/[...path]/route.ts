@@ -18,7 +18,7 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
   const secret = process.env.APP_SIGNATURE_SECRET;
 
   if (!secret && !isPublicRoute) {
-    return NextResponse.json({ error: "APP_SIGNATURE_SECRET chưa được cấu hình" }, { status: 500 });
+    return NextResponse.json({ error: "APP_SIGNATURE_SECRET is not configured" }, { status: 500 });
   }
 
   try {
@@ -49,7 +49,7 @@ async function handleProxy(req: NextRequest, { params }: { params: Promise<{ pat
       headers: { "Content-Type": upstream.headers.get("content-type") || "application/json" },
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Không kết nối được backend";
+    const message = err instanceof Error ? err.message : "Could not reach the backend";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

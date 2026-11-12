@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { tr } from "@/lib/i18n";
 
 const subscribe = (cb: () => void) => {
   window.addEventListener("online", cb);
@@ -16,7 +17,7 @@ export function OfflineBanner() {
   if (online) return null;
   return (
     <div role="status" className="flex h-8 shrink-0 items-center justify-center bg-warning-bg px-4 text-[12.5px] font-medium text-warning">
-      Bạn đang ngoại tuyến — dữ liệu có thể đã cũ, các thay đổi sẽ không được lưu.
+      {tr().ui.offline}
     </div>
   );
 }

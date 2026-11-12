@@ -8,10 +8,11 @@ import { useToast } from "@/lib/toast/ToastProvider";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/form";
+import { tr } from "@/lib/i18n";
 
 export function CreateWorkspaceDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Tạo workspace" description="Mỗi workspace có thành viên, dự án và chấm công riêng." width={440}>
+    <Modal open={open} onClose={onClose} title={tr().createWs.title} description={tr().createWs.desc} width={440}>
       <Form onClose={onClose} />
     </Modal>
   );
@@ -28,7 +29,7 @@ function Form({ onClose }: { onClose: () => void }) {
     onSuccess: async (w) => {
       await qc.invalidateQueries({ queryKey: ["workspaces"] });
       setWorkspaceId(w.id);
-      toast.success(`Đã tạo workspace ${w.name}`);
+      toast.success(tr().createWs.created(w.name));
       onClose();
     },
     onError: (e) => toast.error(e),
@@ -42,13 +43,13 @@ function Form({ onClose }: { onClose: () => void }) {
       }}
       className="flex flex-col gap-4"
     >
-      <Field label="Tên workspace" required>
-        {(p) => <Input {...p} autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="VD: Công ty ABC" maxLength={120} />}
+      <Field label={tr().createWs.name} required>
+        {(p) => <Input {...p} autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={tr().createWs.placeholder} maxLength={120} />}
       </Field>
       <div className="flex justify-end gap-2">
-        <Button onClick={onClose}>Huỷ</Button>
+        <Button onClick={onClose}>{tr().common.cancel}</Button>
         <Button type="submit" variant="primary" loading={create.isPending} disabled={!name.trim()}>
-          Tạo workspace
+          {tr().createWs.title}
         </Button>
       </div>
     </form>

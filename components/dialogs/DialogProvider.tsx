@@ -81,6 +81,6 @@ export function DialogProvider({ children }: { children: ReactNode }) {
 
 export function useDialogs(): DialogsApi {
   const ctx = useContext(DialogContext);
-  if (!ctx) throw new Error("useDialogs phải nằm trong DialogProvider");
+  if (!ctx) throw new Error("useDialogs must be used within DialogProvider");
   return ctx;
 }

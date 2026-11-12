@@ -70,16 +70,6 @@ export function notificationKind(type?: string): NotificationKind {
   return "other";
 }
 
-export const KIND_LABEL: Record<NotificationKind, string> = {
-  task: "Task",
-  comment: "Bình luận",
-  approval: "Phê duyệt",
-  attendance: "Chấm công",
-  member: "Thành viên",
-  feedback: "Phản hồi",
-  other: "Thông báo",
-};
-
 export const KIND_HUE: Record<string, Hue> = {
   task: "blue",
   comment: "cyan",

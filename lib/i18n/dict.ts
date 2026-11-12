@@ -1,208 +1,25 @@
-// App-wide translation dictionary. `vi` is the source of truth for the shape;
-// `en` must mirror its keys. Access via useT() (returns the current language's
-// object) or useLocale() for the raw lang + switcher.
+// App-wide translation dictionary, composed from per-area message modules in
+// ./messages. Each module's `vi` is the source of truth for its shape and `en`
+// must mirror it (enforced by defineMessages). Access via useT() in components
+// or tr() in non-React code.
+import { getLang } from "./state";
+import { core } from "./messages/core";
+import { home } from "./messages/home";
+import { ui } from "./messages/ui";
 
-export const dict = {
-  vi: {
-    common: {
-      save: "Lưu",
-      cancel: "Huỷ",
-      delete: "Xoá",
-      edit: "Sửa",
-      create: "Tạo",
-      close: "Đóng",
-      confirm: "Xác nhận",
-      loading: "Đang tải…",
-      search: "Tìm kiếm",
-      retry: "Thử lại",
-      back: "Quay lại",
-      more: "Thêm",
-      all: "Tất cả",
-      none: "Không",
-      yes: "Có",
-      no: "Không",
-      saving: "Đang lưu…",
-      language: "Ngôn ngữ",
-    },
-    shell: {
-      loadingApp: "Đang tải Kairso…",
-      noWorkspaceTitle: "Bạn chưa thuộc workspace nào",
-      noWorkspaceDesc: "Tạo workspace mới, hoặc nhờ quản trị viên mời bạn bằng alias — lời mời sẽ hiện ở bộ chuyển workspace.",
-      createWorkspace: "Tạo workspace",
-    },
-    nav: {
-      home: "Trang chủ",
-      inbox: "Hộp thư",
-      myTasks: "Việc của tôi",
-      projects: "Dự án",
-      calendar: "Lịch",
-      initiatives: "Sáng kiến",
-      analytics: "Phân tích",
-      threads: "Thảo luận",
-      files: "Tệp",
-      meetings: "Cuộc họp",
-      settings: "Cài đặt",
-    },
-    sidebar: {
-      overview: "Tổng quan",
-      inbox: "Hộp thư",
-      myTasks: "Task của tôi",
-      threads: "Thảo luận",
-      calendar: "Lịch & chấm công",
-      projects: "Dự án",
-      newProject: "Tạo dự án",
-      initiatives: "Sáng kiến",
-      files: "Tài liệu",
-      analytics: "Phân tích",
-      settings: "Thành viên & cài đặt",
-      search: "Tìm nhanh (Ctrl+K)",
-      collapse: "Thu gọn thanh bên",
-      expand: "Mở rộng thanh bên",
-      tabs: { tasks: "Task", board: "Board", timeline: "Timeline", modules: "Module", resources: "Tài nguyên", feedback: "Phản hồi", stats: "Thống kê" },
-    },
-    settings: {
-      title: "Cài đặt",
-      language: "Ngôn ngữ",
-      languageDesc: "Ngôn ngữ hiển thị của ứng dụng và thông báo đẩy.",
-      vietnamese: "Tiếng Việt",
-      english: "English",
-      notifications: "Thông báo",
-      pushEnable: "Bật thông báo đẩy trên trình duyệt này",
-      pushEnabled: "Đã bật thông báo đẩy",
-      pushBlocked: "Trình duyệt đã chặn thông báo. Hãy cho phép trong cài đặt trình duyệt.",
-      pushUnsupported: "Trình duyệt này không hỗ trợ thông báo đẩy.",
-      pushDisabled: "Đã tắt thông báo đẩy",
-      pushNoVapid: "Chưa cấu hình khoá VAPID cho web push.",
-    },
-    userMenu: {
-      account: "Thông tin tài khoản",
-      members: "Thành viên",
-      whatsNew: "Có gì mới",
-      logout: "Đăng xuất",
-      aria: "Tài khoản",
-      userFallback: "Người dùng",
-      enablePush: "Bật thông báo đẩy",
-      disablePush: "Tắt thông báo đẩy",
-    },
-    notif: {
-      title: "Thông báo",
-      markAllRead: "Đánh dấu đã đọc hết",
-      empty: "Không có thông báo",
-      inboxEmpty: "Hộp thư trống",
-      emptyUnread: "Không có thông báo chưa đọc",
-      unread: "Chưa đọc",
-      read: "Đã đọc",
-      kind: {
-        task: "Task",
-        comment: "Bình luận",
-        approval: "Phê duyệt",
-        attendance: "Chấm công",
-        member: "Thành viên",
-        feedback: "Phản hồi",
-        other: "Thông báo",
-      },
-    },
-  },
-  en: {
-    common: {
-      save: "Save",
-      cancel: "Cancel",
-      delete: "Delete",
-      edit: "Edit",
-      create: "Create",
-      close: "Close",
-      confirm: "Confirm",
-      loading: "Loading…",
-      search: "Search",
-      retry: "Retry",
-      back: "Back",
-      more: "More",
-      all: "All",
-      none: "None",
-      yes: "Yes",
-      no: "No",
-      saving: "Saving…",
-      language: "Language",
-    },
-    shell: {
-      loadingApp: "Loading Kairso…",
-      noWorkspaceTitle: "You're not in any workspace yet",
-      noWorkspaceDesc: "Create a new workspace, or ask an admin to invite you by alias — the invitation will appear in the workspace switcher.",
-      createWorkspace: "Create workspace",
-    },
-    nav: {
-      home: "Home",
-      inbox: "Inbox",
-      myTasks: "My tasks",
-      projects: "Projects",
-      calendar: "Calendar",
-      initiatives: "Initiatives",
-      analytics: "Analytics",
-      threads: "Threads",
-      files: "Files",
-      meetings: "Meetings",
-      settings: "Settings",
-    },
-    sidebar: {
-      overview: "Overview",
-      inbox: "Inbox",
-      myTasks: "My tasks",
-      threads: "Threads",
-      calendar: "Calendar & attendance",
-      projects: "Projects",
-      newProject: "New project",
-      initiatives: "Initiatives",
-      files: "Files",
-      analytics: "Analytics",
-      settings: "Members & settings",
-      search: "Quick find (Ctrl+K)",
-      collapse: "Collapse sidebar",
-      expand: "Expand sidebar",
-      tabs: { tasks: "Tasks", board: "Board", timeline: "Timeline", modules: "Modules", resources: "Resources", feedback: "Feedback", stats: "Stats" },
-    },
-    settings: {
-      title: "Settings",
-      language: "Language",
-      languageDesc: "Display language for the app and push notifications.",
-      vietnamese: "Tiếng Việt",
-      english: "English",
-      notifications: "Notifications",
-      pushEnable: "Enable push notifications on this browser",
-      pushEnabled: "Push notifications enabled",
-      pushBlocked: "The browser has blocked notifications. Please allow them in browser settings.",
-      pushUnsupported: "This browser doesn't support push notifications.",
-      pushDisabled: "Push notifications disabled",
-      pushNoVapid: "Web push VAPID key is not configured.",
-    },
-    userMenu: {
-      account: "Account",
-      members: "Members",
-      whatsNew: "What's new",
-      logout: "Log out",
-      aria: "Account",
-      userFallback: "User",
-      enablePush: "Enable push notifications",
-      disablePush: "Disable push notifications",
-    },
-    notif: {
-      title: "Notifications",
-      markAllRead: "Mark all read",
-      empty: "No notifications",
-      inboxEmpty: "Inbox is empty",
-      emptyUnread: "No unread notifications",
-      unread: "Unread",
-      read: "Read",
-      kind: {
-        task: "Task",
-        comment: "Comment",
-        approval: "Approval",
-        attendance: "Attendance",
-        member: "Member",
-        feedback: "Feedback",
-        other: "Notification",
-      },
-    },
-  },
-} as const;
+const modules = [core, home, ui] as const;
 
-export type Dict = (typeof dict)["vi"];
+type Merge<M extends readonly { vi: object }[]> = M extends readonly [infer H extends { vi: object }, ...infer R extends readonly { vi: object }[]]
+  ? H["vi"] & Merge<R>
+  : unknown;
+
+export type Dict = Merge<typeof modules>;
+
+function merge(lang: "vi" | "en"): Dict {
+  return Object.assign({}, ...modules.map((m) => m[lang])) as Dict;
+}
+
+export const dict: Record<"vi" | "en", Dict> = { vi: merge("vi"), en: merge("en") };
+
+/** Dictionary for the current language, for code outside React components. */
+export const tr = (): Dict => dict[getLang()];

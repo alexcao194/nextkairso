@@ -1,20 +1,20 @@
-const VN = "vi-VN";
+import { dateLocale, getLang } from "../i18n/state";
 
 const toDate = (v: string | Date | null | undefined) => (v ? (v instanceof Date ? v : new Date(v)) : null);
 
 export function fmtDate(v?: string | Date | null): string {
   const d = toDate(v);
-  return d ? d.toLocaleDateString(VN, { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
+  return d ? d.toLocaleDateString(dateLocale(), { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
 }
 
 export function fmtDayMonth(v?: string | Date | null): string {
   const d = toDate(v);
-  return d ? d.toLocaleDateString(VN, { day: "2-digit", month: "2-digit" }) : "—";
+  return d ? d.toLocaleDateString(dateLocale(), { day: "2-digit", month: "2-digit" }) : "—";
 }
 
 export function fmtTime(v?: string | Date | null): string {
   const d = toDate(v);
-  return d ? d.toLocaleTimeString(VN, { hour: "2-digit", minute: "2-digit", hour12: false }) : "—";
+  return d ? d.toLocaleTimeString(dateLocale(), { hour: "2-digit", minute: "2-digit", hour12: false }) : "—";
 }
 
 export const fmtDateTime = (v?: string | Date | null) => (toDate(v) ? `${fmtTime(v)} ${fmtDate(v)}` : "—");
@@ -23,10 +23,11 @@ export function fmtRelative(v?: string | Date | null): string {
   const d = toDate(v);
   if (!d) return "";
   const diff = (Date.now() - d.getTime()) / 1000;
-  if (diff < 45) return "vừa xong";
-  if (diff < 3600) return `${Math.round(diff / 60)} phút trước`;
-  if (diff < 86400) return `${Math.round(diff / 3600)} giờ trước`;
-  if (diff < 86400 * 7) return `${Math.round(diff / 86400)} ngày trước`;
+  const en = getLang() === "en";
+  if (diff < 45) return en ? "just now" : "vừa xong";
+  if (diff < 3600) return en ? `${Math.round(diff / 60)}m ago` : `${Math.round(diff / 60)} phút trước`;
+  if (diff < 86400) return en ? `${Math.round(diff / 3600)}h ago` : `${Math.round(diff / 3600)} giờ trước`;
+  if (diff < 86400 * 7) return en ? `${Math.round(diff / 86400)}d ago` : `${Math.round(diff / 86400)} ngày trước`;
   return fmtDate(d);
 }
 

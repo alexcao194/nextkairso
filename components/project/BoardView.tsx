@@ -12,6 +12,7 @@ import { ModuleChip } from "@/components/kairso/ModuleChip";
 import { StatusPicker } from "@/components/kairso/pickers";
 import { IconPlus } from "@/components/icons";
 import { useDialogs } from "@/components/dialogs/DialogProvider";
+import { tr } from "@/lib/i18n";
 
 export function BoardView({
   tasks,
@@ -66,7 +67,7 @@ export function BoardView({
               <h3 className="text-[13px] font-semibold" style={{ color: meta.fg }}>{meta.label}</h3>
               <span className="rounded-full px-1.5 font-mono text-[11px] font-semibold" style={{ background: meta.bg, color: meta.fg }}>{col.length}</span>
               <span className="flex-1" />
-              <button type="button" aria-label={`Thêm task vào ${meta.label}`} onClick={() => openCreateTask({ projectId, status: s })} className="text-ink-faint hover:text-ink">
+              <button type="button" aria-label={tr().ui.addTaskTo(meta.label)} onClick={() => openCreateTask({ projectId, status: s })} className="text-ink-faint hover:text-ink">
                 <IconPlus size={14} />
               </button>
             </header>
@@ -97,7 +98,7 @@ export function BoardView({
                   </div>
                 </li>
               ))}
-              {col.length === 0 && <li className="rounded-md border border-dashed border-line-strong py-5 text-center text-[12px] text-ink-faint">Kéo thẻ vào đây</li>}
+              {col.length === 0 && <li className="rounded-md border border-dashed border-line-strong py-5 text-center text-[12px] text-ink-faint">{tr().ui.dropHere}</li>}
             </ul>
           </section>
         );

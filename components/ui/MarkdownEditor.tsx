@@ -8,6 +8,7 @@ import { useColorMode } from "@/lib/hooks/useColorMode";
 import { Skeleton } from "./feedback";
 import { MD_COMPONENTS, MD_REHYPE_PLUGINS } from "./markdown";
 import { useImagePaste } from "./useImagePaste";
+import { tr } from "@/lib/i18n";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
   ssr: false,
@@ -18,7 +19,7 @@ const saveCommand = (onSubmit: () => void): ICommand => ({
   name: "save",
   keyCommand: "save",
   value: "save",
-  buttonProps: { "aria-label": "Lưu", title: "Lưu (Ctrl/⌘+Enter)" },
+  buttonProps: { "aria-label": tr().common.save, title: tr().ui.saveShortcut },
   icon: <IconSave size={12} />,
   execute: () => onSubmit(),
 });

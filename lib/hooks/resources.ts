@@ -5,6 +5,7 @@ import * as api from "@/lib/api/endpoints";
 import type { Paged } from "@/lib/api/schema";
 import { fetchAll } from "@/lib/query/paged";
 import { qk } from "@/lib/query/keys";
+import { tr } from "../i18n/dict";
 
 export interface ResourceScope {
   ws: string;
@@ -62,7 +63,7 @@ export function useResourceMutations(s: ResourceScope) {
     }),
     updateLink: useMutation({
       mutationFn: ({ id, body }: { id: string; body: { title?: string; url?: string } }) => {
-        if (!p) throw new Error("Link workspace không sửa được — hãy xoá rồi tạo lại");
+        if (!p) throw new Error(tr().ui.workspaceLinkReadonly);
         return api.patchWorkspaceProjectLink(s.ws, p, id, body);
       },
       onSuccess: inv("links"),

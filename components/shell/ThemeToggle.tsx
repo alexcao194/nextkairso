@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { IconMoon, IconSun } from "@/components/icons";
 import { IconButton } from "@/components/ui/Button";
+import { tr } from "@/lib/i18n";
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -25,7 +26,7 @@ export function ThemeToggle() {
 
   return (
     <IconButton
-      label={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+      label={theme === "dark" ? tr().ui.themeLight : tr().ui.themeDark}
       variant="ghost"
       size="sm"
       onClick={toggle}

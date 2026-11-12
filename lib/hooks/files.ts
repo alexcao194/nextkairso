@@ -11,6 +11,7 @@ import type {
   UpsertFileSettingsRequest,
 } from "@/lib/api/schema";
 import { qk } from "@/lib/query/keys";
+import { tr } from "../i18n/dict";
 
 export const useFileTree = (ws: string) =>
   useQuery({ queryKey: qk.fileTree(ws), queryFn: () => api.getWorkspaceFileManagerTree(ws), enabled: !!ws });
@@ -51,7 +52,7 @@ export function useFileMutations(ws: string) {
 export async function presignAndUpload(ws: string, file: File): Promise<{ objectName: string; contentType: string; sizeBytes: number }> {
   const contentType = file.type || "application/octet-stream";
   const presigned = await api.postWorkspaceFileManagerPresign(ws, { filename: file.name, contentType, sizeBytes: file.size });
-  if (!presigned.uploadUrl || !presigned.objectName) throw new Error("Không tạo được đường dẫn tải lên");
+  if (!presigned.uploadUrl || !presigned.objectName) throw new Error(tr().ui.uploadUrlFailed);
   const ascii = file.name.replace(/"/g, "'").replace(/[^\x20-\x7E]/g, "_");
   const res = await fetch(presigned.uploadUrl, {
     method: presigned.method || "PUT",
@@ -61,6 +62,6 @@ export async function presignAndUpload(ws: string, file: File): Promise<{ object
     },
     body: file,
   });
-  if (!res.ok) throw new Error(`Tải file lên thất bại (${res.status})`);
+  if (!res.ok) throw new Error(tr().ui.uploadFailed(res.status));
   return { objectName: presigned.objectName, contentType, sizeBytes: file.size };
 }

@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { Modal } from "./Modal";
 import { Button } from "./Button";
+import { tr } from "@/lib/i18n";
 
 interface ConfirmOptions {
   title: string;
@@ -41,9 +42,9 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
         width={420}
         footer={
           <>
-            <Button onClick={() => settle(false)}>Huỷ</Button>
+            <Button onClick={() => settle(false)}>{tr().common.cancel}</Button>
             <Button variant={opts?.danger ? "danger" : "primary"} onClick={() => settle(true)}>
-              {opts?.confirmLabel ?? (opts?.danger ? "Xoá" : "Xác nhận")}
+              {opts?.confirmLabel ?? (opts?.danger ? tr().common.delete : tr().common.confirm)}
             </Button>
           </>
         }
@@ -56,6 +57,6 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
 
 export function useConfirm(): ConfirmFn {
   const ctx = useContext(ConfirmContext);
-  if (!ctx) throw new Error("useConfirm phải nằm trong ConfirmProvider");
+  if (!ctx) throw new Error("useConfirm must be used within ConfirmProvider");
   return ctx;
 }

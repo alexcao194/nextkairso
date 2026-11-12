@@ -12,6 +12,7 @@ import { EmptyState, Skeleton } from "@/components/ui/feedback";
 import { Button } from "@/components/ui/Button";
 import { IconClose, IconFolder } from "@/components/icons";
 import { useT } from "@/lib/i18n";
+import { tr } from "@/lib/i18n";
 
 const COLLAPSE_KEY = "kairso-sidebar-collapsed";
 
@@ -73,12 +74,12 @@ function Shell({ children }: { children: ReactNode }) {
 
       {drawer && (
         <div className="fixed inset-0 z-40 sm:hidden" role="dialog" aria-modal="true" aria-label="Menu">
-          <button type="button" aria-label="Đóng menu" className="absolute inset-0 bg-[var(--scrim)]" onClick={() => setDrawer(false)} />
+          <button type="button" aria-label={tr().ui.closeMenu} className="absolute inset-0 bg-[var(--scrim)]" onClick={() => setDrawer(false)} />
           <div className="relative h-full w-[300px] max-w-[86vw]">
             <Sidebar onNavigate={() => setDrawer(false)} />
             <button
               type="button"
-              aria-label="Đóng menu"
+              aria-label={tr().ui.closeMenu}
               onClick={() => setDrawer(false)}
               className="absolute -right-11 top-2 flex size-9 items-center justify-center rounded-full bg-surface text-ink shadow-md"
             >

@@ -2,6 +2,7 @@
 
 import { useId, type ComponentProps, type ReactNode } from "react";
 import { IconChevronDown, IconSearch, IconClose } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 const controlBase =
   "w-full rounded-md border bg-surface text-[13px] text-ink outline-none transition-colors placeholder:text-ink-placeholder hover:border-ink-disabled focus:border-accent focus:ring-1 focus:ring-accent disabled:cursor-not-allowed disabled:bg-hover disabled:text-ink-disabled";
@@ -92,8 +93,8 @@ export function Select({
 export function SearchInput({
   value,
   onChange,
-  placeholder = "Tìm kiếm…",
-  label = "Tìm kiếm",
+  placeholder = tr().ui.searchPlaceholder,
+  label = tr().common.search,
   className = "",
   kbd,
 }: {
@@ -122,7 +123,7 @@ export function SearchInput({
         className="min-w-0 flex-1 bg-transparent text-[12px] text-ink outline-none placeholder:text-ink-placeholder [&::-webkit-search-cancel-button]:hidden"
       />
       {value ? (
-        <button type="button" aria-label="Xoá tìm kiếm" onClick={() => onChange("")} className="text-ink-faint hover:text-ink">
+        <button type="button" aria-label={tr().ui.clearSearch} onClick={() => onChange("")} className="text-ink-faint hover:text-ink">
           <IconClose size={12} />
         </button>
       ) : (

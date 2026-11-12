@@ -6,10 +6,11 @@ import { PriorityTag } from "@/components/kairso/PriorityTag";
 import { DueDate } from "@/components/kairso/DueDate";
 import { EmptyState } from "@/components/ui/feedback";
 import { isOverdue } from "@/lib/domain/task";
+import { tr } from "@/lib/i18n";
 
 export function TaskCards({ groups, onOpen }: { groups: TaskGroup[]; onOpen: (t: TaskResponse) => void }) {
   const nonEmpty = groups.filter((g) => g.tasks.length > 0);
-  if (nonEmpty.length === 0) return <EmptyState title="Chưa có task nào" className="py-16" />;
+  if (nonEmpty.length === 0) return <EmptyState title={tr().ui.noTasks} className="py-16" />;
   return (
     <div>
       {nonEmpty.map((g) => (
@@ -32,7 +33,7 @@ export function TaskCards({ groups, onOpen }: { groups: TaskGroup[]; onOpen: (t:
                   <span className="line-clamp-2 text-[14px] font-medium text-ink">{t.title}</span>
                   <span className="flex items-center gap-2">
                     <StatusChip status={t.status} size="sm" />
-                    {isOverdue(t) && <span className="rounded bg-danger-bg px-1.5 py-[1px] text-[10.5px] font-semibold text-danger">Quá hạn</span>}
+                    {isOverdue(t) && <span className="rounded bg-danger-bg px-1.5 py-[1px] text-[10.5px] font-semibold text-danger">{tr().ui.overdue}</span>}
                     <span className="flex-1" />
                     <AvatarGroup people={(t.workers ?? []).map((w) => ({ id: w.user.id, name: w.user.name, avatar: w.user.avatar }))} />
                   </span>

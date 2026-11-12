@@ -1,11 +1,14 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, Fragment, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { patchUsersMe } from "@/lib/api/endpoints";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { dict } from "./dict";
+import { setCurrentLang, type Lang } from "./state";
 
-export type Lang = "vi" | "en";
+export type { Lang } from "./state";
+export { tr } from "./dict";
+export { dateLocale } from "./state";
 
 const STORAGE_KEY = "kairso-lang";
 
@@ -24,6 +27,8 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const { user, setUser } = useAuth();
   const [lang, setLangState] = useState<Lang>("vi");
   const adoptedFromServer = useRef(false);
+  // Keep non-React formatters in step with the language being rendered.
+  setCurrentLang(lang);
 
   // Initial language from localStorage (per-browser convenience).
   useEffect(() => {
@@ -74,7 +79,13 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  return <LocaleContext.Provider value={{ lang, setLang }}>{children}</LocaleContext.Provider>;
+  // Remount the subtree on language change so every label (including those
+  // read by plain functions via tr()) re-renders in the new language.
+  return (
+    <LocaleContext.Provider value={{ lang, setLang }}>
+      <Fragment key={lang}>{children}</Fragment>
+    </LocaleContext.Provider>
+  );
 }
 
 export function useLocale(): LocaleContextValue {

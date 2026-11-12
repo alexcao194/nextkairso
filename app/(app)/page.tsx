@@ -8,9 +8,10 @@ import { useWorkspace } from "@/lib/workspace/WorkspaceContext";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { qk } from "@/lib/query/keys";
 import { isDueToday, isOverdue, localDateKey } from "@/lib/domain/task";
-import { notificationHref, notificationKind, KIND_HUE, KIND_LABEL, type NotificationKind } from "@/lib/domain/notification";
+import { localizedNotification, notificationHref, notificationKind, KIND_HUE, type NotificationKind } from "@/lib/domain/notification";
 import { hueVars } from "@/lib/domain/hue";
-import { fmtRelative, projectColor, startOfWeek } from "@/lib/domain/format";
+import { fmtDate, fmtRelative, projectColor, startOfWeek } from "@/lib/domain/format";
+import { dateLocale, useLocale, useT } from "@/lib/i18n";
 import { useMyTasks, useNotifications, useProjectOverviews, useWorkspaceHistory } from "@/lib/hooks/workspaceData";
 import { useCheckRequests, useMyCalendar, usePendingSchedules } from "@/lib/hooks/attendance";
 import { TopBar, TopBarSpacer } from "@/components/shell/TopBar";
@@ -36,13 +37,14 @@ interface Item {
   priority?: number;
 }
 
-const KIND_TEXT: Record<string, string> = { ...KIND_LABEL, overdue: "Quá hạn", due: "Đến hạn", approval: "Chờ duyệt", feedback: "Phản hồi", attendance: "Chấm công" };
-
 export default function HomePage() {
   const { workspace, workspaceId, projects, isManager, memberById } = useWorkspace();
   const { user } = useAuth();
   const { openCreateTask, openCheckIn } = useDialogs();
   const today = localDateKey();
+  const t = useT();
+  const { lang } = useLocale();
+  const kindText: Record<string, string> = { ...t.notif.kind, ...t.home.kind };
 
   const mine = useMyTasks(workspaceId);
   const notifs = useNotifications(workspaceId, 30);
@@ -69,33 +71,34 @@ export default function HomePage() {
 
   const items = useMemo<Item[]>(() => {
     const out: Item[] = [];
-    for (const t of overdue.slice(0, 8))
-      out.push({ id: `o-${t.id}`, kind: "overdue", code: t.code, title: t.title, meta: `Hạn ${new Date(t.endDate!).toLocaleDateString("vi-VN")}`, href: `/projects/${t.projectId}/tasks?task=${t.id}`, priority: t.priority });
-    for (const t of active.filter((x) => isDueToday(x) && !isOverdue(x)).slice(0, 5))
-      out.push({ id: `d-${t.id}`, kind: "due", code: t.code, title: t.title, meta: "Hạn hôm nay", href: `/projects/${t.projectId}/tasks?task=${t.id}`, priority: t.priority });
+    for (const x of overdue.slice(0, 8))
+      out.push({ id: `o-${x.id}`, kind: "overdue", code: x.code, title: x.title, meta: t.home.dueOn(fmtDate(x.endDate)), href: `/projects/${x.projectId}/tasks?task=${x.id}`, priority: x.priority });
+    for (const x of active.filter((y) => isDueToday(y) && !isOverdue(y)).slice(0, 5))
+      out.push({ id: `d-${x.id}`, kind: "due", code: x.code, title: x.title, meta: t.home.dueToday, href: `/projects/${x.projectId}/tasks?task=${x.id}`, priority: x.priority });
     feedbackSummaries.forEach((q, i) => {
       const n = q.data?.pendingCount ?? 0;
-      if (n > 0) out.push({ id: `f-${projects[i].id}`, kind: "feedback", title: `${n} phản hồi chờ xử lý`, meta: projects[i].name, href: `/projects/${projects[i].id}/feedback`, action: "Mở" });
+      if (n > 0) out.push({ id: `f-${projects[i].id}`, kind: "feedback", title: t.home.pendingFeedback(n), meta: projects[i].name, href: `/projects/${projects[i].id}/feedback`, action: t.home.open });
     });
     if ((pendingSchedules.data?.length ?? 0) > 0)
-      out.push({ id: "ps", kind: "attendance", title: `${pendingSchedules.data!.length} ngày lịch làm việc chờ duyệt`, meta: "Lịch làm việc", href: "/calendar?tab=pending", action: "Duyệt" });
+      out.push({ id: "ps", kind: "attendance", title: t.home.pendingSchedules(pendingSchedules.data!.length), meta: t.home.workSchedule, href: "/calendar?tab=pending", action: t.home.review });
     if ((checkReqs.data?.length ?? 0) > 0)
-      out.push({ id: "cr", kind: "attendance", title: `${checkReqs.data!.length} yêu cầu bổ sung công chờ duyệt`, meta: "Yêu cầu bổ sung công", href: "/calendar?tab=requests", action: "Duyệt" });
+      out.push({ id: "cr", kind: "attendance", title: t.home.pendingCheckRequests(checkReqs.data!.length), meta: t.home.checkRequests, href: "/calendar?tab=requests", action: t.home.review });
     for (const n of (notifs.data ?? []).filter((x) => !x.readAt).slice(0, 8)) {
       const href = notificationHref(n);
-      if (href) out.push({ id: `n-${n.id}`, kind: notificationKind(n.data?.type), title: n.title, meta: `${n.body} · ${fmtRelative(n.createdAt)}`, href });
+      const text = localizedNotification(n, lang);
+      if (href) out.push({ id: `n-${n.id}`, kind: notificationKind(n.data?.type), title: text.title, meta: `${text.body} · ${fmtRelative(n.createdAt)}`, href });
     }
     return out;
-  }, [overdue, active, feedbackSummaries, projects, pendingSchedules.data, checkReqs.data, notifs.data]);
+  }, [overdue, active, feedbackSummaries, projects, pendingSchedules.data, checkReqs.data, notifs.data, t, lang]);
 
   const loading = mine.isLoading;
 
   return (
     <>
       <TopBar>
-        <Breadcrumb items={[{ label: workspace?.name ?? "Kairso" }, { label: "Tổng quan" }]} />
+        <Breadcrumb items={[{ label: workspace?.name ?? "Kairso" }, { label: t.home.overview }]} />
         <TopBarSpacer />
-        <Button variant="primary" onClick={() => openCreateTask()} className="max-sm:hidden"><IconPlus size={14} /> Tạo task</Button>
+        <Button variant="primary" onClick={() => openCreateTask()} className="max-sm:hidden"><IconPlus size={14} /> {t.home.createTask}</Button>
       </TopBar>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-4 p-5 max-sm:p-4">
@@ -107,31 +110,31 @@ export default function HomePage() {
             <span className="pointer-events-none absolute -right-10 -top-16 size-56 rounded-full bg-white/15" aria-hidden="true" />
             <span className="pointer-events-none absolute -bottom-20 right-24 size-44 rounded-full bg-white/10" aria-hidden="true" />
             <span className="pointer-events-none absolute right-6 top-6 hidden text-white/90 sm:block" aria-hidden="true"><IconZap size={44} /></span>
-            <p className="text-[12.5px] font-medium text-white/85">{new Date().toLocaleDateString("vi-VN", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" })}</p>
-            <h1 id="home-hello" className="mt-0.5 text-[24px] font-bold leading-tight">Xin chào, {user?.nickname || user?.name?.split(" ").slice(-1)[0] || "bạn"}!</h1>
+            <p className="text-[12.5px] font-medium text-white/85">{new Date().toLocaleDateString(dateLocale(lang), { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" })}</p>
+            <h1 id="home-hello" className="mt-0.5 text-[24px] font-bold leading-tight">{t.home.hello(user?.nickname || user?.name?.split(" ").slice(-1)[0] || t.home.you)}</h1>
             <p className="mt-1 max-w-[520px] text-[13.5px] text-white/90">
               {loading
-                ? "Đang tổng hợp công việc của bạn…"
+                ? t.home.summarizing
                 : items.length === 0
-                  ? "Mọi việc đã gọn gàng — không có gì cần bạn xử lý lúc này."
-                  : `Bạn có ${items.length} việc cần xử lý${overdue.length ? `, trong đó ${overdue.length} task quá hạn` : ""}.`}
+                  ? t.home.allClear
+                  : t.home.todo(items.length, overdue.length)}
             </p>
             <div className="mt-3.5 flex flex-wrap gap-2">
               <button type="button" onClick={openCheckIn} className="inline-flex h-ctl items-center gap-1.5 rounded-lg bg-white px-3.5 text-[13px] font-semibold text-on-white shadow-sm transition hover:bg-white/90">
                 <IconClock size={14} /> {checkedIn && !checkedOut ? "Check out" : "Check in"}
               </button>
               <button type="button" onClick={() => openCreateTask()} className="inline-flex h-ctl items-center gap-1.5 rounded-lg border border-white/40 bg-white/15 px-3.5 text-[13px] font-medium text-white backdrop-blur transition hover:bg-white/25">
-                <IconPlus size={14} /> Tạo task
+                <IconPlus size={14} /> {t.home.createTask}
               </button>
             </div>
           </section>
 
           <MetricStrip
             metrics={[
-              { label: "Task đang chạy", value: loading ? "…" : active.length, hue: "blue", icon: <IconCheckSquare size={17} /> },
-              { label: "Quá hạn", value: loading ? "…" : overdue.length, tone: overdue.length > 0 ? "danger" : "default", hue: "rose", icon: <IconAlert size={17} /> },
-              { label: "Xong tuần này", value: loading ? "…" : doneThisWeek.length, hue: "green", icon: <IconCircleCheck size={17} /> },
-              { label: "Chấm công hôm nay", value: calendar.isLoading ? "…" : checkedOut ? "Đủ" : checkedIn ? "Đã vào" : "Chưa", hue: "orange", icon: <IconClock size={17} /> },
+              { label: t.home.activeTasks, value: loading ? "…" : active.length, hue: "blue", icon: <IconCheckSquare size={17} /> },
+              { label: t.home.overdue, value: loading ? "…" : overdue.length, tone: overdue.length > 0 ? "danger" : "default", hue: "rose", icon: <IconAlert size={17} /> },
+              { label: t.home.doneThisWeek, value: loading ? "…" : doneThisWeek.length, hue: "green", icon: <IconCircleCheck size={17} /> },
+              { label: t.home.attendanceToday, value: calendar.isLoading ? "…" : checkedOut ? t.home.attFull : checkedIn ? t.home.attIn : t.home.attNone, hue: "orange", icon: <IconClock size={17} /> },
             ]}
           />
 
@@ -140,18 +143,18 @@ export default function HomePage() {
               <section aria-labelledby="h-act" className="overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
                 <h2 id="h-act" className="flex h-12 items-center gap-2.5 border-b border-line px-4 text-[14px] font-semibold">
                   <IconTile hue="violet" size={26}><IconBell size={14} /></IconTile>
-                  Cần bạn xử lý {items.length > 0 && <span className="rounded-full bg-violet-soft px-2 font-mono text-[12px] font-semibold text-violet">{items.length}</span>}
+                  {t.home.needsYou} {items.length > 0 && <span className="rounded-full bg-violet-soft px-2 font-mono text-[12px] font-semibold text-violet">{items.length}</span>}
                 </h2>
                 {loading ? (
                   <div className="flex flex-col gap-2 p-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-9" />)}</div>
                 ) : items.length === 0 ? (
-                  <EmptyState icon={<IconCircleCheck size={26} />} title="Không có gì cần xử lý" description="Mọi việc đã gọn gàng." className="py-10" />
+                  <EmptyState icon={<IconCircleCheck size={26} />} title={t.home.nothingTitle} description={t.home.nothingDesc} className="py-10" />
                 ) : (
                   <ul>
                     {items.map((it) => (
                       <li key={it.id} className="border-b border-line-row last:border-b-0">
                         <Link href={it.href} className="grid min-h-11 grid-cols-[104px_74px_1fr_auto] items-center gap-3 px-4 py-1.5 hover:bg-row-hover max-sm:grid-cols-[96px_1fr_auto]">
-                          <span style={hueVars(KIND_HUE[it.kind] ?? "blue")} className="inline-flex h-5 w-fit items-center gap-1.5 whitespace-nowrap rounded-full bg-(--hs) px-2 text-[11px] font-semibold text-(--h)"><span className="size-1.5 rounded-full bg-(--hv)" aria-hidden="true" />{KIND_TEXT[it.kind]}</span>
+                          <span style={hueVars(KIND_HUE[it.kind] ?? "blue")} className="inline-flex h-5 w-fit items-center gap-1.5 whitespace-nowrap rounded-full bg-(--hs) px-2 text-[11px] font-semibold text-(--h)"><span className="size-1.5 rounded-full bg-(--hv)" aria-hidden="true" />{kindText[it.kind]}</span>
                           <span className="truncate font-mono text-[11.5px] text-ink-faint max-sm:hidden">{it.code ?? ""}</span>
                           <span className="min-w-0">
                             <span className="block truncate text-[13px] font-medium text-ink">{it.title}</span>
@@ -169,17 +172,17 @@ export default function HomePage() {
               </section>
 
               <section aria-labelledby="h-hist" className="overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
-                <h2 id="h-hist" className="flex h-12 items-center gap-2.5 border-b border-line px-4 text-[14px] font-semibold"><IconTile hue="cyan" size={26}><IconZap size={14} /></IconTile>Hoạt động gần đây</h2>
+                <h2 id="h-hist" className="flex h-12 items-center gap-2.5 border-b border-line px-4 text-[14px] font-semibold"><IconTile hue="cyan" size={26}><IconZap size={14} /></IconTile>{t.home.recentActivity}</h2>
                 {history.isLoading ? (
                   <div className="p-3"><Skeleton className="h-24" /></div>
                 ) : (history.data ?? []).length === 0 ? (
-                  <p className="px-4 py-6 text-center text-[13px] text-ink-muted">Chưa có hoạt động</p>
+                  <p className="px-4 py-6 text-center text-[13px] text-ink-muted">{t.home.noActivity}</p>
                 ) : (
                   <ul>
                     {(history.data ?? []).map((h) => (
                       <li key={h.id} className="flex h-[34px] items-center gap-2 px-4 text-[12.5px]">
                         <Avatar person={{ id: h.changedBy.id, name: h.changedBy.name, avatar: h.changedBy.avatar }} size="xs" />
-                        <span className="truncate"><span className="font-medium">{memberById(h.changedBy.id)?.userName ?? h.changedBy.name}</span> <span className="text-ink-muted">cập nhật {h.field}</span></span>
+                        <span className="truncate"><span className="font-medium">{memberById(h.changedBy.id)?.userName ?? h.changedBy.name}</span> <span className="text-ink-muted">{t.home.updatedField(h.field)}</span></span>
                         <span className="ml-auto shrink-0 text-[11.5px] text-ink-faint">{fmtRelative(h.createdAt)}</span>
                       </li>
                     ))}
@@ -190,9 +193,9 @@ export default function HomePage() {
 
             <div className="flex min-w-0 flex-col gap-4">
               <section aria-labelledby="h-proj" className="overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
-                <h2 id="h-proj" className="flex h-12 items-center gap-2.5 border-b border-line px-4 text-[14px] font-semibold"><IconTile hue="teal" size={26}><IconFolder size={14} /></IconTile>Dự án</h2>
+                <h2 id="h-proj" className="flex h-12 items-center gap-2.5 border-b border-line px-4 text-[14px] font-semibold"><IconTile hue="teal" size={26}><IconFolder size={14} /></IconTile>{t.home.projects}</h2>
                 {projects.length === 0 ? (
-                  <EmptyState title="Chưa có dự án" className="py-8" />
+                  <EmptyState title={t.home.noProjects} className="py-8" />
                 ) : (
                   <ul>
                     {projects.map((p) => {
@@ -208,7 +211,7 @@ export default function HomePage() {
                               <span className="flex-1 truncate">{p.name}</span>
                               <span className="font-mono text-[11.5px] font-normal text-ink-muted">{done}/{total}</span>
                             </span>
-                            <span className="h-1.5 rounded-full bg-hover" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`Tiến độ ${p.name}`}>
+                            <span className="h-1.5 rounded-full bg-hover" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t.home.progressOf(p.name)}>
                               <span className="block h-full rounded-full" style={{ width: `${pct}%`, background: projectColor(p.id) }} />
                             </span>
                           </Link>

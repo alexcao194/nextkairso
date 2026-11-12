@@ -56,7 +56,7 @@ export function UserMenu({ collapsed }: { collapsed?: boolean }) {
   };
 
   const workspaceSettingsLabel =
-    lang === "en" ? `${workspace?.name ?? "workspace"} settings` : `Cài đặt ${workspace?.name ?? "workspace"}`;
+    lang === "en" ? `${workspace?.name ?? "workspace"} settings` : `${t.settingsNav.settings} ${workspace?.name ?? "workspace"}`;
 
   return (
     <Menu

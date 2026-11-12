@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { IconAlert } from "@/components/icons";
 import { Button } from "./Button";
 import { hueVars, type Hue } from "@/lib/domain/hue";
+import { tr } from "@/lib/i18n";
 
 export function Spinner({ size = 16 }: { size?: number }) {
   return (
@@ -15,7 +16,7 @@ export function Spinner({ size = 16 }: { size?: number }) {
       strokeLinecap="round"
       className="animate-spin"
       role="status"
-      aria-label="Đang tải"
+      aria-label={tr().ui.loading}
     >
       <path d="M21 12a9 9 0 1 1-6.2-8.55" opacity={0.9} />
     </svg>
@@ -28,7 +29,7 @@ export function Skeleton({ className = "", style }: { className?: string; style?
 
 export function SkeletonRows({ rows = 6, height = 36 }: { rows?: number; height?: number }) {
   return (
-    <div role="status" aria-label="Đang tải">
+    <div role="status" aria-label={tr().ui.loading}>
       {Array.from({ length: rows }, (_, i) => (
         <div key={i} style={{ height }} className="flex items-center border-b border-line-row px-4">
           <Skeleton className="h-3 w-full max-w-[520px]" style={{ opacity: 1 - i * 0.1 }} />
@@ -79,17 +80,17 @@ export function ErrorState({
   onRetry?: () => void;
   className?: string;
 }) {
-  const msg = error instanceof Error ? error.message : "Không tải được dữ liệu.";
+  const msg = error instanceof Error ? error.message : tr().ui.loadFailedMsg;
   return (
     <div role="alert" className={`flex flex-col items-center gap-2 px-6 py-14 text-center ${className}`}>
       <span className="text-danger">
         <IconAlert size={20} />
       </span>
-      <p className="text-[14px] font-semibold text-ink">Không tải được dữ liệu</p>
+      <p className="text-[14px] font-semibold text-ink">{tr().ui.loadFailed}</p>
       <p className="max-w-[420px] text-[13px] text-ink-muted">{msg}</p>
       {onRetry && (
         <Button size="sm" onClick={onRetry} className="mt-1">
-          Thử lại
+          {tr().common.retry}
         </Button>
       )}
     </div>

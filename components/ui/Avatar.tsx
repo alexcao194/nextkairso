@@ -1,4 +1,5 @@
 import { avatarColor, initials } from "@/lib/domain/format";
+import { tr } from "@/lib/i18n";
 
 const sizeMap = { xs: 18, sm: 22, md: 28, lg: 36, xl: 56 } as const;
 const fontMap = { xs: 9, sm: 10, md: 11, lg: 13, xl: 20 } as const;
@@ -44,7 +45,7 @@ export function AvatarPlaceholder({ size = "sm" }: { size?: AvatarSize }) {
       className="inline-flex shrink-0 rounded-full border border-dashed border-line-strong"
       style={{ width: px, height: px }}
       role="img"
-      aria-label="Chưa giao cho ai"
+      aria-label={tr().ui.unassigned}
     />
   );
 }

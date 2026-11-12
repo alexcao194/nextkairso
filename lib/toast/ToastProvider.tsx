@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import { IconCheck, IconClose, IconAlert } from "@/components/icons";
 import { ApiError } from "@/lib/api/http";
+import { tr } from "../i18n/dict";
 
 type Tone = "success" | "error" | "info";
 interface ToastItem {
@@ -24,7 +25,7 @@ const toneClass: Record<Tone, string> = {
   info: "text-accent-ink",
 };
 
-function errorMessage(e: unknown, fallback = "Đã xảy ra lỗi. Vui lòng thử lại."): string {
+function errorMessage(e: unknown, fallback = tr().ui.genericError): string {
   if (typeof e === "string") return e;
   if (e instanceof Error && e.message) return e.message;
   return fallback;
@@ -75,7 +76,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <span className="min-w-0 flex-1 break-words">{t.message}</span>
             <button
               type="button"
-              aria-label="Đóng thông báo"
+              aria-label={tr().ui.closeToast}
               onClick={() => dismiss(t.id)}
               className="-mr-1 shrink-0 rounded p-0.5 text-ink-faint hover:bg-hover hover:text-ink"
             >
@@ -90,6 +91,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
 export function useToast(): ToastApi {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error("useToast phải nằm trong ToastProvider");
+  if (!ctx) throw new Error("useToast must be used within ToastProvider");
   return ctx;
 }

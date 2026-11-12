@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ClipboardEvent, type DragEvent } from "react";
 import { useToast } from "@/lib/toast/ToastProvider";
+import { tr } from "@/lib/i18n";
 
 let uploadSeq = 0;
 
@@ -40,7 +41,7 @@ export function useImagePaste(value: string, onChange: (v: string) => void, uplo
     const v = valueRef.current;
     const start = area.selectionStart ?? v.length;
     const end = area.selectionEnd ?? start;
-    const items = files.map((f, i) => ({ file: namedImage(f, i), token: `![Đang tải ảnh ${++uploadSeq}…]()` }));
+    const items = files.map((f, i) => ({ file: namedImage(f, i), token: `![${tr().ui.uploadingImage(++uploadSeq)}]()` }));
     const before = v.slice(0, start);
     const lead = before && !before.endsWith("\n") ? "\n" : "";
     const block = `${lead}${items.map((it) => it.token).join("\n")}\n`;

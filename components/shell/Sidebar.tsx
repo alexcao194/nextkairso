@@ -36,15 +36,7 @@ import { NAV_HUE } from "@/lib/domain/hue";
 import { useDialogs } from "@/components/dialogs/DialogProvider";
 import { useT } from "@/lib/i18n";
 
-const PROJECT_TABS = [
-  { slug: "tasks", label: "Task" },
-  { slug: "board", label: "Board" },
-  { slug: "timeline", label: "Timeline" },
-  { slug: "modules", label: "Module" },
-  { slug: "resources", label: "Tài nguyên" },
-  { slug: "feedback", label: "Phản hồi" },
-  { slug: "stats", label: "Thống kê" },
-] as const;
+const PROJECT_TABS = [{ slug: "tasks" }, { slug: "board" }, { slug: "timeline" }, { slug: "modules" }, { slug: "resources" }, { slug: "feedback" }, { slug: "stats" }] as const;
 
 const SectionLabel = ({ children, action, hidden }: { children: string; action?: React.ReactNode; hidden?: boolean }) =>
   hidden ? (
@@ -107,7 +99,7 @@ export function Sidebar({
               className="flex h-ctl-sm w-full items-center gap-2 rounded-md border border-line-strong bg-surface px-2.5 text-left text-[12px] text-ink-placeholder hover:border-ink-disabled max-sm:h-11"
             >
               <IconSearch size={13} className="shrink-0 text-ink-faint" />
-              <span className="flex-1">Tìm nhanh</span>
+              <span className="flex-1">{tr.sidebarExtra.quickFind}</span>
               <kbd className="font-mono text-[10px]">⌘K</kbd>
             </button>
           )}
@@ -115,7 +107,7 @@ export function Sidebar({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-3">
-        <nav className={`flex flex-col gap-0.5 ${collapsed ? "px-1.5" : "px-2.5"}`} aria-label="Điều hướng chính">
+        <nav className={`flex flex-col gap-0.5 ${collapsed ? "px-1.5" : "px-2.5"}`} aria-label={tr.sidebarExtra.mainNav}>
           <SidebarNavItem {...nav("/", (p) => p === "/")} hue={NAV_HUE.home} icon={<IconHome />} label={tr.sidebar.overview} />
           <SidebarNavItem {...nav("/inbox")} hue={NAV_HUE.inbox} icon={<IconInbox />} label={tr.sidebar.inbox} count={unreadCount || undefined} countTone="danger" />
           <SidebarNavItem {...nav("/my-tasks")} hue={NAV_HUE.myTasks} icon={<IconCheckSquare />} label={tr.sidebar.myTasks} count={myTasksCount || undefined} />
@@ -134,7 +126,7 @@ export function Sidebar({
           {tr.sidebar.projects}
         </SectionLabel>
 
-        <nav className={`flex flex-col gap-0.5 ${collapsed ? "px-1.5" : "px-2.5"}`} aria-label="Dự án">
+        <nav className={`flex flex-col gap-0.5 ${collapsed ? "px-1.5" : "px-2.5"}`} aria-label={tr.sidebar.projects}>
           {visible.map((p) => {
             const isCurrent = p.id === currentId;
             const expanded = open[p.id] ?? isCurrent;
@@ -162,7 +154,7 @@ export function Sidebar({
                 >
                   <button
                     type="button"
-                    aria-label={expanded ? `Thu gọn ${p.name}` : `Mở rộng ${p.name}`}
+                    aria-label={expanded ? tr.sidebarExtra.collapseProject(p.name) : tr.sidebarExtra.expandProject(p.name)}
                     aria-expanded={expanded}
                     onClick={() => setOpen((s) => ({ ...s, [p.id]: !expanded }))}
                     className="flex size-5 shrink-0 items-center justify-center text-ink-disabled hover:text-ink"
@@ -202,7 +194,7 @@ export function Sidebar({
             );
           })}
           {projects.length === 0 && !collapsed && (
-            <p className="px-3 py-2 text-[12px] text-ink-muted">Chưa có dự án nào</p>
+            <p className="px-3 py-2 text-[12px] text-ink-muted">{tr.sidebarExtra.noProjects}</p>
           )}
           {!showAll && !collapsed && projects.length > 4 && (
             <button
@@ -210,7 +202,7 @@ export function Sidebar({
               onClick={() => setShowAll(true)}
               className="flex h-[26px] items-center rounded-md pl-7 pr-2.5 text-left text-[12px] text-ink-faint hover:bg-hover hover:text-ink"
             >
-              Xem cả {projects.length} dự án
+              {tr.sidebarExtra.showAll(projects.length)}
             </button>
           )}
         </nav>

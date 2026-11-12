@@ -11,6 +11,7 @@ import { ProjectToolbar } from "@/components/project/ProjectToolbar";
 import { TaskTable } from "@/components/project/TaskTable";
 import { ErrorState, SkeletonRows } from "@/components/ui/feedback";
 import { TaskCards } from "@/components/project/TaskCards";
+import { tr } from "@/lib/i18n";
 
 export default function ProjectTasksPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
@@ -51,7 +52,7 @@ export default function ProjectTasksPage({ params }: { params: Promise<{ project
               onAdd={async (title) => {
                 try {
                   const t = await create.mutateAsync({ body: { title, status: "todo", priority: priorityToApi(2) } });
-                  toast.success(`Đã tạo ${t.code}`);
+                  toast.success(tr().ui.createdCode(t.code));
                 } catch (e) {
                   toast.error(e);
                 }

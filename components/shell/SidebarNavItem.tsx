@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { CountBadge } from "@/components/ui/CountBadge";
 import { hueVars, type Hue } from "@/lib/domain/hue";
+import { tr } from "@/lib/i18n";
 
 export function SidebarNavItem({
   href,
@@ -46,7 +47,7 @@ export function SidebarNavItem({
       {collapsed ? <span className="sr-only">{label}</span> : <span className="flex-1 truncate">{label}</span>}
       {count !== undefined &&
         (collapsed ? (
-          <span className="absolute right-1 top-1 size-2 rounded-full bg-danger" aria-label={`${count} mục`} />
+          <span className="absolute right-1 top-1 size-2 rounded-full bg-danger" aria-label={tr().ui.itemsCount(count)} />
         ) : (
           <CountBadge value={count} tone={countTone} />
         ))}

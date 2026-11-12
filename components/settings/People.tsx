@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/form";
 import { useConfirm } from "@/components/ui/Confirm";
 import { IconTrash } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 const ROLES: WorkspaceRole[] = ["holder", "admin", "member"];
 
@@ -41,19 +42,19 @@ export function Members() {
             return (
               <li key={m.userId} className="flex min-h-[48px] items-center gap-3 border-b border-line-row px-4 py-1.5 last:border-b-0">
                 <Avatar person={{ id: m.userId, name: m.userName, avatar: m.userAvatar }} size="md" />
-                <span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-medium">{m.userName}{self && <span className="ml-1.5 text-[11.5px] font-normal text-ink-faint">(bạn)</span>}</span><span className="block truncate text-[11.5px] text-ink-faint">@{m.userAlias}</span></span>
-                <Select small aria-label={`Vai trò của ${m.userName}`} className="w-40" disabled={!isManager || self || !canManage} value={m.role} onChange={(e) => setRole.mutate({ id: m.userId, role: e.target.value as WorkspaceRole })}>
+                <span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-medium">{m.userName}{self && <span className="ml-1.5 text-[11.5px] font-normal text-ink-faint">{tr().people.you}</span>}</span><span className="block truncate text-[11.5px] text-ink-faint">@{m.userAlias}</span></span>
+                <Select small aria-label={tr().people.roleOf(m.userName)} className="w-40" disabled={!isManager || self || !canManage} value={m.role} onChange={(e) => setRole.mutate({ id: m.userId, role: e.target.value as WorkspaceRole })}>
                   {ROLES.filter((r) => !myRole || roleRank(myRole) >= roleRank(r)).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
                 </Select>
                 {isManager && !self && canManage && (
-                  <Button size="sm" variant="ghost" aria-label={`Xoá ${m.userName}`} onClick={async () => { if (await confirm({ title: `Xoá ${m.userName} khỏi workspace?`, message: "Họ sẽ mất quyền truy cập mọi dự án trong workspace.", danger: true })) remove.mutate(m.userId); }}><IconTrash size={13} /></Button>
+                  <Button size="sm" variant="ghost" aria-label={tr().people.removeOf(m.userName)} onClick={async () => { if (await confirm({ title: tr().people.confirmRemove(m.userName), message: tr().people.removeDesc, danger: true })) remove.mutate(m.userId); }}><IconTrash size={13} /></Button>
                 )}
               </li>
             );
           })}
         </ul>
       </div>
-      {isManager ? <InviteBar /> : <Alert>Chỉ quản trị viên mới mời được thành viên.</Alert>}
+      {isManager ? <InviteBar /> : <Alert>{tr().people.inviteAdminOnly}</Alert>}
     </div>
   );
 }
@@ -75,17 +76,17 @@ function InviteBar() {
   const [role, setRole] = useState<WorkspaceRole>("member");
   const invite = useMutation({
     mutationFn: () => postWorkspaceInvitations(workspaceId, { userAlias: alias.trim().replace(/^@/, ""), role }),
-    onSuccess: () => { toast.success("Đã gửi lời mời"); setAlias(""); qc.invalidateQueries({ queryKey: ["members"] }); },
+    onSuccess: () => { toast.success(tr().people.invited); setAlias(""); qc.invalidateQueries({ queryKey: ["members"] }); },
     onError: (e) => toast.error(e),
   });
   return (
     <form onSubmit={(e) => (e.preventDefault(), alias.trim() && invite.mutate())} className="sticky bottom-0 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface p-3">
-      <label htmlFor="inv-alias" className="sr-only">Alias người được mời</label>
-      <Input id="inv-alias" small className="min-w-[200px] flex-1" placeholder="Mời bằng alias, VD: nguyenvana" value={alias} onChange={(e) => setAlias(e.target.value)} />
-      <Select small aria-label="Vai trò" className="w-40" value={role} onChange={(e) => setRole(e.target.value as WorkspaceRole)}>
+      <label htmlFor="inv-alias" className="sr-only">{tr().people.inviteAlias}</label>
+      <Input id="inv-alias" small className="min-w-[200px] flex-1" placeholder={tr().people.invitePh} value={alias} onChange={(e) => setAlias(e.target.value)} />
+      <Select small aria-label={tr().people.role} className="w-40" value={role} onChange={(e) => setRole(e.target.value as WorkspaceRole)}>
         {ROLES.filter((r) => !myRole || roleRank(myRole) >= roleRank(r)).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
       </Select>
-      <Button type="submit" variant="primary" loading={invite.isPending} disabled={!alias.trim()}>Mời</Button>
+      <Button type="submit" variant="primary" loading={invite.isPending} disabled={!alias.trim()}>{tr().people.invite}</Button>
     </form>
   );
 }
@@ -99,14 +100,14 @@ export function Invites() {
   const pending = all.filter((m) => m.status === "pending");
   return (
     <div className="flex flex-col gap-4">
-      {pending.length === 0 ? <p className="rounded-lg border border-line bg-surface px-4 py-8 text-center text-[13px] text-ink-muted">Không có lời mời nào đang chờ.</p> : (
+      {pending.length === 0 ? <p className="rounded-lg border border-line bg-surface px-4 py-8 text-center text-[13px] text-ink-muted">{tr().people.noInvites}</p> : (
         <ul className="overflow-hidden rounded-lg border border-line bg-surface">
           {pending.map((m) => (
             <li key={m.userId} className="flex min-h-[48px] items-center gap-3 border-b border-line-row px-4 py-1.5 last:border-b-0">
               <Avatar person={{ id: m.userId, name: m.userName, avatar: m.userAvatar }} size="md" />
               <span className="min-w-0 flex-1 text-[13px]"><span className="font-medium">{m.userName}</span> <span className="text-ink-faint">@{m.userAlias}</span></span>
-              <Badge tone="warning">Chờ chấp nhận</Badge><Badge>{ROLE_LABEL[m.role]}</Badge>
-              {isManager && m.invitationId && <Button size="sm" variant="ghost" loading={cancel.isPending} onClick={() => cancel.mutate(m.invitationId!)}>Huỷ lời mời</Button>}
+              <Badge tone="warning">{tr().people.pending}</Badge><Badge>{ROLE_LABEL[m.role]}</Badge>
+              {isManager && m.invitationId && <Button size="sm" variant="ghost" loading={cancel.isPending} onClick={() => cancel.mutate(m.invitationId!)}>{tr().people.cancelInvite}</Button>}
             </li>
           ))}
         </ul>
@@ -118,22 +119,21 @@ export function Invites() {
 
 export function Roles() {
   const rows: Array<[string, boolean, boolean, boolean]> = [
-    ["Mời, xoá thành viên và đổi vai trò", false, true, true],
-    ["Thêm / đổi vai trò thành viên dự án", false, true, true],
-    ["Duyệt lịch làm việc, yêu cầu bổ sung công", false, true, true],
-    ["Xem lịch chấm công cả đội, chấm điểm thái độ", false, true, true],
-    ["Cấu hình KPI (trọng số)", false, false, true],
-    ["Quản lý định nghĩa quy trình, xem mọi yêu cầu", false, false, true],
+    [tr().people.perm1, false, true, true],
+    [tr().people.perm2, false, true, true],
+    [tr().people.perm3, false, true, true],
+    [tr().people.perm4, false, true, true],
+    [tr().people.perm5, false, false, true],
   ];
-  const yes = <span aria-label="Có" className="font-semibold text-success">Có</span>;
-  const no = <span aria-label="Không" className="text-ink-disabled">—</span>;
+  const yes = <span aria-label={tr().people.yes} className="font-semibold text-success">{tr().people.yes}</span>;
+  const no = <span aria-label={tr().people.no} className="text-ink-disabled">—</span>;
   return (
     <div className="overflow-hidden rounded-lg border border-line bg-surface">
       <table className="w-full text-[13px]">
-        <thead className="text-left text-[11px] font-medium uppercase tracking-wide text-ink-faint"><tr className="h-thead border-b border-line"><th className="px-4">Quyền</th><th className="px-2 text-center">Thành viên</th><th className="px-2 text-center">Quản trị</th><th className="px-2 text-center">Chủ workspace</th></tr></thead>
+        <thead className="text-left text-[11px] font-medium uppercase tracking-wide text-ink-faint"><tr className="h-thead border-b border-line"><th className="px-4">{tr().people.permission}</th><th className="px-2 text-center">{tr().people.member}</th><th className="px-2 text-center">{tr().people.admin}</th><th className="px-2 text-center">{tr().people.holder}</th></tr></thead>
         <tbody>{rows.map(([label, m, a, h]) => <tr key={label} className="h-10 border-b border-line-row last:border-b-0"><td className="px-4">{label}</td><td className="text-center">{m ? yes : no}</td><td className="text-center">{a ? yes : no}</td><td className="text-center">{h ? yes : no}</td></tr>)}</tbody>
       </table>
-      <p className="border-t border-line px-4 py-2 text-[12px] text-ink-muted">Chỉ nêu các quyền đặc biệt; mọi thao tác thông thường (task, bình luận, chấm công cá nhân) dành cho mọi thành viên. Quyền thực tế luôn do máy chủ quyết định.</p>
+      <p className="border-t border-line px-4 py-2 text-[12px] text-ink-muted">{tr().people.permNote}</p>
     </div>
   );
 }

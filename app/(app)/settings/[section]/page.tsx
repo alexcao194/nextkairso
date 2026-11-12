@@ -4,21 +4,22 @@ import { use } from "react";
 import { notFound } from "next/navigation";
 import { Invites, Members, Roles } from "@/components/settings/People";
 import { AttendanceSection, AuditSection, IntegrationsSection, KpiSection, LabelsSection, NotificationsSection, ResourcesSection, ShiftsSection, WhatsNewSection, WorkspaceSection } from "@/components/settings/Ops";
+import { tr } from "@/lib/i18n";
 
 const SECTIONS: Record<string, { title: string; el: () => React.ReactNode }> = {
-  members: { title: "Thành viên", el: () => <Members /> },
-  invites: { title: "Lời mời đang chờ", el: () => <Invites /> },
-  roles: { title: "Vai trò & quyền", el: () => <Roles /> },
-  workspace: { title: "Thông tin workspace", el: () => <WorkspaceSection /> },
-  resources: { title: "Tài nguyên workspace", el: () => <ResourcesSection /> },
-  labels: { title: "Nhãn theo dự án", el: () => <LabelsSection /> },
-  attendance: { title: "Chấm công", el: () => <AttendanceSection /> },
-  shifts: { title: "Ca làm việc", el: () => <ShiftsSection /> },
+  members: { get title() { return tr().sectionTitle.members; }, el: () => <Members /> },
+  invites: { get title() { return tr().sectionTitle.invites; }, el: () => <Invites /> },
+  roles: { get title() { return tr().sectionTitle.roles; }, el: () => <Roles /> },
+  workspace: { get title() { return tr().sectionTitle.workspace; }, el: () => <WorkspaceSection /> },
+  resources: { get title() { return tr().sectionTitle.resources; }, el: () => <ResourcesSection /> },
+  labels: { get title() { return tr().sectionTitle.labels; }, el: () => <LabelsSection /> },
+  attendance: { get title() { return tr().sectionTitle.attendance; }, el: () => <AttendanceSection /> },
+  shifts: { get title() { return tr().sectionTitle.shifts; }, el: () => <ShiftsSection /> },
   kpi: { title: "KPI", el: () => <KpiSection /> },
-  notifications: { title: "Thông báo", el: () => <NotificationsSection /> },
-  integrations: { title: "Tích hợp", el: () => <IntegrationsSection /> },
-  audit: { title: "Nhật ký thay đổi", el: () => <AuditSection /> },
-  "whats-new": { title: "Có gì mới", el: () => <WhatsNewSection /> },
+  notifications: { get title() { return tr().sectionTitle.notifications; }, el: () => <NotificationsSection /> },
+  integrations: { get title() { return tr().sectionTitle.integrations; }, el: () => <IntegrationsSection /> },
+  audit: { get title() { return tr().sectionTitle.audit; }, el: () => <AuditSection /> },
+  "whats-new": { get title() { return tr().sectionTitle.whatsNew; }, el: () => <WhatsNewSection /> },
 };
 
 export default function SettingsSectionPage({ params }: { params: Promise<{ section: string }> }) {

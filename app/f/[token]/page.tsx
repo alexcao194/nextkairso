@@ -17,6 +17,8 @@ import { IconChat, IconChevronRight, IconClose, IconDownload, IconFile, IconFold
 import { ToastProvider, useToast } from "@/lib/toast/ToastProvider";
 import { Modal } from "@/components/ui/Modal";
 import { Gantt, type GanttRow } from "@/components/project/Gantt";
+import { tr } from "@/lib/i18n";
+import { LangToggle } from "@/components/shell/LangToggle";
 
 const PAGE = 20;
 
@@ -67,34 +69,35 @@ function Board({ token }: { token: string }) {
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex h-14 max-w-[960px] items-center gap-3 px-4">
           <span className="inline-flex size-7 items-center justify-center rounded-md bg-accent text-[13px] font-bold text-accent-on">K</span>
-          <h1 className="min-w-0 flex-1 truncate text-[15px] font-semibold">{project.data?.projectName ?? "Phản hồi"}</h1>
-          {project.data?.enabled && <Button variant="primary" onClick={() => setOpen(true)}><IconPlus size={14} /> Gửi phản hồi</Button>}
+          <h1 className="min-w-0 flex-1 truncate text-[15px] font-semibold">{project.data?.projectName ?? tr().publicFb.fallbackTitle}</h1>
+          <LangToggle />
+          {project.data?.enabled && <Button variant="primary" onClick={() => setOpen(true)}><IconPlus size={14} /> {tr().publicFb.send}</Button>}
         </div>
       </header>
       <main className="mx-auto flex max-w-[960px] flex-col gap-5 px-4 py-6">
         {project.isLoading ? <Skeleton className="h-40" /> : project.isError ? (
-          <EmptyState icon={<IconChat size={28} />} title="Không tìm thấy trang phản hồi" description="Liên kết có thể đã bị đổi hoặc gỡ. Hãy liên hệ đơn vị đã gửi bạn liên kết này." />
+          <EmptyState icon={<IconChat size={28} />} title={tr().publicFb.notFound} description={tr().publicFb.notFoundDesc} />
         ) : !project.data?.enabled ? (
-          <EmptyState icon={<IconChat size={28} />} title="Trang phản hồi đang tạm đóng" description="Dự án này hiện chưa nhận phản hồi công khai." />
+          <EmptyState icon={<IconChat size={28} />} title={tr().publicFb.closed} description={tr().publicFb.closedDesc} />
         ) : (
           <>
             {project.data?.showModuleTimeline && (modules.data ?? []).length > 0 && (
               <section aria-labelledby="pf-mod" className="overflow-hidden rounded-lg border border-line bg-surface">
-                <h2 id="pf-mod" className="px-4 pt-3 pb-2 text-[13px] font-semibold">Tiến độ các hạng mục</h2>
-                <Gantt rows={moduleRows} defaultZoom="month" scrollToToday empty={<p className="px-4 pb-4 text-[13px] text-ink-muted">Các hạng mục chưa có lịch sprint.</p>} />
+                <h2 id="pf-mod" className="px-4 pt-3 pb-2 text-[13px] font-semibold">{tr().publicFb.progress}</h2>
+                <Gantt rows={moduleRows} defaultZoom="month" scrollToToday empty={<p className="px-4 pb-4 text-[13px] text-ink-muted">{tr().publicFb.noSprints}</p>} />
                 {moduleRows.length > 0 && (
-                  <ul className="flex flex-wrap gap-x-4 gap-y-1 border-t border-line px-4 py-2.5 text-[12px] text-ink-muted" aria-label="Chú thích">
+                  <ul className="flex flex-wrap gap-x-4 gap-y-1 border-t border-line px-4 py-2.5 text-[12px] text-ink-muted" aria-label={tr().publicFb.legend}>
                     {hasSprints && (["completed", "active", "planned"] as SprintStatus[]).map((s) => (
                       <li key={s} className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm" style={{ background: SPRINT_STATUS_COLOR[s] }} aria-hidden="true" />Sprint {SPRINT_STATUS_LABEL[s].toLowerCase()}</li>
                     ))}
-                    <li className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm" style={{ background: MODULE_STATUS_COLOR.released }} aria-hidden="true" />Ngày phát hành</li>
+                    <li className="flex items-center gap-1.5"><span className="size-2.5 rounded-sm" style={{ background: MODULE_STATUS_COLOR.released }} aria-hidden="true" />{tr().publicFb.releaseDate}</li>
                   </ul>
                 )}
               </section>
             )}
             {hasFiles && (
               <section aria-labelledby="pf-files" className="overflow-hidden rounded-lg border border-line bg-surface">
-                <h2 id="pf-files" className="px-4 pt-3 pb-2 text-[13px] font-semibold">Tài liệu</h2>
+                <h2 id="pf-files" className="px-4 pt-3 pb-2 text-[13px] font-semibold">{tr().publicFb.docs}</h2>
                 <div className="px-2 pb-3">
                   {files.data?.folders?.map((n) => <PublicFolder key={n.id} node={n} depth={0} />)}
                   {files.data?.rootFiles?.map((f) => <PublicFile key={f.id} file={f} depth={0} />)}
@@ -102,11 +105,11 @@ function Board({ token }: { token: string }) {
               </section>
             )}
             <div className="flex flex-wrap items-center gap-2">
-              <SearchInput value={q} onChange={setQ} placeholder="Tìm phản hồi…" label="Tìm phản hồi" className="w-[240px]" />
-              <Select small aria-label="Lọc trạng thái" className="w-40" value={status} onChange={(e) => setStatus(e.target.value)}><option value="">Mọi trạng thái</option>{FEEDBACK_STATUSES.map((s) => <option key={s} value={s}>{FEEDBACK_STATUS_LABEL[s]}</option>)}</Select>
-              <Select small aria-label="Lọc loại" className="w-36" value={type} onChange={(e) => setType(e.target.value)}><option value="">Mọi loại</option>{FEEDBACK_TYPES.map((t) => <option key={t} value={t}>{FEEDBACK_TYPE_LABEL[t]}</option>)}</Select>
+              <SearchInput value={q} onChange={setQ} placeholder={tr().publicFb.searchPh} label={tr().publicFb.search} className="w-[240px]" />
+              <Select small aria-label={tr().publicFb.filterStatus} className="w-40" value={status} onChange={(e) => setStatus(e.target.value)}><option value="">{tr().publicFb.allStatuses}</option>{FEEDBACK_STATUSES.map((s) => <option key={s} value={s}>{FEEDBACK_STATUS_LABEL[s]}</option>)}</Select>
+              <Select small aria-label={tr().publicFb.filterType} className="w-36" value={type} onChange={(e) => setType(e.target.value)}><option value="">{tr().publicFb.allTypes}</option>{FEEDBACK_TYPES.map((t) => <option key={t} value={t}>{FEEDBACK_TYPE_LABEL[t]}</option>)}</Select>
             </div>
-            {list.isLoading ? <Skeleton className="h-64" /> : items.length === 0 ? <EmptyState icon={<IconChat size={28} />} title="Chưa có phản hồi nào" description="Hãy là người đầu tiên gửi ý kiến." className="rounded-lg border border-line bg-surface py-14" /> : (
+            {list.isLoading ? <Skeleton className="h-64" /> : items.length === 0 ? <EmptyState icon={<IconChat size={28} />} title={tr().publicFb.none} description={tr().publicFb.noneDesc} className="rounded-lg border border-line bg-surface py-14" /> : (
               <ul className="flex flex-col gap-3">
                 {items.map((f) => (
                   <li key={f.id} className="rounded-lg border border-line bg-surface p-4">
@@ -117,23 +120,23 @@ function Board({ token }: { token: string }) {
                       <Badge tone={FEEDBACK_STATUS_TONE[f.status]}>{FEEDBACK_STATUS_LABEL[f.status]}</Badge>
                     </div>
                     <p className="mt-1.5 whitespace-pre-wrap break-words text-[13px] text-ink-2">{f.content}</p>
-                    {(f.images ?? []).length > 0 && <div className="mt-2 flex flex-wrap gap-2">{(f.images ?? []).map((src) => <a key={src} href={src} target="_blank" rel="noreferrer">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={src} alt="Ảnh đính kèm" className="h-20 rounded-md border border-line object-cover" /></a>)}</div>}
+                    {(f.images ?? []).length > 0 && <div className="mt-2 flex flex-wrap gap-2">{(f.images ?? []).map((src) => <a key={src} href={src} target="_blank" rel="noreferrer">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={src} alt={tr().publicFb.image} className="h-20 rounded-md border border-line object-cover" /></a>)}</div>}
                     {f.response && (
                       <div className="mt-3 rounded-md border-l-2 border-accent bg-accent-soft px-3 py-2 text-[13px]">
-                        <p className="text-[11.5px] font-medium text-accent-ink">Phản hồi từ đội dự án{f.expectedFixDate ? ` · dự kiến ${fmtDate(f.expectedFixDate)}` : ""}</p>
+                        <p className="text-[11.5px] font-medium text-accent-ink">{tr().publicFb.teamResponse(f.expectedFixDate ? fmtDate(f.expectedFixDate) : "")}</p>
                         <p className="whitespace-pre-wrap text-ink-2">{f.response}</p>
                       </div>
                     )}
                     <p className="mt-2 text-[11.5px] text-ink-faint">{f.submitterName}{f.submitterCompany ? ` · ${f.submitterCompany}` : ""} · {fmtDate(f.createdAt)}</p>
                   </li>
                 ))}
-                {list.hasNextPage && <li className="text-center"><Button loading={list.isFetchingNextPage} onClick={() => list.fetchNextPage()}>Tải thêm</Button></li>}
+                {list.hasNextPage && <li className="text-center"><Button loading={list.isFetchingNextPage} onClick={() => list.fetchNextPage()}>{tr().publicFb.loadMore}</Button></li>}
               </ul>
             )}
           </>
         )}
       </main>
-      <Modal open={open} onClose={() => setOpen(false)} title="Gửi phản hồi" description="Phản hồi sẽ hiển thị công khai trên trang này." width={560}><SubmitForm token={token} onClose={() => setOpen(false)} /></Modal>
+      <Modal open={open} onClose={() => setOpen(false)} title={tr().publicFb.send} description={tr().publicFb.publicNote} width={560}><SubmitForm token={token} onClose={() => setOpen(false)} /></Modal>
     </div>
   );
 }
@@ -158,7 +161,7 @@ function PublicFolder({ node, depth }: { node: TreeNode; depth: number }) {
         <div>
           {node.children?.map((c) => <PublicFolder key={c.id} node={c} depth={depth + 1} />)}
           {node.files?.map((f) => <PublicFile key={f.id} file={f} depth={depth + 1} />)}
-          {empty && <p className="py-1 text-[11.5px] text-ink-faint" style={{ paddingLeft: (depth + 1) * 16 + 24 }}>Trống</p>}
+          {empty && <p className="py-1 text-[11.5px] text-ink-faint" style={{ paddingLeft: (depth + 1) * 16 + 24 }}>{tr().publicFb.empty}</p>}
         </div>
       )}
     </div>
@@ -195,7 +198,7 @@ function SubmitForm({ token, onClose }: { token: string; onClose: () => void }) 
 
   const send = useMutation({
     mutationFn: () => postPublicProjectFeedbacks(token, { ...f, featureName: f.featureName.trim(), content: f.content.trim(), submitterName: f.submitterName.trim(), submitterCompany: f.submitterCompany.trim(), images }),
-    onSuccess: () => { toast.success("Cảm ơn bạn! Phản hồi đã được gửi."); qc.invalidateQueries({ queryKey: ["public-feedbacks"] }); onClose(); },
+    onSuccess: () => { toast.success(tr().publicFb.thanks); qc.invalidateQueries({ queryKey: ["public-feedbacks"] }); onClose(); },
     onError: (e) => toast.error(e),
   });
 
@@ -206,7 +209,7 @@ function SubmitForm({ token, onClose }: { token: string; onClose: () => void }) 
       for (const file of list) {
         const p = await postPublicProjectUploadsPresignedUrl(token, { contentType: file.type || "image/jpeg", filename: file.name });
         const r = await fetch(p.uploadUrl, { method: p.method || "PUT", headers: { "Content-Type": file.type || "image/jpeg" }, body: file });
-        if (!r.ok) throw new Error(`Tải ảnh thất bại (${r.status})`);
+        if (!r.ok) throw new Error(tr().publicFb.uploadFailed(r.status));
         setImages((x) => [...x, p.fileUrl]);
       }
     } catch (e) { toast.error(e); } finally { setUploading(false); if (ref.current) ref.current.value = ""; }
@@ -214,23 +217,23 @@ function SubmitForm({ token, onClose }: { token: string; onClose: () => void }) 
 
   return (
     <form onSubmit={(e) => (e.preventDefault(), ok && send.mutate())} className="flex flex-col gap-3.5">
-      <Field label="Tính năng / chức năng liên quan" required>{(p) => <Input {...p} autoFocus value={f.featureName} onChange={(e) => set("featureName", e.target.value)} maxLength={150} />}</Field>
-      <Field label="Nội dung" required>{(p) => <Textarea {...p} rows={4} value={f.content} onChange={(e) => set("content", e.target.value)} />}</Field>
+      <Field label={tr().publicFb.feature} required>{(p) => <Input {...p} autoFocus value={f.featureName} onChange={(e) => set("featureName", e.target.value)} maxLength={150} />}</Field>
+      <Field label={tr().publicFb.content} required>{(p) => <Textarea {...p} rows={4} value={f.content} onChange={(e) => set("content", e.target.value)} />}</Field>
       <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-        <Field label="Loại">{(p) => <Select {...p} value={f.feedbackType} onChange={(e) => set("feedbackType", e.target.value)}>{FEEDBACK_TYPES.map((t) => <option key={t} value={t}>{FEEDBACK_TYPE_LABEL[t]}</option>)}</Select>}</Field>
-        <Field label="Mức độ quan trọng">{(p) => <Select {...p} value={f.priority} onChange={(e) => set("priority", Number(e.target.value))}>{PRIORITY_LEVELS.map((l) => <option key={l} value={PRIORITY_META[l].api}>{PRIORITY_META[l].label}</option>)}</Select>}</Field>
-        <Field label="Tên của bạn" required>{(p) => <Input {...p} value={f.submitterName} onChange={(e) => set("submitterName", e.target.value)} />}</Field>
-        <Field label="Công ty">{(p) => <Input {...p} value={f.submitterCompany} onChange={(e) => set("submitterCompany", e.target.value)} />}</Field>
+        <Field label={tr().publicFb.type}>{(p) => <Select {...p} value={f.feedbackType} onChange={(e) => set("feedbackType", e.target.value)}>{FEEDBACK_TYPES.map((t) => <option key={t} value={t}>{FEEDBACK_TYPE_LABEL[t]}</option>)}</Select>}</Field>
+        <Field label={tr().publicFb.importance}>{(p) => <Select {...p} value={f.priority} onChange={(e) => set("priority", Number(e.target.value))}>{PRIORITY_LEVELS.map((l) => <option key={l} value={PRIORITY_META[l].api}>{PRIORITY_META[l].label}</option>)}</Select>}</Field>
+        <Field label={tr().publicFb.name} required>{(p) => <Input {...p} value={f.submitterName} onChange={(e) => set("submitterName", e.target.value)} />}</Field>
+        <Field label={tr().publicFb.company}>{(p) => <Input {...p} value={f.submitterCompany} onChange={(e) => set("submitterCompany", e.target.value)} />}</Field>
       </div>
       <div>
-        <input ref={ref} type="file" accept="image/*" multiple className="sr-only" aria-label="Chọn ảnh" onChange={(e) => addImages(e.target.files)} />
+        <input ref={ref} type="file" accept="image/*" multiple className="sr-only" aria-label={tr().publicFb.pickImages} onChange={(e) => addImages(e.target.files)} />
         <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" loading={uploading} onClick={() => ref.current?.click()}>Đính kèm ảnh</Button>
-          {images.map((src, i) => <span key={src} className="relative">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={src} alt={`Ảnh ${i + 1}`} className="h-12 rounded border border-line object-cover" /><button type="button" aria-label={`Bỏ ảnh ${i + 1}`} onClick={() => setImages((x) => x.filter((_, j) => j !== i))} className="absolute -right-1.5 -top-1.5 rounded-full bg-surface p-0.5 shadow"><IconClose size={10} /></button></span>)}
+          <Button size="sm" loading={uploading} onClick={() => ref.current?.click()}>{tr().publicFb.attachImages}</Button>
+          {images.map((src, i) => <span key={src} className="relative">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={src} alt={tr().publicFb.imageN(i + 1)} className="h-12 rounded border border-line object-cover" /><button type="button" aria-label={tr().publicFb.removeImage(i + 1)} onClick={() => setImages((x) => x.filter((_, j) => j !== i))} className="absolute -right-1.5 -top-1.5 rounded-full bg-surface p-0.5 shadow"><IconClose size={10} /></button></span>)}
         </div>
       </div>
-      {send.isError && <Alert tone="danger">{send.error instanceof Error ? send.error.message : "Không gửi được"}</Alert>}
-      <div className="flex justify-end gap-2 border-t border-line pt-3"><Button onClick={onClose}>Huỷ</Button><Button type="submit" variant="primary" loading={send.isPending} disabled={!ok || uploading}>Gửi</Button></div>
+      {send.isError && <Alert tone="danger">{send.error instanceof Error ? send.error.message : tr().publicFb.sendFailed}</Alert>}
+      <div className="flex justify-end gap-2 border-t border-line pt-3"><Button onClick={onClose}>{tr().publicFb.cancel}</Button><Button type="submit" variant="primary" loading={send.isPending} disabled={!ok || uploading}>{tr().publicFb.submit}</Button></div>
     </form>
   );
 }

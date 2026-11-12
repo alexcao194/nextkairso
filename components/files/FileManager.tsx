@@ -16,6 +16,7 @@ import {
   IconGlobe, IconMaximize, IconMore, IconPlus, IconSettings, IconTrash, IconUpload,
 } from "@/components/icons";
 import { fmtBytes, isImage } from "@/lib/upload";
+import { dateLocale, tr } from "@/lib/i18n";
 
 const DRAG_MIME = "application/x-kairso-file";
 
@@ -68,7 +69,7 @@ export function FileManager() {
         const up = await presignAndUpload(ws, f);
         await m.createFile.mutateAsync({ folderId: folderId || "", name: f.name, objectName: up.objectName, contentType: up.contentType, sizeBytes: up.sizeBytes, isPublic: false });
       }
-      toast.success(Array.from(files).length > 1 ? "Đã tải các tệp lên" : "Đã tải tệp lên");
+      toast.success(Array.from(files).length > 1 ? tr().fm.uploadedMany : tr().fm.uploadedOne);
     } catch (e) {
       toast.error(e);
     } finally {
@@ -92,15 +93,15 @@ export function FileManager() {
 
   const del = async (kind: "folder" | "file", id: string, name: string) => {
     const ok = await confirm({
-      title: `Xoá ${kind === "file" ? "tệp" : "thư mục"} "${name}"?`,
-      message: kind === "folder" ? "Mọi thư mục con và tệp bên trong cũng bị xoá." : undefined,
+      title: tr().fm.confirmDelete(kind === "file", name),
+      message: kind === "folder" ? tr().fm.deleteFolderDesc : undefined,
       danger: true,
     });
     if (!ok) return;
     try {
       if (kind === "file") await m.deleteFile.mutateAsync(id);
       else await m.deleteFolder.mutateAsync(id);
-      toast.success("Đã xoá");
+      toast.success(tr().fm.deleted);
     } catch (e) {
       toast.error(e);
     }
@@ -122,7 +123,7 @@ export function FileManager() {
       if (id === folderId) return;
       if (kind === "file") await m.updateFile.mutateAsync({ id, body: { folderId: folderId || "" } });
       else await m.updateFolder.mutateAsync({ id, body: { parentId: folderId || "" } });
-      toast.success("Đã di chuyển");
+      toast.success(tr().fm.moved);
     } catch (err) {
       toast.error(err);
     }
@@ -142,27 +143,27 @@ export function FileManager() {
     );
   }
   if (tree.error) {
-    return <div className="p-4"><EmptyState title="Không tải được tài liệu" description={String((tree.error as Error).message ?? tree.error)} /></div>;
+    return <div className="p-4"><EmptyState title={tr().fm.loadFailed} description={String((tree.error as Error).message ?? tree.error)} /></div>;
   }
 
   const data = tree.data ?? { folders: [], rootFiles: [] };
   const isEmpty = (data.folders?.length ?? 0) === 0 && (data.rootFiles?.length ?? 0) === 0;
-  const selName = sel ? findFolderName(data.folders, sel) : "Gốc workspace";
+  const selName = sel ? findFolderName(data.folders, sel) : tr().fm.root;
 
   return (
     <div className="flex h-full flex-col">
       {/* Thanh công cụ */}
       <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2.5">
         <span className="text-[12px] text-ink-muted">
-          Đang ở: <button type="button" className="font-medium text-ink underline-offset-2 hover:underline" onClick={() => setSel("")}>{selName}</button>
+          {tr().fm.location} <button type="button" className="font-medium text-ink underline-offset-2 hover:underline" onClick={() => setSel("")}>{selName}</button>
         </span>
         <span className="flex-1" />
         {isManager && (
           <>
             <input ref={fileInput} type="file" multiple hidden onChange={onPickUpload} />
-            <Button size="sm" variant="ghost" onClick={() => setNewFolder({ parentId: sel })}><IconPlus size={14} /> Thư mục</Button>
-            <Button size="sm" variant="primary" loading={busy} onClick={() => fileInput.current?.click()}><IconUpload size={14} /> Tải lên</Button>
-            <IconButton label="Cài đặt tải lên" variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}><IconSettings size={15} /></IconButton>
+            <Button size="sm" variant="ghost" onClick={() => setNewFolder({ parentId: sel })}><IconPlus size={14} /> {tr().fm.folder}</Button>
+            <Button size="sm" variant="primary" loading={busy} onClick={() => fileInput.current?.click()}><IconUpload size={14} /> {tr().fm.upload}</Button>
+            <IconButton label={tr().fm.uploadSettings} variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}><IconSettings size={15} /></IconButton>
           </>
         )}
       </div>
@@ -177,8 +178,8 @@ export function FileManager() {
         {isEmpty && (
           <div className="p-6">
             <EmptyState
-              title="Chưa có tài liệu"
-              description={isManager ? "Thư mục dự án/module tự tạo khi bạn có dự án. Tải tệp lên hoặc tạo thư mục để bắt đầu." : "Quản lý chưa tải tài liệu nào lên."}
+              title={tr().fm.none}
+              description={isManager ? tr().fm.noneManager : tr().fm.noneMember}
             />
           </div>
         )}
@@ -259,15 +260,15 @@ function FolderRow({ node, depth, ctx }: { node: TreeNode; depth: number; ctx: F
         className={`group flex h-row cursor-pointer items-center gap-1 rounded-md pr-1 hover:bg-hover ${ctx.sel === id ? "bg-(--blue-soft)" : ""} ${isDragTarget ? "ring-1 ring-accent" : ""}`}
         style={{ paddingLeft: depth * 16 + 4 }}
       >
-        <button type="button" aria-label={open ? "Thu gọn" : "Mở rộng"} onClick={(e) => { e.stopPropagation(); ctx.toggle(id); }} className="grid size-5 place-items-center text-ink-faint">
+        <button type="button" aria-label={open ? tr().fm.collapse : tr().fm.expand} onClick={(e) => { e.stopPropagation(); ctx.toggle(id); }} className="grid size-5 place-items-center text-ink-faint">
           <IconChevronRight size={13} className={`transition-transform ${open ? "rotate-90" : ""}`} />
         </button>
         <IconFolder size={15} className={locked ? "text-(--blue)" : "text-ink-muted"} />
         <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink">{name}</span>
-        {locked && <Badge tone="neutral">{kind === "project" ? "Dự án" : "Module"}</Badge>}
+        {locked && <Badge tone="neutral">{kind === "project" ? tr().fm.project : "Module"}</Badge>}
         {ctx.isManager && (
           <IconButton
-            label={pubEff ? "Đang công khai — bấm để ẩn" : node.isPublic ? "Đã bật public (bị cha che)" : "Riêng tư — bấm để công khai"}
+            label={pubEff ? tr().fm.publicOn : node.isPublic ? tr().fm.publicHidden : tr().fm.private}
             variant="ghost" size="sm" className={pubEff ? "text-(--green)" : node.isPublic ? "text-(--amber)" : "text-ink-disabled"}
             onClick={(e) => { e.stopPropagation(); ctx.togglePublic("folder", id, !node.isPublic); }}
           ><IconGlobe size={14} /></IconButton>
@@ -276,13 +277,13 @@ function FolderRow({ node, depth, ctx }: { node: TreeNode; depth: number; ctx: F
           <Menu
             align="end"
             trigger={({ ref, open: mo, ...p }) => (
-              <button ref={ref} {...p} aria-label="Tác vụ thư mục" className={`grid size-6 place-items-center rounded text-ink-faint hover:bg-hover hover:text-ink ${mo ? "bg-hover" : "opacity-0 group-hover:opacity-100"}`}><IconMore size={15} /></button>
+              <button ref={ref} {...p} aria-label={tr().fm.folderActions} className={`grid size-6 place-items-center rounded text-ink-faint hover:bg-hover hover:text-ink ${mo ? "bg-hover" : "opacity-0 group-hover:opacity-100"}`}><IconMore size={15} /></button>
             )}
             items={[
-              { label: "Thư mục con mới", icon: <IconPlus size={14} />, onSelect: () => ctx.setNewFolder({ parentId: id }) },
+              { label: tr().fm.newSubfolder, icon: <IconPlus size={14} />, onSelect: () => ctx.setNewFolder({ parentId: id }) },
               ...(locked ? [] : [
-                { label: "Đổi tên", icon: <IconEdit size={14} />, onSelect: () => ctx.setRename({ kind: "folder", id: id, name: name }) },
-                { label: "Xoá", icon: <IconTrash size={14} />, danger: true, separated: true, onSelect: () => ctx.del("folder", id, name) },
+                { label: tr().fm.rename, icon: <IconEdit size={14} />, onSelect: () => ctx.setRename({ kind: "folder", id: id, name: name }) },
+                { label: tr().fm.delete, icon: <IconTrash size={14} />, danger: true, separated: true, onSelect: () => ctx.del("folder", id, name) },
               ]),
             ]}
           />
@@ -293,7 +294,7 @@ function FolderRow({ node, depth, ctx }: { node: TreeNode; depth: number; ctx: F
           {node.children?.map((c) => <FolderRow key={c.id} node={c} depth={depth + 1} ctx={ctx} />)}
           {node.files?.map((f) => <FileRow key={f.id} file={f} depth={depth + 1} ctx={ctx} />)}
           {!node.children?.length && !node.files?.length && (
-            <div className="text-[11.5px] text-ink-faint" style={{ paddingLeft: (depth + 1) * 16 + 28 }}>Trống</div>
+            <div className="text-[11.5px] text-ink-faint" style={{ paddingLeft: (depth + 1) * 16 + 28 }}>{tr().fm.empty}</div>
           )}
         </div>
       )}
@@ -331,23 +332,23 @@ function FileRow({ file, depth, ctx }: {
       <span className="hidden shrink-0 font-mono text-[11px] text-ink-faint sm:block">{fmtBytes(file.sizeBytes)}</span>
       {ctx.isManager && (
         <IconButton
-          label={pubEff ? "Đang công khai — bấm để ẩn" : file.isPublic ? "Đã bật public (folder cha che)" : "Riêng tư — bấm để công khai"}
+          label={pubEff ? tr().fm.publicOn : file.isPublic ? tr().fm.publicHiddenFile : tr().fm.private}
           variant="ghost" size="sm" className={pubEff ? "text-(--green)" : file.isPublic ? "text-(--amber)" : "text-ink-disabled"}
           onClick={() => ctx.togglePublic("file", fid, !file.isPublic)}
         ><IconGlobe size={14} /></IconButton>
       )}
-      <a href={furl} target="_blank" rel="noreferrer" className="grid size-6 place-items-center rounded text-ink-faint hover:bg-hover hover:text-ink" aria-label="Tải xuống" download><IconDownload size={14} /></a>
+      <a href={furl} target="_blank" rel="noreferrer" className="grid size-6 place-items-center rounded text-ink-faint hover:bg-hover hover:text-ink" aria-label={tr().fm.download} download><IconDownload size={14} /></a>
       {ctx.isManager && (
         <Menu
           align="end"
           trigger={({ ref, open: mo, ...p }) => (
-            <button ref={ref} {...p} aria-label="Tác vụ tệp" className={`grid size-6 place-items-center rounded text-ink-faint hover:bg-hover hover:text-ink ${mo ? "bg-hover" : "opacity-0 group-hover:opacity-100"}`}><IconMore size={15} /></button>
+            <button ref={ref} {...p} aria-label={tr().fm.fileActions} className={`grid size-6 place-items-center rounded text-ink-faint hover:bg-hover hover:text-ink ${mo ? "bg-hover" : "opacity-0 group-hover:opacity-100"}`}><IconMore size={15} /></button>
           )}
           items={[
-            ...(previewable ? [{ label: "Xem trước", icon: <IconMaximize size={14} />, onSelect: () => ctx.setPreview(file) }] : []),
-            { label: "Phiên bản", icon: <IconClock size={14} />, onSelect: () => ctx.setVersionsFor(file) },
-            { label: "Đổi tên", icon: <IconEdit size={14} />, onSelect: () => ctx.setRename({ kind: "file", id: fid, name: fname }) },
-            { label: "Xoá", icon: <IconTrash size={14} />, danger: true, separated: true, onSelect: () => ctx.del("file", fid, fname) },
+            ...(previewable ? [{ label: tr().fm.preview, icon: <IconMaximize size={14} />, onSelect: () => ctx.setPreview(file) }] : []),
+            { label: tr().fm.versions, icon: <IconClock size={14} />, onSelect: () => ctx.setVersionsFor(file) },
+            { label: tr().fm.rename, icon: <IconEdit size={14} />, onSelect: () => ctx.setRename({ kind: "file", id: fid, name: fname }) },
+            { label: tr().fm.delete, icon: <IconTrash size={14} />, danger: true, separated: true, onSelect: () => ctx.del("file", fid, fname) },
           ]}
         />
       )}
@@ -363,15 +364,15 @@ function NewFolderModal({ ws, parentId, onClose }: { ws: string; parentId: strin
     if (!name.trim()) return;
     try {
       await m.createFolder.mutateAsync({ parentId: parentId || "", name: name.trim(), isPublic: false });
-      toast.success("Đã tạo thư mục");
+      toast.success(tr().fm.folderCreated);
       onClose();
     } catch (e) {
       toast.error(e);
     }
   };
   return (
-    <Modal open onClose={onClose} title="Thư mục mới" footer={<><Button variant="ghost" onClick={onClose}>Huỷ</Button><Button variant="primary" loading={m.createFolder.isPending} onClick={save} disabled={!name.trim()}>Tạo</Button></>}>
-      <Field label="Tên thư mục">{(p) => <Input {...p} autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} placeholder="vd: Hợp đồng" />}</Field>
+    <Modal open onClose={onClose} title={tr().fm.newFolder} footer={<><Button variant="ghost" onClick={onClose}>{tr().fm.cancel}</Button><Button variant="primary" loading={m.createFolder.isPending} onClick={save} disabled={!name.trim()}>{tr().fm.create}</Button></>}>
+      <Field label={tr().fm.folderName}>{(p) => <Input {...p} autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} placeholder={tr().fm.folderPh} />}</Field>
     </Modal>
   );
 }
@@ -386,25 +387,25 @@ function RenameModal({ rename, onClose }: { rename: { kind: "folder" | "file"; i
     try {
       if (rename.kind === "file") await m.updateFile.mutateAsync({ id: rename.id, body: { name: name.trim() } });
       else await m.updateFolder.mutateAsync({ id: rename.id, body: { name: name.trim() } });
-      toast.success("Đã đổi tên");
+      toast.success(tr().fm.renamed);
       onClose();
     } catch (e) {
       toast.error(e);
     }
   };
   return (
-    <Modal open onClose={onClose} title="Đổi tên" footer={<><Button variant="ghost" onClick={onClose}>Huỷ</Button><Button variant="primary" onClick={save} disabled={!name.trim()}>Lưu</Button></>}>
-      <Field label="Tên mới">{(p) => <Input {...p} autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} />}</Field>
+    <Modal open onClose={onClose} title={tr().fm.rename} footer={<><Button variant="ghost" onClick={onClose}>{tr().fm.cancel}</Button><Button variant="primary" onClick={save} disabled={!name.trim()}>{tr().fm.save}</Button></>}>
+      <Field label={tr().fm.newName}>{(p) => <Input {...p} autoFocus value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} />}</Field>
     </Modal>
   );
 }
 
 function PreviewModal({ file, onClose }: { file: FileResponse; onClose: () => void }) {
   const img = isImage(file.contentType, file.name);
-  const name = file.name ?? "Tệp";
+  const name = file.name ?? tr().fm.file;
   const furl = file.url ?? "";
   return (
-    <Modal open onClose={onClose} title={name} width={760} footer={<a href={furl} target="_blank" rel="noreferrer" download><Button variant="ghost"><IconDownload size={14} /> Tải xuống</Button></a>}>
+    <Modal open onClose={onClose} title={name} width={760} footer={<a href={furl} target="_blank" rel="noreferrer" download><Button variant="ghost"><IconDownload size={14} /> {tr().fm.download}</Button></a>}>
       {img ? (
         <img src={furl} alt={name} className="mx-auto max-h-[70vh] rounded-md" />
       ) : (
@@ -427,7 +428,7 @@ function VersionsModal({ ws, file, isManager, onClose }: { ws: string; file: Fil
     try {
       const up = await presignAndUpload(ws, f);
       await m.addVersion.mutateAsync({ id: fid, body: { objectName: up.objectName, contentType: up.contentType, sizeBytes: up.sizeBytes } });
-      toast.success("Đã tải phiên bản mới");
+      toast.success(tr().fm.versionUploaded);
     } catch (e) {
       toast.error(e);
     } finally {
@@ -437,27 +438,27 @@ function VersionsModal({ ws, file, isManager, onClose }: { ws: string; file: Fil
   const restore = async (versionId: string) => {
     try {
       await m.restoreVersion.mutateAsync({ id: fid, versionId });
-      toast.success("Đã khôi phục phiên bản");
+      toast.success(tr().fm.versionRestored);
     } catch (e) {
       toast.error(e);
     }
   };
 
   return (
-    <Modal open onClose={onClose} title={`Phiên bản — ${file.name}`} width={560}
-      footer={isManager ? <><input ref={input} type="file" hidden onChange={(e) => { if (e.target.files?.[0]) addVersion(e.target.files[0]); e.target.value = ""; }} /><Button variant="primary" loading={busy} onClick={() => input.current?.click()}><IconUpload size={14} /> Tải phiên bản mới</Button></> : undefined}>
+    <Modal open onClose={onClose} title={tr().fm.versionsOf(file.name ?? "")} width={560}
+      footer={isManager ? <><input ref={input} type="file" hidden onChange={(e) => { if (e.target.files?.[0]) addVersion(e.target.files[0]); e.target.value = ""; }} /><Button variant="primary" loading={busy} onClick={() => input.current?.click()}><IconUpload size={14} /> {tr().fm.uploadVersion}</Button></> : undefined}>
       {versions.isLoading && <Skeleton className="h-16 w-full" />}
-      {versions.data && versions.data.length === 0 && <p className="text-[12.5px] text-ink-muted">Chưa có lịch sử phiên bản.</p>}
+      {versions.data && versions.data.length === 0 && <p className="text-[12.5px] text-ink-muted">{tr().fm.noVersions}</p>}
       <ul className="flex flex-col gap-1">
         {versions.data?.map((v, i) => (
           <li key={v.id} className="flex items-center gap-2 rounded-md border border-line px-2.5 py-1.5">
             <IconClock size={14} className="text-ink-faint" />
             <div className="min-w-0 flex-1">
-              <p className="text-[12.5px] text-ink">{i === 0 ? "Hiện tại" : `Phiên bản ${versions.data!.length - i}`} · <span className="font-mono text-[11px] text-ink-faint">{fmtBytes(v.sizeBytes)}</span></p>
-              <p className="text-[11px] text-ink-faint">{new Date(v.createdAt).toLocaleString("vi-VN")}</p>
+              <p className="text-[12.5px] text-ink">{i === 0 ? tr().fm.current : tr().fm.versionN(versions.data!.length - i)} · <span className="font-mono text-[11px] text-ink-faint">{fmtBytes(v.sizeBytes)}</span></p>
+              <p className="text-[11px] text-ink-faint">{new Date(v.createdAt).toLocaleString(dateLocale())}</p>
             </div>
-            <a href={v.url} target="_blank" rel="noreferrer" download><IconButton label="Tải xuống" variant="ghost" size="sm"><IconDownload size={14} /></IconButton></a>
-            {isManager && i !== 0 && <Button size="sm" variant="ghost" onClick={() => restore(v.id)}>Khôi phục</Button>}
+            <a href={v.url} target="_blank" rel="noreferrer" download><IconButton label={tr().fm.download} variant="ghost" size="sm"><IconDownload size={14} /></IconButton></a>
+            {isManager && i !== 0 && <Button size="sm" variant="ghost" onClick={() => restore(v.id)}>{tr().fm.restore}</Button>}
           </li>
         ))}
       </ul>
@@ -472,21 +473,21 @@ function SettingsModal({ ws, current, onClose }: { ws: string; current?: { maxFi
   const [types, setTypes] = useState(current?.allowedTypes ?? "");
   const save = async () => {
     const n = parseInt(maxMB, 10);
-    if (!n || n < 1 || n > 5000) return toast.error("Dung lượng tối đa phải trong khoảng 1–5000 MB");
+    if (!n || n < 1 || n > 5000) return toast.error(tr().fm.maxSizeRange);
     try {
       await m.saveSettings.mutateAsync({ maxFileSizeMb: n, allowedTypes: types.trim() });
-      toast.success("Đã lưu cài đặt");
+      toast.success(tr().fm.settingsSaved);
       onClose();
     } catch (e) {
       toast.error(e);
     }
   };
   return (
-    <Modal open onClose={onClose} title="Cài đặt tải lên" description="Áp dụng cho toàn workspace."
-      footer={<><Button variant="ghost" onClick={onClose}>Huỷ</Button><Button variant="primary" loading={m.saveSettings.isPending} onClick={save}>Lưu</Button></>}>
+    <Modal open onClose={onClose} title={tr().fm.uploadSettings} description={tr().fm.settingsDesc}
+      footer={<><Button variant="ghost" onClick={onClose}>{tr().fm.cancel}</Button><Button variant="primary" loading={m.saveSettings.isPending} onClick={save}>{tr().fm.save}</Button></>}>
       <div className="flex flex-col gap-3">
-        <Field label="Dung lượng tối đa mỗi tệp (MB)">{(p) => <Input {...p} type="number" min={1} max={5000} value={maxMB} onChange={(e) => setMaxMB(e.target.value)} />}</Field>
-        <Field label="Loại tệp cho phép" hint="Danh sách đuôi file, cách nhau bằng dấu phẩy (vd: pdf,png,jpg,docx). Để trống = mọi loại.">{(p) => <Input {...p} value={types} onChange={(e) => setTypes(e.target.value)} placeholder="pdf,png,jpg,docx" />}</Field>
+        <Field label={tr().fm.maxSize}>{(p) => <Input {...p} type="number" min={1} max={5000} value={maxMB} onChange={(e) => setMaxMB(e.target.value)} />}</Field>
+        <Field label={tr().fm.allowedTypes} hint={tr().fm.allowedHint}>{(p) => <Input {...p} value={types} onChange={(e) => setTypes(e.target.value)} placeholder="pdf,png,jpg,docx" />}</Field>
       </div>
     </Modal>
   );

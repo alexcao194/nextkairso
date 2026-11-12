@@ -12,6 +12,7 @@ window.__KAIRSO_ENV__ = {
   firebaseStorageBucket: "${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:-}",
   firebaseMessagingSenderId: "${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:-}",
   firebaseAppId: "${NEXT_PUBLIC_FIREBASE_APP_ID:-}",
+  firebaseVapidKey: "${NEXT_PUBLIC_FIREBASE_VAPID_KEY:-}",
   wsUrl: "${NEXT_PUBLIC_WS_URL:-}"
 };
 EOF

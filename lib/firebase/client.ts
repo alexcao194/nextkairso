@@ -14,7 +14,7 @@ import {
   User as FirebaseUser,
 } from "firebase/auth";
 
-function buildFirebaseConfig() {
+export function buildFirebaseConfig() {
   const rt = runtimeEnv();
   return {
     apiKey: rt.firebaseApiKey || process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAMf5IWMDzIyl2-OiNEyPymJrL-EHnRC-k",
@@ -29,7 +29,7 @@ function buildFirebaseConfig() {
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 
-function getFirebaseApp(): FirebaseApp {
+export function getFirebaseApp(): FirebaseApp {
   if (typeof window === "undefined") {
     return getApps().length > 0 ? getApp() : initializeApp(buildFirebaseConfig());
   }

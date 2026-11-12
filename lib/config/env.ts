@@ -6,6 +6,7 @@ type RuntimeEnv = {
   firebaseStorageBucket?: string;
   firebaseMessagingSenderId?: string;
   firebaseAppId?: string;
+  firebaseVapidKey?: string;
   wsUrl?: string;
 };
 

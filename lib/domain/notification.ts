@@ -1,5 +1,15 @@
 import type { NotificationResponse } from "../api/schema";
+import type { Lang } from "../i18n";
+import { renderNotification } from "../i18n/notifications";
 import type { Hue } from "./hue";
+
+/** Render a notification's title/body in the given language (falls back to the server text). */
+export function localizedNotification(
+  n: Pick<NotificationResponse, "title" | "body" | "data">,
+  lang: Lang,
+): { title: string; body: string } {
+  return renderNotification(lang, n.data ?? undefined, { title: n.title ?? "", body: n.body ?? "" });
+}
 
 export function notificationHref(n: Pick<NotificationResponse, "data" | "workspaceId">): string | null {
   const d = n.data ?? {};

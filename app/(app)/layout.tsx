@@ -11,6 +11,7 @@ import { DialogProvider, useDialogs } from "@/components/dialogs/DialogProvider"
 import { EmptyState, Skeleton } from "@/components/ui/feedback";
 import { Button } from "@/components/ui/Button";
 import { IconClose, IconFolder } from "@/components/icons";
+import { useT } from "@/lib/i18n";
 
 const COLLAPSE_KEY = "kairso-sidebar-collapsed";
 
@@ -19,7 +20,7 @@ function Splash() {
     <div className="flex h-screen w-full items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <div style={{ background: "var(--brand-grad)" }} className="flex size-10 animate-pulse items-center justify-center rounded-xl text-base font-bold text-white shadow-accent">K</div>
-        <span className="text-xs font-medium text-ink-muted">Đang tải Kairso…</span>
+        <span className="text-xs font-medium text-ink-muted">{useT().shell.loadingApp}</span>
       </div>
     </div>
   );
@@ -27,13 +28,14 @@ function Splash() {
 
 function NoWorkspace() {
   const { openCreateWorkspace } = useDialogs();
+  const t = useT();
   return (
     <EmptyState
       className="flex-1"
       icon={<IconFolder size={28} />}
-      title="Bạn chưa thuộc workspace nào"
-      description="Tạo workspace mới, hoặc nhờ quản trị viên mời bạn bằng alias — lời mời sẽ hiện ở bộ chuyển workspace."
-      action={<Button variant="primary" onClick={openCreateWorkspace}>Tạo workspace</Button>}
+      title={t.shell.noWorkspaceTitle}
+      description={t.shell.noWorkspaceDesc}
+      action={<Button variant="primary" onClick={openCreateWorkspace}>{t.shell.createWorkspace}</Button>}
     />
   );
 }

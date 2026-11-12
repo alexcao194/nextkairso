@@ -23,6 +23,7 @@ import {
 } from "@/components/icons";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { ThemeToggle } from "./ThemeToggle";
+import { LangToggle } from "./LangToggle";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { UserMenu } from "./UserMenu";
 import { CountBadge } from "@/components/ui/CountBadge";
@@ -33,6 +34,7 @@ import { qk } from "@/lib/query/keys";
 import { projectColor } from "@/lib/domain/format";
 import { NAV_HUE } from "@/lib/domain/hue";
 import { useDialogs } from "@/components/dialogs/DialogProvider";
+import { useT } from "@/lib/i18n";
 
 const PROJECT_TABS = [
   { slug: "tasks", label: "Task" },
@@ -68,6 +70,7 @@ export function Sidebar({
   const { openCreateProject, openCommandPalette } = useDialogs();
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [showAll, setShowAll] = useState(false);
+  const tr = useT();
 
   const currentId = projects.find((p) => pathname.startsWith(`/projects/${p.id}`))?.id ?? null;
   const visible = showAll || collapsed ? projects : projects.slice(0, 4);
@@ -91,7 +94,7 @@ export function Sidebar({
         <WorkspaceSwitcher collapsed={collapsed} />
         <div className={collapsed ? "flex justify-center pb-2 pt-1.5" : "px-2.5 pb-2 pt-1.5"}>
           {collapsed ? (
-            <IconButton label="Tìm nhanh (Ctrl+K)" variant="ghost" size="sm" onClick={openCommandPalette}>
+            <IconButton label={tr.sidebar.search} variant="ghost" size="sm" onClick={openCommandPalette}>
               <IconSearch size={15} />
             </IconButton>
           ) : (
@@ -113,22 +116,22 @@ export function Sidebar({
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-3">
         <nav className={`flex flex-col gap-0.5 ${collapsed ? "px-1.5" : "px-2.5"}`} aria-label="Điều hướng chính">
-          <SidebarNavItem {...nav("/", (p) => p === "/")} hue={NAV_HUE.home} icon={<IconHome />} label="Tổng quan" />
-          <SidebarNavItem {...nav("/inbox")} hue={NAV_HUE.inbox} icon={<IconInbox />} label="Hộp thư" count={unreadCount || undefined} countTone="danger" />
-          <SidebarNavItem {...nav("/my-tasks")} hue={NAV_HUE.myTasks} icon={<IconCheckSquare />} label="Task của tôi" count={myTasksCount || undefined} />
-          <SidebarNavItem {...nav("/threads")} hue={NAV_HUE.threads} icon={<IconChat />} label="Thảo luận" count={threadsCount || undefined} />
-          <SidebarNavItem {...nav("/calendar")} hue={NAV_HUE.calendar} icon={<IconCalendar />} label="Lịch & chấm công" />
+          <SidebarNavItem {...nav("/", (p) => p === "/")} hue={NAV_HUE.home} icon={<IconHome />} label={tr.sidebar.overview} />
+          <SidebarNavItem {...nav("/inbox")} hue={NAV_HUE.inbox} icon={<IconInbox />} label={tr.sidebar.inbox} count={unreadCount || undefined} countTone="danger" />
+          <SidebarNavItem {...nav("/my-tasks")} hue={NAV_HUE.myTasks} icon={<IconCheckSquare />} label={tr.sidebar.myTasks} count={myTasksCount || undefined} />
+          <SidebarNavItem {...nav("/threads")} hue={NAV_HUE.threads} icon={<IconChat />} label={tr.sidebar.threads} count={threadsCount || undefined} />
+          <SidebarNavItem {...nav("/calendar")} hue={NAV_HUE.calendar} icon={<IconCalendar />} label={tr.sidebar.calendar} />
         </nav>
 
         <SectionLabel
           hidden={collapsed}
           action={
-            <button type="button" onClick={openCreateProject} aria-label="Tạo dự án" className="text-ink-faint hover:text-ink">
+            <button type="button" onClick={openCreateProject} aria-label={tr.sidebar.newProject} className="text-ink-faint hover:text-ink">
               <IconPlus size={13} />
             </button>
           }
         >
-          Dự án
+          {tr.sidebar.projects}
         </SectionLabel>
 
         <nav className={`flex flex-col gap-0.5 ${collapsed ? "px-1.5" : "px-2.5"}`} aria-label="Dự án">
@@ -188,7 +191,7 @@ export function Sidebar({
                             active ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-hover"
                           }`}
                         >
-                          <span className="flex-1 truncate">{t.label}</span>
+                          <span className="flex-1 truncate">{tr.sidebar.tabs[t.slug]}</span>
                           {!!badge && <CountBadge value={badge} />}
                         </Link>
                       );
@@ -214,19 +217,20 @@ export function Sidebar({
 
         <SectionLabel hidden={collapsed}>Workspace</SectionLabel>
         <nav className={`flex flex-col gap-0.5 ${collapsed ? "px-1.5" : "px-2.5"}`} aria-label="Workspace">
-          <SidebarNavItem {...nav("/initiatives")} hue={NAV_HUE.initiatives} icon={<IconBulb />} label="Sáng kiến" />
-          <SidebarNavItem {...nav("/files")} hue={NAV_HUE.files} icon={<IconFolder />} label="Tài liệu" />
-          {isManager && <SidebarNavItem {...nav("/analytics")} hue={NAV_HUE.analytics} icon={<IconChart />} label="Phân tích" />}
-          <SidebarNavItem {...nav("/settings")} hue={NAV_HUE.settings} icon={<IconUsers />} label="Thành viên & cài đặt" />
+          <SidebarNavItem {...nav("/initiatives")} hue={NAV_HUE.initiatives} icon={<IconBulb />} label={tr.sidebar.initiatives} />
+          <SidebarNavItem {...nav("/files")} hue={NAV_HUE.files} icon={<IconFolder />} label={tr.sidebar.files} />
+          {isManager && <SidebarNavItem {...nav("/analytics")} hue={NAV_HUE.analytics} icon={<IconChart />} label={tr.sidebar.analytics} />}
+          <SidebarNavItem {...nav("/settings")} hue={NAV_HUE.settings} icon={<IconUsers />} label={tr.sidebar.settings} />
         </nav>
       </div>
 
       <div className={`flex shrink-0 items-center border-t border-line px-2.5 py-2 ${collapsed ? "flex-col gap-1" : "gap-1"}`}>
         <UserMenu collapsed={collapsed} />
+        <LangToggle />
         <ThemeToggle />
         {onToggleCollapse && (
           <IconButton
-            label={collapsed ? "Mở rộng thanh bên" : "Thu gọn thanh bên"}
+            label={collapsed ? tr.sidebar.expand : tr.sidebar.collapse}
             variant="ghost"
             size="sm"
             onClick={onToggleCollapse}

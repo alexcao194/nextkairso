@@ -14,5 +14,6 @@ export const NAV_HUE = {
   initiatives: "amber",
   analytics: "pink",
   files: "blue",
+  quotes: "teal",
   settings: "green",
 } as const satisfies Record<string, Hue>;

@@ -69,6 +69,12 @@ export const postAuthFirebaseLogin = (body: S.FirebaseLoginRequest, opts?: Reque
 export const postAuthRefresh = (body: S.RefreshRequest, opts?: RequestOptions): Promise<S.TokenResponse> =>
   request<S.TokenResponse>("POST", `/v1/auth/refresh`, { body, ...opts });
 
+/** GET /v1/currencies
+ * List currencies
+ * Every supported ISO 4217 currency with its minor-unit digits */
+export const getCurrencies = (opts?: RequestOptions): Promise<S.Currency[]> =>
+  request<S.Currency[]>("GET", `/v1/currencies`, { ...opts });
+
 /** POST /v1/devices
  * Register a push device token
  * Register or refresh the caller's FCM device token for push notifications */
@@ -538,6 +544,27 @@ export interface GetWorkspaceCalendarMembersEventsQuery {
  * List work schedule and attendance for all workspace members (admin/holder only) */
 export const getWorkspaceCalendarMembersEvents = (workspaceId: string, query?: GetWorkspaceCalendarMembersEventsQuery, opts?: RequestOptions): Promise<Paged<S.MemberCalendarResponse>> =>
   request<Paged<S.MemberCalendarResponse>>("GET", `/v1/workspaces/${enc(workspaceId)}/calendar/members/events`, { query, ...opts });
+
+/** GET /v1/workspaces/{workspaceId}/customers
+ * List customers */
+export const getWorkspaceCustomers = (workspaceId: string, opts?: RequestOptions): Promise<S.CustomerResponse[]> =>
+  request<S.CustomerResponse[]>("GET", `/v1/workspaces/${enc(workspaceId)}/customers`, { ...opts });
+
+/** POST /v1/workspaces/{workspaceId}/customers
+ * Create customer */
+export const postWorkspaceCustomers = (workspaceId: string, body: S.CustomerRequest, opts?: RequestOptions): Promise<S.CustomerResponse> =>
+  request<S.CustomerResponse>("POST", `/v1/workspaces/${enc(workspaceId)}/customers`, { body, ...opts });
+
+/** PUT /v1/workspaces/{workspaceId}/customers/{customerId}
+ * Update customer */
+export const putWorkspaceCustomer = (workspaceId: string, customerId: string, body: S.CustomerRequest, opts?: RequestOptions): Promise<S.CustomerResponse> =>
+  request<S.CustomerResponse>("PUT", `/v1/workspaces/${enc(workspaceId)}/customers/${enc(customerId)}`, { body, ...opts });
+
+/** DELETE /v1/workspaces/{workspaceId}/customers/{customerId}
+ * Delete customer
+ * Quotes keep their customer snapshot; drafts lose the link */
+export const deleteWorkspaceCustomer = (workspaceId: string, customerId: string, opts?: RequestOptions): Promise<void> =>
+  request<void>("DELETE", `/v1/workspaces/${enc(workspaceId)}/customers/${enc(customerId)}`, { ...opts });
 
 export interface GetWorkspaceDailyReportsQuery {
   /** Filter by member ID */
@@ -1215,6 +1242,69 @@ export const getWorkspaceProjectTasks = (workspaceId: string, projectId: string,
  * Create Task */
 export const postWorkspaceProjectTasks = (workspaceId: string, projectId: string, body: S.CreateTaskRequest, opts?: RequestOptions): Promise<S.TaskResponse> =>
   request<S.TaskResponse>("POST", `/v1/workspaces/${enc(workspaceId)}/projects/${enc(projectId)}/tasks`, { body, ...opts });
+
+/** GET /v1/workspaces/{workspaceId}/quote-settings
+ * Get quote settings */
+export const getWorkspaceQuoteSettings = (workspaceId: string, opts?: RequestOptions): Promise<S.QuoteSettingsResponse> =>
+  request<S.QuoteSettingsResponse>("GET", `/v1/workspaces/${enc(workspaceId)}/quote-settings`, { ...opts });
+
+/** PUT /v1/workspaces/{workspaceId}/quote-settings
+ * Update quote settings */
+export const putWorkspaceQuoteSettings = (workspaceId: string, body: S.QuoteSettingsRequest, opts?: RequestOptions): Promise<S.QuoteSettingsResponse> =>
+  request<S.QuoteSettingsResponse>("PUT", `/v1/workspaces/${enc(workspaceId)}/quote-settings`, { body, ...opts });
+
+export interface GetWorkspaceQuotesQuery {
+  /** Filter by module */
+  moduleId?: string;
+  /** Filter by project */
+  projectId?: string;
+  /** Filter by stored status */
+  status?: string;
+  limit?: number;
+  page?: number;
+}
+/** GET /v1/workspaces/{workspaceId}/quotes
+ * List quotes */
+export const getWorkspaceQuotes = (workspaceId: string, query?: GetWorkspaceQuotesQuery, opts?: RequestOptions): Promise<Paged<S.QuoteSummaryResponse>> =>
+  request<Paged<S.QuoteSummaryResponse>>("GET", `/v1/workspaces/${enc(workspaceId)}/quotes`, { query, ...opts });
+
+/** POST /v1/workspaces/{workspaceId}/quotes
+ * Create a draft quote for a module */
+export const postWorkspaceQuotes = (workspaceId: string, body: S.CreateQuoteRequest, opts?: RequestOptions): Promise<S.QuoteResponse> =>
+  request<S.QuoteResponse>("POST", `/v1/workspaces/${enc(workspaceId)}/quotes`, { body, ...opts });
+
+/** GET /v1/workspaces/{workspaceId}/quotes/{quoteId}
+ * Get quote */
+export const getWorkspaceQuote = (workspaceId: string, quoteId: string, opts?: RequestOptions): Promise<S.QuoteResponse> =>
+  request<S.QuoteResponse>("GET", `/v1/workspaces/${enc(workspaceId)}/quotes/${enc(quoteId)}`, { ...opts });
+
+/** PUT /v1/workspaces/{workspaceId}/quotes/{quoteId}
+ * Update a draft quote
+ * Replaces the header and all lines; totals are recomputed server-side */
+export const putWorkspaceQuote = (workspaceId: string, quoteId: string, body: S.UpdateQuoteRequest, opts?: RequestOptions): Promise<S.QuoteResponse> =>
+  request<S.QuoteResponse>("PUT", `/v1/workspaces/${enc(workspaceId)}/quotes/${enc(quoteId)}`, { body, ...opts });
+
+/** DELETE /v1/workspaces/{workspaceId}/quotes/{quoteId}
+ * Delete a draft quote */
+export const deleteWorkspaceQuote = (workspaceId: string, quoteId: string, opts?: RequestOptions): Promise<void> =>
+  request<void>("DELETE", `/v1/workspaces/${enc(workspaceId)}/quotes/${enc(quoteId)}`, { ...opts });
+
+/** POST /v1/workspaces/{workspaceId}/quotes/{quoteId}/duplicate
+ * Duplicate a quote as a new draft */
+export const postWorkspaceQuoteDuplicate = (workspaceId: string, quoteId: string, opts?: RequestOptions): Promise<S.QuoteResponse> =>
+  request<S.QuoteResponse>("POST", `/v1/workspaces/${enc(workspaceId)}/quotes/${enc(quoteId)}/duplicate`, { ...opts });
+
+/** POST /v1/workspaces/{workspaceId}/quotes/{quoteId}/send
+ * Send a quote
+ * Locks the draft and snapshots customer + issuer details */
+export const postWorkspaceQuoteSend = (workspaceId: string, quoteId: string, opts?: RequestOptions): Promise<S.QuoteResponse> =>
+  request<S.QuoteResponse>("POST", `/v1/workspaces/${enc(workspaceId)}/quotes/${enc(quoteId)}/send`, { ...opts });
+
+/** POST /v1/workspaces/{workspaceId}/quotes/{quoteId}/status
+ * Set quote status
+ * accepted/rejected (from sent) or cancelled (from draft/sent) */
+export const postWorkspaceQuoteStatus = (workspaceId: string, quoteId: string, body: S.SetQuoteStatusRequest, opts?: RequestOptions): Promise<S.QuoteResponse> =>
+  request<S.QuoteResponse>("POST", `/v1/workspaces/${enc(workspaceId)}/quotes/${enc(quoteId)}/status`, { body, ...opts });
 
 export interface GetWorkspaceTaskStatisticsQuery {
   /** Member id, holder/admin only */

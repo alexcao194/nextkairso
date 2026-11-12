@@ -340,6 +340,11 @@ export interface CreateProjectRequest {
   name: string;
 }
 
+export interface CreateQuoteRequest {
+  customerId?: string;
+  moduleId: string;
+}
+
 export interface CreateTaskAttachmentRequest {
   contentType?: string;
   fileName: string;
@@ -406,10 +411,38 @@ export interface CreateWorkspaceRequest {
   name: string;
 }
 
+export interface Currency {
+  code?: string;
+  minorUnits?: number;
+}
+
 export interface CustomerKPIDetail {
   kpi: number;
   rawEstimate: number;
   score: number;
+}
+
+export interface CustomerRequest {
+  address: string;
+  contactName: string;
+  email: string;
+  name: string;
+  note: string;
+  phone: string;
+  taxCode: string;
+}
+
+export interface CustomerResponse {
+  address: string;
+  contactName: string;
+  createdAt: string;
+  email: string;
+  id: string;
+  name: string;
+  note: string;
+  phone: string;
+  taxCode: string;
+  updatedAt: string;
 }
 
 export interface DailyReportResponse {
@@ -818,6 +851,19 @@ export interface NotificationResponse {
 
 export type ParticipantKind = "user" | "group";
 
+export interface PartyInfo {
+  address: string;
+  bankInfo?: string;
+  contactName?: string;
+  email: string;
+  logoUrl?: string;
+  name: string;
+  phone: string;
+  signatureUrl?: string;
+  taxCode: string;
+  website?: string;
+}
+
 export interface PresignUploadRequest {
   contentType: string;
   filename: string;
@@ -1026,6 +1072,124 @@ export interface QualityKPIDetail {
   totalWorkerEstimation: number;
 }
 
+export interface QuoteEventResponse {
+  actorName: string;
+  createdAt: string;
+  note: string;
+  type: string;
+}
+
+export interface QuoteItemRequest {
+  description: string;
+  discountPercent: number;
+  name: string;
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+}
+
+export interface QuoteItemResponse {
+  description: string;
+  discountPercent: number;
+  id: string;
+  lineTotal: number;
+  name: string;
+  position: number;
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+}
+
+export interface QuoteResponse {
+  amountInWords: string;
+  createdAt: string;
+  currency: string;
+  customer: PartyInfo;
+  customerId?: string;
+  decidedAt?: string;
+  discountAmount: number;
+  discountPercent: number;
+  discountTotal: number;
+  discountType: string;
+  editable: boolean;
+  events: QuoteEventResponse[];
+  grandTotal: number;
+  id: string;
+  issueDate: string;
+  issuer: PartyInfo;
+  items: QuoteItemResponse[];
+  language: string;
+  minorUnits: number;
+  moduleId: string;
+  moduleName: string;
+  notes: string;
+  number: string;
+  projectId: string;
+  projectName: string;
+  sentAt?: string;
+  status: string;
+  subtotal: number;
+  taxTotal: number;
+  terms: string;
+  title: string;
+  updatedAt: string;
+  validUntil?: string;
+  vatRate: number;
+}
+
+export interface QuoteSettingsRequest {
+  address: string;
+  bankInfo: string;
+  companyName: string;
+  defaultCurrency: string;
+  defaultTerms: string;
+  defaultValidDays: number;
+  defaultVatRate: number;
+  email: string;
+  logoUrl: string;
+  numberPrefix: string;
+  phone: string;
+  signatureUrl: string;
+  taxCode: string;
+  website: string;
+}
+
+export interface QuoteSettingsResponse {
+  address: string;
+  bankInfo: string;
+  companyName: string;
+  defaultCurrency: string;
+  defaultTerms: string;
+  defaultValidDays: number;
+  defaultVatRate: number;
+  email: string;
+  logoUrl: string;
+  numberPrefix: string;
+  phone: string;
+  signatureUrl: string;
+  taxCode: string;
+  website: string;
+}
+
+export interface QuoteSummaryResponse {
+  createdAt: string;
+  currency: string;
+  customerName: string;
+  grandTotal: number;
+  id: string;
+  issueDate: string;
+  minorUnits: number;
+  moduleId: string;
+  moduleName: string;
+  number: string;
+  projectId: string;
+  projectName: string;
+  sentAt?: string;
+  status: string;
+  title: string;
+  validUntil?: string;
+}
+
 export interface ReadNotificationsRequest {
   ids: string[];
 }
@@ -1045,6 +1209,10 @@ export interface SetAttitudeRequest {
   memberId: string;
   month: string;
   score: number;
+}
+
+export interface SetQuoteStatusRequest {
+  status: string;
 }
 
 export type SprintStatus = "planned" | "active" | "completed";
@@ -1418,6 +1586,22 @@ export interface UpdateProjectNoteRequest {
 export interface UpdateProjectRequest {
   avatar?: string;
   name?: string;
+}
+
+export interface UpdateQuoteRequest {
+  currency: string;
+  customerId?: string;
+  discountAmount: number;
+  discountPercent: number;
+  discountType: string;
+  issueDate: string;
+  items: QuoteItemRequest[];
+  language: string;
+  notes: string;
+  terms: string;
+  title: string;
+  validUntil: string;
+  vatRate: number;
 }
 
 export interface UpdateTaskCommentRequest {

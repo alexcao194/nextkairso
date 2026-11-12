@@ -21,8 +21,9 @@ import { core } from "./messages/core";
 import { home } from "./messages/home";
 import { ui } from "./messages/ui";
 import { domain } from "./messages/domain";
+import { quotes } from "./messages/quotes";
 
-const modules = [core, home, ui, domain, authPages, dialogs, calendar1, calendar2, project1, project2, tasks, meetings, settings, pages, stats, files, analytics, analytics2] as const;
+const modules = [core, home, ui, domain, authPages, dialogs, calendar1, calendar2, project1, project2, tasks, meetings, settings, pages, stats, files, analytics, analytics2, quotes] as const;
 
 type Merge<M extends readonly { vi: object }[]> = M extends readonly [infer H extends { vi: object }, ...infer R extends readonly { vi: object }[]]
   ? H["vi"] & Merge<R>

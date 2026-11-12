@@ -11,6 +11,7 @@ import {
   IconChat,
   IconCheckSquare,
   IconChevronDown,
+  IconFile,
   IconFolder,
   IconChevronRight,
   IconHome,
@@ -211,6 +212,7 @@ export function Sidebar({
         <nav className={`flex flex-col gap-0.5 ${collapsed ? "px-1.5" : "px-2.5"}`} aria-label="Workspace">
           <SidebarNavItem {...nav("/initiatives")} hue={NAV_HUE.initiatives} icon={<IconBulb />} label={tr.sidebar.initiatives} />
           <SidebarNavItem {...nav("/files")} hue={NAV_HUE.files} icon={<IconFolder />} label={tr.sidebar.files} />
+          <SidebarNavItem {...nav("/quotes")} hue={NAV_HUE.quotes} icon={<IconFile />} label={tr.quotes.title} />
           {isManager && <SidebarNavItem {...nav("/analytics")} hue={NAV_HUE.analytics} icon={<IconChart />} label={tr.sidebar.analytics} />}
           <SidebarNavItem {...nav("/settings")} hue={NAV_HUE.settings} icon={<IconUsers />} label={tr.sidebar.settings} />
         </nav>

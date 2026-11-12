@@ -3,6 +3,8 @@
 // must mirror it (enforced by defineMessages). Access via useT() in components
 // or tr() in non-React code.
 import { getLang } from "./state";
+import { analytics2 } from "./messages/analytics2";
+import { analytics } from "./messages/analytics";
 import { files } from "./messages/files";
 import { stats } from "./messages/stats";
 import { pages } from "./messages/pages";
@@ -20,7 +22,7 @@ import { home } from "./messages/home";
 import { ui } from "./messages/ui";
 import { domain } from "./messages/domain";
 
-const modules = [core, home, ui, domain, authPages, dialogs, calendar1, calendar2, project1, project2, tasks, meetings, settings, pages, stats, files] as const;
+const modules = [core, home, ui, domain, authPages, dialogs, calendar1, calendar2, project1, project2, tasks, meetings, settings, pages, stats, files, analytics, analytics2] as const;
 
 type Merge<M extends readonly { vi: object }[]> = M extends readonly [infer H extends { vi: object }, ...infer R extends readonly { vi: object }[]]
   ? H["vi"] & Merge<R>

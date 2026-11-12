@@ -3,6 +3,8 @@ import { defineMessages } from "../define";
 export const ui = defineMessages({
   vi: {
     ui: {
+      imagePlaceholder: "[Ảnh]",
+      loadMore: "Tải thêm",
       loading: "Đang tải",
       loadFailed: "Không tải được dữ liệu",
       loadFailedMsg: "Không tải được dữ liệu.",
@@ -98,6 +100,8 @@ export const ui = defineMessages({
   },
   en: {
     ui: {
+      imagePlaceholder: "[Image]",
+      loadMore: "Load more",
       loading: "Loading",
       loadFailed: "Couldn't load data",
       loadFailedMsg: "Couldn't load data.",

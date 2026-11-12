@@ -27,6 +27,8 @@ import { StatusChip } from "@/components/kairso/StatusChip";
 import { TopBar, TopBarSpacer } from "@/components/shell/TopBar";
 import { Breadcrumb } from "@/components/shell/Breadcrumb";
 import { IconChart } from "@/components/icons";
+import { tr } from "@/lib/i18n";
+import { monthKeyTitle, shortMonth } from "@/lib/domain/format";
 
 const months = () => Array.from({ length: 12 }, (_, i) => monthKey(new Date(new Date().getFullYear(), new Date().getMonth() - i, 1)));
 const r1 = (n: number) => Math.round(n * 10) / 10;
@@ -56,7 +58,7 @@ export default function MemberDetailPage({ params }: { params: Promise<{ memberI
   });
 
   const member = memberById(memberId);
-  const name = k?.memberName ?? member?.userName ?? "Nhân viên";
+  const name = k?.memberName ?? member?.userName ?? tr().memberStats.employee;
   const avatar = k?.memberAvatar ?? member?.userAvatar;
   const totals = stats.data?.totals;
 
@@ -72,22 +74,22 @@ export default function MemberDetailPage({ params }: { params: Promise<{ memberI
 
   const kpiRows = k
     ? [
-        { key: "progress", label: "Tiến độ", value: r1(k.progress.kpi) },
-        { key: "quality", label: "Chất lượng", value: r1(k.quality.kpi) },
-        { key: "punctuality", label: "Đúng giờ", value: r1(k.punctuality.kpi) },
-        { key: "attitude", label: "Thái độ", value: r1(k.attitude.kpi) },
-        { key: "initiative", label: "Sáng kiến", value: r1(k.initiative.kpi) },
-        { key: "customer", label: "Khách hàng", value: r1(k.customer.kpi) },
+        { key: "progress", label: tr().memberStats.progress, value: r1(k.progress.kpi) },
+        { key: "quality", label: tr().memberStats.quality, value: r1(k.quality.kpi) },
+        { key: "punctuality", label: tr().memberStats.punctuality, value: r1(k.punctuality.kpi) },
+        { key: "attitude", label: tr().memberStats.attitude, value: r1(k.attitude.kpi) },
+        { key: "initiative", label: tr().memberStats.initiative, value: r1(k.initiative.kpi) },
+        { key: "customer", label: tr().memberStats.customer, value: r1(k.customer.kpi) },
       ]
     : [];
 
   return (
     <>
       <TopBar>
-        <Breadcrumb items={[{ label: "Phân tích", href: "/analytics?tab=members" }, { label: name }]} />
+        <Breadcrumb items={[{ label: tr().memberStats.analytics, href: "/analytics?tab=members" }, { label: name }]} />
         <TopBarSpacer />
-        <Select small aria-label="Tháng" className="w-40" value={month} onChange={(e) => setMonth(e.target.value)}>
-          {months().map((m) => <option key={m} value={m}>Tháng {m.slice(5)}/{m.slice(0, 4)}</option>)}
+        <Select small aria-label={tr().memberStats.month} className="w-40" value={month} onChange={(e) => setMonth(e.target.value)}>
+          {months().map((m) => <option key={m} value={m}>{monthKeyTitle(m)}</option>)}
         </Select>
       </TopBar>
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -97,58 +99,58 @@ export default function MemberDetailPage({ params }: { params: Promise<{ memberI
             <Avatar person={{ id: memberId, name, avatar }} size="lg" />
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-[16px] font-semibold">{name}</h1>
-              <p className="text-[12.5px] text-ink-muted">Chi tiết công việc tháng {month.slice(5)}/{month.slice(0, 4)}</p>
+              <p className="text-[12.5px] text-ink-muted">{tr().memberStats.detailOf(monthKeyTitle(month))}</p>
             </div>
-            {k && <div className="text-right"><div className="font-mono text-[22px] font-bold text-ink">{r1(k.totalKpi)}%</div><div className="text-[11.5px] text-ink-faint">Tổng KPI</div></div>}
+            {k && <div className="text-right"><div className="font-mono text-[22px] font-bold text-ink">{r1(k.totalKpi)}%</div><div className="text-[11.5px] text-ink-faint">{tr().memberStats.totalKpi}</div></div>}
           </div>
 
           {/* Biểu đồ */}
           <div className="grid grid-cols-3 gap-5 max-lg:grid-cols-1">
-            <Card title="KPI theo thành phần">
-              {kpiList.isLoading ? <Skeleton className="h-36" /> : kpiRows.length ? <BarList label="KPI theo thành phần" rows={kpiRows} unit="%" /> : <EmptyState title="Chưa có KPI" className="py-8" />}
+            <Card title={tr().memberStats.byComponent}>
+              {kpiList.isLoading ? <Skeleton className="h-36" /> : kpiRows.length ? <BarList label={tr().memberStats.byComponent} rows={kpiRows} unit="%" /> : <EmptyState title={tr().memberStats.noKpi} className="py-8" />}
             </Card>
-            <Card title="Phân bố trạng thái task">
-              {totals ? <StackedBar label="Phân bố trạng thái" segments={statusSegments(totals)} height={12} /> : <EmptyState title="Chưa có task" className="py-8" />}
+            <Card title={tr().memberStats.taskStatusDist}>
+              {totals ? <StackedBar label={tr().memberStats.statusDist} segments={statusSegments(totals)} height={12} /> : <EmptyState title={tr().memberStats.noTasks} className="py-8" />}
             </Card>
-            <Card title="Phân bố độ ưu tiên">
-              {totals ? <StackedBar label="Phân bố độ ưu tiên" segments={prioritySegments(totals)} height={12} /> : <EmptyState title="Chưa có task" className="py-8" />}
+            <Card title={tr().memberStats.priorityDist}>
+              {totals ? <StackedBar label={tr().memberStats.priorityDist} segments={prioritySegments(totals)} height={12} /> : <EmptyState title={tr().memberStats.noTasks} className="py-8" />}
             </Card>
           </div>
-          <Card title="Xu hướng KPI 6 tháng">
+          <Card title={tr().memberStats.trend6}>
             <LineChart
-              title="Xu hướng KPI"
+              title={tr().memberStats.trend}
               unit="%"
-              labels={trendMonths.map((m) => m.slice(5))}
-              series={[{ key: "kpi", label: "Tổng KPI", color: "var(--chart-1)", points: trend.map((q) => r1(q.data?.find((x) => x.memberId === memberId)?.totalKpi ?? 0)) }]}
+              labels={trendMonths.map((m) => shortMonth(m))}
+              series={[{ key: "kpi", label: tr().memberStats.totalKpi, color: "var(--chart-1)", points: trend.map((q) => r1(q.data?.find((x) => x.memberId === memberId)?.totalKpi ?? 0)) }]}
             />
           </Card>
 
           {/* Danh sách lỗi/đóng góp trong tháng */}
           <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
-            <TaskListCard title="Task bug (chịu lỗi)" tone="danger" tasks={breakdown.data?.bugTasks} loading={breakdown.isLoading} empty="Không có task bug nào." />
-            <TaskListCard title="Task đang quá hạn (chưa xong)" tone="danger" tasks={breakdown.data?.overdueTasks} loading={breakdown.isLoading} empty="Không có task nào đang quá hạn." showDue />
-            <TaskListCard title="Task hoàn thành trễ" tone="warning" tasks={breakdown.data?.completedLateTasks} loading={breakdown.isLoading} empty="Không có task nào hoàn thành trễ." showDue />
-            <TaskListCard title="Task bị trả lại (rework)" tone="warning" tasks={breakdown.data?.reworkTasks} loading={breakdown.isLoading} empty="Không có task nào bị trả lại." showReturn />
+            <TaskListCard title={tr().memberStats.bugTasks} tone="danger" tasks={breakdown.data?.bugTasks} loading={breakdown.isLoading} empty={tr().memberStats.noBugs} />
+            <TaskListCard title={tr().memberStats.overdueTasks} tone="danger" tasks={breakdown.data?.overdueTasks} loading={breakdown.isLoading} empty={tr().memberStats.noOverdue} showDue />
+            <TaskListCard title={tr().memberStats.lateTasks} tone="warning" tasks={breakdown.data?.completedLateTasks} loading={breakdown.isLoading} empty={tr().memberStats.noLate} showDue />
+            <TaskListCard title={tr().memberStats.reworkTasks} tone="warning" tasks={breakdown.data?.reworkTasks} loading={breakdown.isLoading} empty={tr().memberStats.noRework} showReturn />
           </div>
 
           {/* Chấm công + sáng kiến + phản hồi */}
           <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
-            <Card title={`Đi muộn / về sớm (${attnDays.length} ngày)`}>
-              {calendar.isLoading ? <Skeleton className="h-16" /> : attnDays.length === 0 ? <EmptyState title="Không có ngày đi muộn/về sớm." className="py-6" /> : (
+            <Card title={tr().memberStats.attnTitle(attnDays.length)}>
+              {calendar.isLoading ? <Skeleton className="h-16" /> : attnDays.length === 0 ? <EmptyState title={tr().memberStats.noAttn} className="py-6" /> : (
                 <ul className="flex flex-col gap-1.5 text-[13px]">
                   {attnDays.map((d) => (
                     <li key={d.key} className="flex items-center gap-2">
                       <span className="font-mono text-[12px] text-ink-2">{fmtDate(d.key)}</span>
-                      {d.late && <Badge tone="warning">Đi muộn</Badge>}
-                      {d.early && <Badge tone="warning">Về sớm</Badge>}
+                      {d.late && <Badge tone="warning">{tr().memberStats.late}</Badge>}
+                      {d.early && <Badge tone="warning">{tr().memberStats.early}</Badge>}
                       <span className="ml-auto font-mono text-[11.5px] text-ink-faint">{r1(d.hours)}h</span>
                     </li>
                   ))}
                 </ul>
               )}
             </Card>
-            <Card title={`Log đi muộn thủ công (${rec?.lateLogs?.length ?? 0})`}>
-              {records.isLoading ? <Skeleton className="h-16" /> : !(rec?.lateLogs?.length) ? <EmptyState title="Không có log đi muộn." className="py-6" /> : (
+            <Card title={tr().memberStats.lateLogsTitle(rec?.lateLogs?.length ?? 0)}>
+              {records.isLoading ? <Skeleton className="h-16" /> : !(rec?.lateLogs?.length) ? <EmptyState title={tr().memberStats.noLateLogs} className="py-6" /> : (
                 <ul className="flex flex-col gap-1.5 text-[13px]">
                   {rec!.lateLogs.map((l) => (
                     <li key={l.id} className="flex items-center gap-2">
@@ -160,8 +162,8 @@ export default function MemberDetailPage({ params }: { params: Promise<{ memberI
                 </ul>
               )}
             </Card>
-            <Card title={`Sáng kiến (${rec?.initiatives?.length ?? 0})`}>
-              {records.isLoading ? <Skeleton className="h-16" /> : !(rec?.initiatives?.length) ? <EmptyState title="Không có sáng kiến." className="py-6" /> : (
+            <Card title={tr().memberStats.initiativesTitle(rec?.initiatives?.length ?? 0)}>
+              {records.isLoading ? <Skeleton className="h-16" /> : !(rec?.initiatives?.length) ? <EmptyState title={tr().memberStats.noInitiatives} className="py-6" /> : (
                 <ul className="flex flex-col gap-1.5 text-[13px]">
                   {rec!.initiatives.map((it) => (
                     <li key={it.id} className="flex items-center gap-2">
@@ -172,8 +174,8 @@ export default function MemberDetailPage({ params }: { params: Promise<{ memberI
                 </ul>
               )}
             </Card>
-            <Card title={`Phản hồi khách hàng (${rec?.feedbacks?.length ?? 0})`}>
-              {records.isLoading ? <Skeleton className="h-16" /> : !(rec?.feedbacks?.length) ? <EmptyState title="Không có phản hồi." className="py-6" /> : (
+            <Card title={tr().memberStats.feedbackTitle(rec?.feedbacks?.length ?? 0)}>
+              {records.isLoading ? <Skeleton className="h-16" /> : !(rec?.feedbacks?.length) ? <EmptyState title={tr().memberStats.noFeedback} className="py-6" /> : (
                 <ul className="flex flex-col gap-1.5 text-[13px]">
                   {rec!.feedbacks.map((f) => (
                     <li key={f.id} className="flex items-center gap-2">

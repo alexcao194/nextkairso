@@ -30,6 +30,8 @@ import { statusSegments } from "@/components/charts/statusSegments";
 import { prioritySegments } from "@/components/charts/prioritySegments";
 import { histogram, workloadBalance } from "@/lib/domain/analytics";
 import { IconChart, IconDownload } from "@/components/icons";
+import { tr } from "@/lib/i18n";
+import { monthKeyTitle, shortMonth } from "@/lib/domain/format";
 
 const months = () => Array.from({ length: 12 }, (_, i) => monthKey(new Date(new Date().getFullYear(), new Date().getMonth() - i, 1)));
 const r1 = (n: number) => Math.round(n * 10) / 10;
@@ -41,10 +43,10 @@ export default function AnalyticsPage() {
   const t = isManager ? (["workspace", "members", "projects"].includes(tab) ? tab : "workspace") : "mine";
   return (
     <>
-      <TopBar><Breadcrumb items={[{ label: "Phân tích" }]} /><TopBarSpacer />
-        <Select small aria-label="Tháng" className="w-40" value={month} onChange={(e) => setMonth(e.target.value)}>{months().map((m) => <option key={m} value={m}>Tháng {m.slice(5)}/{m.slice(0, 4)}</option>)}</Select>
+      <TopBar><Breadcrumb items={[{ label: tr().analytics.title }]} /><TopBarSpacer />
+        <Select small aria-label={tr().analytics.month} className="w-40" value={month} onChange={(e) => setMonth(e.target.value)}>{months().map((m) => <option key={m} value={m}>{monthKeyTitle(m)}</option>)}</Select>
       </TopBar>
-      <Tabs label="Phân tích" value={t} onChange={setTab} className="bg-surface px-3" tabs={isManager ? [{ value: "workspace", label: "Workspace" }, { value: "members", label: "Thành viên" }, { value: "projects", label: "Dự án" }] : [{ value: "mine", label: "Của tôi" }]} />
+      <Tabs label={tr().analytics.title} value={t} onChange={setTab} className="bg-surface px-3" tabs={isManager ? [{ value: "workspace", label: "Workspace" }, { value: "members", label: tr().analytics.members }, { value: "projects", label: tr().analytics.projects }] : [{ value: "mine", label: tr().analytics.mine }]} />
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-5 p-5 max-sm:p-3">
           {t === "mine" && <Mine month={month} />}
@@ -64,13 +66,13 @@ const Card = ({ title, children }: { title: string; children: React.ReactNode })
 function KpiBreakdown({ k }: { k: KPIMemberResponse }) {
   return (
     <MetricStrip metrics={[
-      { label: "Tổng KPI", value: `${r1(k.totalKpi)}%` },
-      { label: "Tiến độ", value: r1(k.progress.kpi), hint: `trễ ${Math.round(k.progress.lateRatio * 100)}%` },
-      { label: "Chất lượng", value: r1(k.quality.kpi), hint: `sạch ${Math.round(k.quality.ratio * 100)}%` },
-      { label: "Đúng giờ", value: r1(k.punctuality.kpi), hint: `−${r1(k.punctuality.deduction)}` },
-      { label: "Thái độ", value: r1(k.attitude.kpi) },
-      { label: "Sáng kiến", value: r1(k.initiative.kpi) },
-      { label: "Khách hàng", value: r1(k.customer.kpi) },
+      { label: tr().analytics.totalKpi, value: `${r1(k.totalKpi)}%` },
+      { label: tr().analytics.progress, value: r1(k.progress.kpi), hint: tr().analytics.lateHint(Math.round(k.progress.lateRatio * 100)) },
+      { label: tr().analytics.quality, value: r1(k.quality.kpi), hint: tr().analytics.cleanHint(Math.round(k.quality.ratio * 100)) },
+      { label: tr().analytics.punctuality, value: r1(k.punctuality.kpi), hint: `−${r1(k.punctuality.deduction)}` },
+      { label: tr().analytics.attitude, value: r1(k.attitude.kpi) },
+      { label: tr().analytics.initiative, value: r1(k.initiative.kpi) },
+      { label: tr().analytics.customer, value: r1(k.customer.kpi) },
     ]} />
   );
 }
@@ -83,12 +85,12 @@ function Mine({ month }: { month: string }) {
     <>
       {kpi.isLoading ? <Skeleton className="h-[58px]" /> : kpi.isError ? <ErrorState error={kpi.error} onRetry={() => kpi.refetch()} /> : kpi.data && <KpiBreakdown k={kpi.data} />}
       {kpi.data && (
-        <div><Link href={`/analytics/members/${kpi.data.memberId}?month=${month}`} className="text-[12.5px] font-medium text-accent-ink hover:underline">Xem chi tiết công việc tháng (task bug / trễ / rework / đi muộn…) →</Link></div>
+        <div><Link href={`/analytics/members/${kpi.data.memberId}?month=${month}`} className="text-[12.5px] font-medium text-accent-ink hover:underline">{tr().analytics.details}</Link></div>
       )}
       {stats.data && (
         <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
-          <Card title="Task của tôi theo trạng thái"><StackedBar label="Task của tôi" segments={statusSegments(stats.data)} height={12} /></Card>
-          <Card title="Task của tôi theo độ ưu tiên"><StackedBar label="Task của tôi theo độ ưu tiên" segments={prioritySegments(stats.data)} height={12} /></Card>
+          <Card title={tr().analytics.myByStatus}><StackedBar label={tr().analytics.myTasks} segments={statusSegments(stats.data)} height={12} /></Card>
+          <Card title={tr().analytics.myByPriority}><StackedBar label={tr().analytics.myByPriority} segments={prioritySegments(stats.data)} height={12} /></Card>
         </div>
       )}
     </>
@@ -108,36 +110,35 @@ function WorkspaceTab({ month }: { month: string }) {
   return (
     <>
       <MetricStrip metrics={[
-        { label: "Tổng task", value: t?.totalTasks ?? "—" },
-        { label: "Hoàn thành", value: t?.done ?? "—" },
-        { label: "Quá hạn", value: t?.totalOverdue ?? "—", tone: (t?.totalOverdue ?? 0) > 0 ? "danger" : "default" },
-        { label: "Cycle time TB", value: t && t.cycleTimeSampleSize > 0 ? r1(t.avgCycleDays) : "—", hint: t && t.cycleTimeSampleSize > 0 ? "ngày" : undefined },
-        { label: "Giờ làm", value: a ? r1(a.attendanceHours) : "—", hint: "h" },
-        { label: "Ngày đi muộn", value: a?.lateDays ?? "—" },
+        { label: tr().analytics.totalTasks, value: t?.totalTasks ?? "—" },
+        { label: tr().analytics.done, value: t?.done ?? "—" },
+        { label: tr().analytics.overdue, value: t?.totalOverdue ?? "—", tone: (t?.totalOverdue ?? 0) > 0 ? "danger" : "default" },
+        { label: tr().analytics.avgCycle, value: t && t.cycleTimeSampleSize > 0 ? r1(t.avgCycleDays) : "—", hint: t && t.cycleTimeSampleSize > 0 ? tr().analytics.days : undefined },
+        { label: tr().analytics.hours, value: a ? r1(a.attendanceHours) : "—", hint: "h" },
+        { label: tr().analytics.lateDays, value: a?.lateDays ?? "—" },
       ]} />
       <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
-        {t && <Card title="Phân bố trạng thái task"><StackedBar label="Phân bố trạng thái" segments={statusSegments(t)} height={12} /></Card>}
-        {t && <Card title="Phân bố độ ưu tiên"><StackedBar label="Phân bố độ ưu tiên" segments={prioritySegments(t)} height={12} /></Card>}
+        {t && <Card title={tr().analytics.taskStatusDist}><StackedBar label={tr().analytics.statusDist} segments={statusSegments(t)} height={12} /></Card>}
+        {t && <Card title={tr().analytics.priorityDist}><StackedBar label={tr().analytics.priorityDist} segments={prioritySegments(t)} height={12} /></Card>}
       </div>
-      <Card title="Xu hướng 6 tháng gần đây">
+      <Card title={tr().analytics.trend}>
         <WorkspaceTrend />
       </Card>
       <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
-        <Card title="KPI theo thành viên">
-          {kpi.isLoading ? <Skeleton className="h-40" /> : kpi.isError ? <ErrorState error={kpi.error} onRetry={() => kpi.refetch()} /> : list.length === 0 ? <EmptyState icon={<IconChart size={26} />} title="Chưa có dữ liệu KPI" className="py-8" /> : (
+        <Card title={tr().analytics.kpiByMember}>
+          {kpi.isLoading ? <Skeleton className="h-40" /> : kpi.isError ? <ErrorState error={kpi.error} onRetry={() => kpi.refetch()} /> : list.length === 0 ? <EmptyState icon={<IconChart size={26} />} title={tr().analytics.noKpi} className="py-8" /> : (
             <div className="flex flex-col gap-3">
-              <BarList label="KPI tổng theo thành viên" unit="%" rows={kpiRows} />
+              <BarList label={tr().analytics.totalKpiByMember} unit="%" rows={kpiRows} />
               {kpiBalance && (
                 <p className="border-t border-line pt-2 text-[12px] text-ink-muted">
-                  Trung bình <b className="font-mono text-ink">{r1(kpiBalance.mean)}%</b> · độ lệch chuẩn <b className="font-mono text-ink">{r1(kpiBalance.stdDev)}</b> · CV <b className="font-mono text-ink">{Math.round(kpiBalance.cv * 100)}%</b>
-                  {" "}({kpiBalance.cv < 0.1 ? "hiệu suất khá đồng đều giữa các thành viên" : kpiBalance.cv < 0.25 ? "chênh lệch vừa phải" : "chênh lệch lớn giữa các thành viên"}).
+                  {tr().analytics.balance(String(r1(kpiBalance.mean)), String(r1(kpiBalance.stdDev)), Math.round(kpiBalance.cv * 100), kpiBalance.cv < 0.1 ? tr().analytics.even : kpiBalance.cv < 0.25 ? tr().analytics.moderate : tr().analytics.uneven)}
                 </p>
               )}
             </div>
           )}
         </Card>
-        <Card title="Phân bố điểm KPI">
-          {list.length === 0 ? <EmptyState icon={<IconChart size={26} />} title="Chưa có dữ liệu KPI" className="py-8" /> : (
+        <Card title={tr().analytics.kpiDist}>
+          {list.length === 0 ? <EmptyState icon={<IconChart size={26} />} title={tr().analytics.noKpi} className="py-8" /> : (
             <KpiHistogram values={list.map((k) => k.totalKpi)} />
           )}
         </Card>
@@ -153,7 +154,7 @@ function KpiHistogram({ values }: { values: number[] }) {
   const counts = histogram(values, KPI_BUCKET_EDGES);
   return (
     <BarList
-      label="Phân bố điểm KPI"
+      label={tr().analytics.kpiDist}
       color="var(--chart-1)"
       rows={KPI_BUCKET_LABELS.map((label, i) => ({ key: label, label, value: counts[i] }))}
     />
@@ -166,22 +167,22 @@ function WorkspaceTrend() {
   const taskRes = useQueries({ queries: ms.map((m) => ({ queryKey: qk.stats(workspaceId, "ws-trend", { m }), queryFn: () => getWorkspaceTaskStatistics(workspaceId, { month: m }) })) });
   const attRes = useQueries({ queries: ms.map((m) => ({ queryKey: qk.attStats(workspaceId, { m, trend: true }), queryFn: () => getWorkspaceAttendanceStatistics(workspaceId, { month: m }) })) });
   if (taskRes.some((r) => r.isLoading) || attRes.some((r) => r.isLoading)) return <Skeleton className="h-40" />;
-  const labels = ms.map((m) => `T${m.slice(5)}`);
+  const labels = ms.map((m) => shortMonth(m));
   return (
     <div className="grid grid-cols-2 gap-5 max-lg:grid-cols-1">
       <LineChart
-        title="Task theo tháng"
+        title={tr().analytics.tasksByMonth}
         labels={labels}
         series={[
-          { key: "total", label: "Tổng task", color: "var(--chart-1)", points: taskRes.map((r) => r.data?.totals?.totalTasks ?? 0) },
-          { key: "done", label: "Hoàn thành", color: "var(--chart-2)", points: taskRes.map((r) => r.data?.totals?.done ?? 0) },
+          { key: "total", label: tr().analytics.totalTasks, color: "var(--chart-1)", points: taskRes.map((r) => r.data?.totals?.totalTasks ?? 0) },
+          { key: "done", label: tr().analytics.done, color: "var(--chart-2)", points: taskRes.map((r) => r.data?.totals?.done ?? 0) },
         ]}
       />
       <LineChart
-        title="Giờ làm theo tháng"
+        title={tr().analytics.hoursByMonth}
         unit="h"
         labels={labels}
-        series={[{ key: "hours", label: "Giờ làm", color: "var(--chart-1)", points: attRes.map((r) => r1(r.data?.totals?.attendanceHours ?? 0)) }]}
+        series={[{ key: "hours", label: tr().analytics.hours, color: "var(--chart-1)", points: attRes.map((r) => r1(r.data?.totals?.attendanceHours ?? 0)) }]}
       />
     </div>
   );
@@ -237,9 +238,9 @@ function MembersTab({ month }: { month: string }) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <p className="text-[12.5px] text-ink-muted">{list.length} thành viên · KPI tháng {monthLabel}</p>
+        <p className="text-[12.5px] text-ink-muted">{tr().analytics.teamHeader(list.length, monthLabel)}</p>
         <Button size="sm" loading={exporting} disabled={list.length === 0 || !settings.data} onClick={exportGroup}>
-          <IconDownload size={13} /> Xuất Excel cả nhóm
+          <IconDownload size={13} /> {tr().analytics.exportTeam}
         </Button>
       </div>
       <div className="overflow-hidden rounded-lg border border-line bg-surface">
@@ -247,21 +248,21 @@ function MembersTab({ month }: { month: string }) {
           <thead className="text-left text-[11px] font-medium uppercase tracking-wide text-ink-faint">
             <tr className="h-thead border-b border-line">
               <th className="w-9 px-2 text-center">#</th>
-              <th className="px-2">Thành viên</th>
-              <th className="px-2 text-right">Tiến độ</th>
-              <th className="px-2 text-right">Chất lượng</th>
-              <th className="px-2 text-right">Đúng giờ</th>
-              <th className="px-2 text-right">Thái độ</th>
-              <th className="px-2 text-right">Sáng kiến</th>
-              <th className="px-2 text-right">Khách hàng</th>
-              <th className="px-3 text-right">Tổng KPI</th>
+              <th className="px-2">{tr().analytics.members}</th>
+              <th className="px-2 text-right">{tr().analytics.progress}</th>
+              <th className="px-2 text-right">{tr().analytics.quality}</th>
+              <th className="px-2 text-right">{tr().analytics.punctuality}</th>
+              <th className="px-2 text-right">{tr().analytics.attitude}</th>
+              <th className="px-2 text-right">{tr().analytics.initiative}</th>
+              <th className="px-2 text-right">{tr().analytics.customer}</th>
+              <th className="px-3 text-right">{tr().analytics.totalKpi}</th>
               <th className="w-16" />
             </tr>
           </thead>
           <tbody>
             {kpi.isLoading && <tr><td colSpan={10} className="p-4"><Skeleton className="h-24" /></td></tr>}
             {!kpi.isLoading && list.length === 0 && (
-              <tr><td colSpan={10}><EmptyState icon={<IconChart size={26} />} title="Chưa có dữ liệu KPI trong kỳ" className="py-10" /></td></tr>
+              <tr><td colSpan={10}><EmptyState icon={<IconChart size={26} />} title={tr().analytics.noKpiPeriod} className="py-10" /></td></tr>
             )}
             {list.map((k, i) => (
               <tr key={k.memberId} className="h-14 border-b border-line-row last:border-b-0 hover:bg-row-hover">
@@ -278,13 +279,13 @@ function MembersTab({ month }: { month: string }) {
                 <td className="px-2 text-right font-mono text-ink-2">{r1(k.initiative.kpi)}<span className="text-ink-faint">/{r1(m.initiative)}</span></td>
                 <td className="px-2 text-right font-mono text-ink-2">{r1(k.customer.kpi)}<span className="text-ink-faint">/{r1(m.customer)}</span></td>
                 <td className={`px-3 text-right font-mono text-[14px] font-bold ${TOTAL_TONE_CLASS[totalTone(k.totalKpi)]}`}>{r1(k.totalKpi)}%</td>
-                <td className="px-2 text-right"><Button size="sm" variant="ghost" onClick={() => setSel(k)}>Phiếu KPI</Button></td>
+                <td className="px-2 text-right"><Button size="sm" variant="ghost" onClick={() => setSel(k)}>{tr().analytics.kpiSlip}</Button></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <Modal open={!!sel} onClose={() => setSel(null)} title={sel ? `Phiếu KPI — ${sel.memberName}` : ""} width={960}>
+      <Modal open={!!sel} onClose={() => setSel(null)} title={sel ? tr().analytics.slipOf(sel.memberName) : ""} width={960}>
         {sel && settings.data && (
           <KpiSlip
             k={sel}
@@ -293,7 +294,7 @@ function MembersTab({ month }: { month: string }) {
             monthLabel={monthLabel}
             controllerName={holderName}
             memberDisplayName={members.find((mm) => mm.userId === sel.memberId)?.userName ?? sel.memberName}
-            onSaveAttitude={(v) => setAttitude.mutate({ memberId: sel.memberId, month, ...v }, { onSuccess: () => toast.success("Đã lưu điểm thái độ"), onError: (e) => toast.error(e) })}
+            onSaveAttitude={(v) => setAttitude.mutate({ memberId: sel.memberId, month, ...v }, { onSuccess: () => toast.success(tr().analytics.attitudeSaved), onError: (e) => toast.error(e) })}
             attitudeBusy={setAttitude.isPending}
           />
         )}
@@ -321,17 +322,17 @@ function KpiSlip({
   const toast = useToast();
 
   const rows: Array<{ stt: string | number; label: string; how?: string; weight: number; result: number; note?: string; section?: boolean }> = [
-    { stt: "A", label: "ĐÁNH GIÁ TỪ KHÁCH HÀNG", weight: settings.customerWeight, result: k.customer.kpi, section: true },
-    { stt: 1, label: "Khách hàng có phản hồi tích cực", how: "Từ cấp trưởng phòng, trong biên bản nghiệm thu", weight: r1(settings.customerWeight * 0.7), result: r1(k.customer.kpi) },
-    { stt: 2, label: "Không phản hồi", weight: r1(settings.customerWeight * 0.3), result: 0 },
+    { stt: "A", label: tr().analytics.secCustomer, weight: settings.customerWeight, result: k.customer.kpi, section: true },
+    { stt: 1, label: tr().analytics.positive, how: tr().analytics.positiveHow, weight: r1(settings.customerWeight * 0.7), result: r1(k.customer.kpi) },
+    { stt: 2, label: tr().analytics.noResponse, weight: r1(settings.customerWeight * 0.3), result: 0 },
     { stt: 3, label: "Claim", weight: 0, result: 0 },
-    { stt: "B", label: "CÔNG VIỆC", weight: settings.progressWeight + settings.qualityWeight + settings.initiativeWeight, result: k.progress.kpi + k.quality.kpi + k.initiative.kpi, section: true },
-    { stt: 1, label: "Tiến độ (Đúng hạn)", how: "Đo lường mức độ hoàn thành theo khối lượng công việc", weight: settings.progressWeight, result: r1(k.progress.kpi), note: `Trễ ${Math.round(k.progress.lateRatio * 100)}%` },
-    { stt: 2, label: "Chất lượng (Rework)", how: "Đo lường khối lượng bị QA/Tester trả về", weight: settings.qualityWeight, result: r1(k.quality.kpi), note: `Sạch ${Math.round(k.quality.ratio * 100)}%` },
-    { stt: 3, label: "Sáng kiến / Giải pháp", how: "Đếm giải pháp tối ưu/tái cấu trúc được áp dụng", weight: settings.initiativeWeight, result: r1(k.initiative.kpi) },
-    { stt: "C", label: "KỶ LUẬT LAO ĐỘNG", weight: settings.punctualityWeight + settings.attitudeWeight, result: k.punctuality.kpi + k.attitude.kpi, section: true },
-    { stt: 1, label: "Đi sớm về muộn", how: "Theo bảng theo dõi hằng ngày", weight: settings.punctualityWeight, result: r1(k.punctuality.kpi), note: `−${r1(k.punctuality.deduction)}` },
-    { stt: 2, label: "Thái độ công việc, cố gắng", how: "Theo đánh giá của trưởng bộ phận", weight: settings.attitudeWeight, result: r1(k.attitude.kpi) },
+    { stt: "B", label: tr().analytics.secWork, weight: settings.progressWeight + settings.qualityWeight + settings.initiativeWeight, result: k.progress.kpi + k.quality.kpi + k.initiative.kpi, section: true },
+    { stt: 1, label: tr().analytics.progressRow, how: tr().analytics.progressHow, weight: settings.progressWeight, result: r1(k.progress.kpi), note: tr().analytics.lateNote(Math.round(k.progress.lateRatio * 100)) },
+    { stt: 2, label: tr().analytics.qualityRow, how: tr().analytics.qualityHow, weight: settings.qualityWeight, result: r1(k.quality.kpi), note: tr().analytics.cleanNote(Math.round(k.quality.ratio * 100)) },
+    { stt: 3, label: tr().analytics.initiativeRow, how: tr().analytics.initiativeHow, weight: settings.initiativeWeight, result: r1(k.initiative.kpi) },
+    { stt: "C", label: tr().analytics.secDiscipline, weight: settings.punctualityWeight + settings.attitudeWeight, result: k.punctuality.kpi + k.attitude.kpi, section: true },
+    { stt: 1, label: tr().analytics.punctualityRow, how: tr().analytics.punctualityHow, weight: settings.punctualityWeight, result: r1(k.punctuality.kpi), note: `−${r1(k.punctuality.deduction)}` },
+    { stt: 2, label: tr().analytics.attitudeRow, how: tr().analytics.attitudeHow, weight: settings.attitudeWeight, result: r1(k.attitude.kpi) },
   ];
 
   const doExport = async () => {
@@ -349,27 +350,27 @@ function KpiSlip({
     <div className="flex flex-col gap-4">
       <div className="rounded-lg border border-line-strong bg-surface">
         <div className="border-b border-line-strong px-5 py-3 text-center">
-          <h3 className="text-[15px] font-bold tracking-wide">BẢNG ĐÁNH GIÁ HIỆU QUẢ CÔNG VIỆC HÀNG THÁNG (KPI)</h3>
+          <h3 className="text-[15px] font-bold tracking-wide">{tr().analytics.slipTitle}</h3>
         </div>
         <div className="grid grid-cols-2 gap-x-8 gap-y-2 border-b border-line-strong px-5 py-3 text-[13px] max-sm:grid-cols-1">
-          <p><span className="text-ink-muted">KPI Tháng:</span> <b className="font-mono">{monthLabel}</b></p>
-          <p><span className="text-ink-muted">Người duyệt:</span> <span className="text-ink-faint">(để trống, ký tay)</span></p>
-          <p><span className="text-ink-muted">Người thực hiện:</span> <b>{memberDisplayName}</b></p>
-          <p><span className="text-ink-muted">Người kiểm soát:</span> <b>{controllerName || "—"}</b></p>
+          <p><span className="text-ink-muted">{tr().analytics.slipMonth}</span> <b className="font-mono">{monthLabel}</b></p>
+          <p><span className="text-ink-muted">{tr().analytics.approver}</span> <span className="text-ink-faint">{tr().analytics.signHere}</span></p>
+          <p><span className="text-ink-muted">{tr().analytics.assignee}</span> <b>{memberDisplayName}</b></p>
+          <p><span className="text-ink-muted">{tr().analytics.controller}</span> <b>{controllerName || "—"}</b></p>
         </div>
         <p className="border-b border-line-strong bg-hover px-5 py-2 text-[12px] text-ink-muted">
-          <b className="text-ink">Kết quả đánh giá:</b> 85 điểm coi như hoàn thành công việc — từ 86 điểm trở lên coi như vượt chỉ tiêu.
+          <b className="text-ink">{tr().analytics.resultLabel}</b> {tr().analytics.resultRule}
         </p>
 
         <div className="overflow-x-auto">
           <div className="min-w-[720px]">
             <div className={`${SLIP_ROW} border-b border-line-strong bg-hover text-[11px] font-semibold uppercase tracking-wide text-ink-faint`}>
-              <span className="flex items-center justify-center px-1 py-2">STT</span>
-              <span className="flex items-center px-3 py-2">Tiêu chí đánh giá</span>
-              <span className="flex items-center px-3 py-2">Cách thực hiện</span>
-              <span className="flex items-center justify-center px-1 py-2 text-center leading-tight">Hệ số<br />(%)</span>
-              <span className="flex items-center justify-center px-1 py-2 text-center leading-tight">Kết quả<br />(%)</span>
-              <span className="flex items-center px-3 py-2">Ghi chú</span>
+              <span className="flex items-center justify-center px-1 py-2">{tr().analytics.no}</span>
+              <span className="flex items-center px-3 py-2">{tr().analytics.criteria}</span>
+              <span className="flex items-center px-3 py-2">{tr().analytics.how}</span>
+              <span className="flex items-center justify-center px-1 py-2 text-center leading-tight">{tr().analytics.weight}<br />(%)</span>
+              <span className="flex items-center justify-center px-1 py-2 text-center leading-tight">{tr().analytics.result}<br />(%)</span>
+              <span className="flex items-center px-3 py-2">{tr().analytics.note}</span>
             </div>
             {rows.map((row, i) => (
               <div key={i} className={`${SLIP_ROW} border-b border-line-row ${row.section ? "bg-hover font-semibold" : ""}`}>
@@ -383,7 +384,7 @@ function KpiSlip({
             ))}
             <div className={`${SLIP_ROW} bg-accent-soft text-[13px] font-bold`}>
               <span />
-              <span className="flex items-center px-3 py-2.5 text-accent-ink">TỔNG KPI</span>
+              <span className="flex items-center px-3 py-2.5 text-accent-ink">{tr().analytics.totalKpiCaps}</span>
               <span />
               <span className="flex items-center justify-center px-1 py-2.5 font-mono tabular-nums text-accent-ink">100%</span>
               <span className={`flex items-center justify-center px-1 py-2.5 font-mono text-[14px] tabular-nums ${TOTAL_TONE_CLASS[totalTone(k.totalKpi)]}`}>{r1(k.totalKpi)}%</span>
@@ -393,9 +394,9 @@ function KpiSlip({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3">
-          <p className="text-[12px] text-ink-faint">Người thực hiện · Người kiểm soát · Người phê duyệt</p>
+          <p className="text-[12px] text-ink-faint">{tr().analytics.signatures}</p>
           <Button size="sm" variant="primary" loading={exporting} onClick={doExport}>
-            <IconDownload size={13} /> Xuất Excel
+            <IconDownload size={13} /> {tr().analytics.export}
           </Button>
         </div>
       </div>
@@ -412,13 +413,13 @@ function AttitudeForm({ initial, busy, onSave }: { memberId: string; initial: { 
   const dirty = Number(score) !== initial.score || comment.trim() !== (initial.comment ?? "");
   return (
     <form onSubmit={(e) => (e.preventDefault(), onSave({ score: Number(score), comment: comment.trim() }))} className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-3.5">
-      <p className="text-[12px] font-semibold uppercase tracking-wide text-ink-faint">Điểm thái độ (do quản lý chấm)</p>
+      <p className="text-[12px] font-semibold uppercase tracking-wide text-ink-faint">{tr().analytics.attitudeTitle}</p>
       <div className="flex gap-3 max-sm:flex-col">
-        <Field label="Điểm" className="w-24 shrink-0">{(p) => <Input {...p} type="number" min={0} max={100} step="0.5" className="font-mono" value={score} onChange={(e) => setScore(e.target.value)} />}</Field>
-        <Field label="Nhận xét" className="flex-1">{(p) => <Textarea {...p} rows={2} placeholder="Nhận xét về thái độ làm việc trong tháng…" value={comment} onChange={(e) => setComment(e.target.value)} />}</Field>
+        <Field label={tr().analytics.score} className="w-24 shrink-0">{(p) => <Input {...p} type="number" min={0} max={100} step="0.5" className="font-mono" value={score} onChange={(e) => setScore(e.target.value)} />}</Field>
+        <Field label={tr().analytics.comment} className="flex-1">{(p) => <Textarea {...p} rows={2} placeholder={tr().analytics.commentPh} value={comment} onChange={(e) => setComment(e.target.value)} />}</Field>
       </div>
       <div className="flex justify-end">
-        <Button type="submit" variant="primary" loading={busy} disabled={!dirty || score === "" || Number(score) < 0}>Lưu điểm thái độ</Button>
+        <Button type="submit" variant="primary" loading={busy} disabled={!dirty || score === "" || Number(score) < 0}>{tr().analytics.saveAttitude}</Button>
       </div>
     </form>
   );
@@ -429,7 +430,7 @@ function Trend({ memberId, name }: { memberId: string; name: string }) {
   const ms = useMemo(() => Array.from({ length: 6 }, (_, i) => monthKey(new Date(new Date().getFullYear(), new Date().getMonth() - (5 - i), 1))), []);
   const res = useQueries({ queries: ms.map((m) => ({ queryKey: qk.kpi(workspaceId, "trend", { m, memberId }), queryFn: () => getWorkspaceKpi(workspaceId, { month: m, memberId }) })) });
   if (res.some((r) => r.isLoading)) return <Skeleton className="h-40" />;
-  return <LineChart title={`KPI 6 tháng của ${name}`} unit="%" labels={ms.map((m) => `T${m.slice(5)}`)} series={[{ key: "kpi", label: "KPI tổng (%)", color: "var(--chart-1)", points: res.map((r) => r.data?.[0]?.totalKpi ?? 0) }]} />;
+  return <LineChart title={tr().analytics.trendOf(name)} unit="%" labels={ms.map((m) => shortMonth(m))} series={[{ key: "kpi", label: tr().analytics.totalKpiPct, color: "var(--chart-1)", points: res.map((r) => r.data?.[0]?.totalKpi ?? 0) }]} />;
 }
 
 function ProjectsTab({ month }: { month: string }) {
@@ -437,15 +438,15 @@ function ProjectsTab({ month }: { month: string }) {
   const res = useQueries({ queries: projects.map((p) => ({ queryKey: qk.stats(workspaceId, "project", { p: p.id, month }), queryFn: () => getWorkspaceTaskStatistics(workspaceId, { projectId: p.id, month }) })) });
   return (
     <>
-      {projects.length === 0 && <EmptyState title="Chưa có dự án" className="py-10" />}
+      {projects.length === 0 && <EmptyState title={tr().analytics.noProjects} className="py-10" />}
       {projects.map((p, i) => {
         const t = res[i]?.data?.totals;
         return (
           <Card key={p.id} title={p.name}>
-            {res[i]?.isLoading ? <Skeleton className="h-10" /> : !t || t.totalTasks === 0 ? <p className="text-[13px] text-ink-muted">Chưa có task trong kỳ.</p> : (
+            {res[i]?.isLoading ? <Skeleton className="h-10" /> : !t || t.totalTasks === 0 ? <p className="text-[13px] text-ink-muted">{tr().analytics.noTasksPeriod}</p> : (
               <div className="flex flex-col gap-3">
-                <p className="flex flex-wrap gap-x-6 text-[12.5px] text-ink-muted"><span><span className="mr-1.5 inline-block size-2 rounded-[2px]" style={{ background: projectColor(p.id) }} />Tổng <b className="font-mono text-ink">{t.totalTasks}</b></span><span>Quá hạn <b className={`font-mono ${t.totalOverdue ? "text-danger" : "text-ink"}`}>{t.totalOverdue}</b></span><span>Giờ ước tính <b className="font-mono text-ink">{r1(t.totalEstimation)}h</b></span></p>
-                <StackedBar label={`Trạng thái ${p.name}`} segments={statusSegments(t)} height={10} />
+                <p className="flex flex-wrap gap-x-6 text-[12.5px] text-ink-muted"><span><span className="mr-1.5 inline-block size-2 rounded-[2px]" style={{ background: projectColor(p.id) }} />{tr().analytics.total} <b className="font-mono text-ink">{t.totalTasks}</b></span><span>{tr().analytics.overdue} <b className={`font-mono ${t.totalOverdue ? "text-danger" : "text-ink"}`}>{t.totalOverdue}</b></span><span>{tr().analytics.estHours} <b className="font-mono text-ink">{r1(t.totalEstimation)}h</b></span></p>
+                <StackedBar label={tr().analytics.statusOf(p.name)} segments={statusSegments(t)} height={10} />
               </div>
             )}
           </Card>

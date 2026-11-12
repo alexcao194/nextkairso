@@ -77,3 +77,10 @@ export const weekdayShort = (d: Date) => (getLang() === "en" ? d.toLocaleDateStr
 
 /** Monday-first compact weekday headers for month grids. */
 export const weekHeaders = () => [1, 2, 3, 4, 5, 6, 0].map((dow) => weekdayShort(new Date(2024, 0, 7 + dow)));
+
+/** Compact month label for "YYYY-MM": "T11" / "Nov". */
+export const shortMonth = (key: string) =>
+  getLang() === "en" ? new Date(Number(key.slice(0, 4)), Number(key.slice(5, 7)) - 1, 1).toLocaleDateString("en-US", { month: "short" }) : `T${Number(key.slice(5, 7))}`;
+
+/** Month heading for "YYYY-MM". */
+export const monthKeyTitle = (key: string) => monthTitle(new Date(Number(key.slice(0, 4)), Number(key.slice(5, 7)) - 1, 1));

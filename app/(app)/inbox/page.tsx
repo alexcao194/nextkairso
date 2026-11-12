@@ -110,7 +110,7 @@ function Notifications() {
             );
           })}
           {q.hasNextPage && (
-            <li className="p-3 text-center"><Button size="sm" loading={q.isFetchingNextPage} onClick={() => q.fetchNextPage()}>Tải thêm</Button></li>
+            <li className="p-3 text-center"><Button size="sm" loading={q.isFetchingNextPage} onClick={() => q.fetchNextPage()}>{t.ui.loadMore}</Button></li>
           )}
         </ul>
       )}

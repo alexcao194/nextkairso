@@ -7,6 +7,7 @@ import { SECTION_META, SECTION_ORDER, itemAssignment, meetingLead, sectionTitle,
 import { fmtDate } from "@/lib/domain/format";
 import { useLinkedTasks, useMeeting } from "@/lib/hooks/meetings";
 import { useWorkspace } from "@/lib/workspace/WorkspaceContext";
+import { tr } from "@/lib/i18n";
 
 export function MeetingPrint({ id }: { id: string }) {
   const sp = useSearchParams();
@@ -31,8 +32,8 @@ export function MeetingPrint({ id }: { id: string }) {
     return () => clearTimeout(t);
   }, [auto, ready]);
 
-  if (q.isLoading) return <Center>Đang tải biên bản…</Center>;
-  if (!m) return <Center>Không mở được biên bản họp.</Center>;
+  if (q.isLoading) return <Center>{tr().meetingPrint.loading}</Center>;
+  if (!m) return <Center>{tr().meetingPrint.failed}</Center>;
 
   const sections = SECTION_ORDER.map((s) => ({ s, rows: m.items.filter((i) => i.section === s), note: m.sectionNotes?.[s] ?? "" })).filter((x) => x.rows.length || x.note);
   const lead = meetingLead(m);
@@ -48,16 +49,16 @@ export function MeetingPrint({ id }: { id: string }) {
       `}</style>
 
       <div className="mx-auto mb-4 flex w-[210mm] max-w-full items-center justify-end gap-2 px-2 print:hidden">
-        <span className="mr-auto text-[12.5px] text-(--doc-muted)">Chọn “Lưu dưới dạng PDF” trong hộp thoại in.</span>
+        <span className="mr-auto text-[12.5px] text-(--doc-muted)">{tr().meetingPrint.hint}</span>
         <button type="button" onClick={() => window.print()} className="h-ctl rounded-md bg-(--doc-brand) px-4 text-[13px] font-medium text-white">
-          In / Lưu PDF
+          {tr().meetingPrint.print}
         </button>
       </div>
 
       <article className="doc mx-auto w-[210mm] max-w-full bg-(--doc-paper) font-sans text-(--doc-ink) shadow-overlay print:shadow-none">
         <header className="flex items-start gap-6 px-[16mm] pb-[9mm] pt-[11mm] text-white" style={{ background: "linear-gradient(90deg, var(--doc-brand), var(--doc-brand-2))" }}>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] opacity-90">Biên bản họp</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] opacity-90">{tr().meetingPrint.title}</p>
             <h1 className="mt-2 text-[27px] font-bold leading-tight">{m.title}</h1>
           </div>
           <div className="grid size-[19mm] shrink-0 place-items-center overflow-hidden rounded-xl bg-(--doc-paper)">
@@ -69,21 +70,21 @@ export function MeetingPrint({ id }: { id: string }) {
         <div className="flex flex-col gap-[7mm] px-[16mm] pb-[14mm] pt-[7mm]">
           <div className="keep overflow-hidden rounded-lg border border-(--doc-tint-line) bg-(--doc-tint)">
             <div className="grid grid-cols-[1fr_1.6fr_1.2fr] divide-x divide-(--doc-tint-line)">
-              <InfoCard label="Thời gian" value={fmtDate(m.meetingDate)} />
-              <InfoCard label="Địa điểm / hình thức" value={m.location} />
-              <InfoCard label="Người ghi biên bản" value={(m.recorders ?? []).map((p) => p.name).join(", ")} />
+              <InfoCard label={tr().meetingPrint.time} value={fmtDate(m.meetingDate)} />
+              <InfoCard label={tr().meetingPrint.location} value={m.location} />
+              <InfoCard label={tr().meetingPrint.recorders} value={(m.recorders ?? []).map((p) => p.name).join(", ")} />
             </div>
             <div className="border-t border-(--doc-tint-line)">
-              <InfoCard label="Thành phần tham dự" value={(m.attendees ?? []).map((p) => p.name).join(", ")} />
+              <InfoCard label={tr().meetingPrint.attendees} value={(m.attendees ?? []).map((p) => p.name).join(", ")} />
             </div>
           </div>
 
           {(lead || m.summary) && (
-            <Section n={1} title="Thông tin chung">
+            <Section n={1} title={tr().meetingPrint.general}>
               {lead && <p className="text-[13px] leading-relaxed text-(--doc-ink-2)">{lead}</p>}
               {m.summary && (
                 <p className="mt-2 whitespace-pre-line text-[13px] leading-relaxed text-(--doc-ink-2)">
-                  <b className="text-(--doc-ink)">Nội dung:</b> {m.summary}
+                  <b className="text-(--doc-ink)">{tr().meetingPrint.summary}</b> {m.summary}
                 </p>
               )}
             </Section>
@@ -94,7 +95,7 @@ export function MeetingPrint({ id }: { id: string }) {
               {rows.length > 0 && <ItemsTable section={s} rows={rows} tasks={linked.map} />}
               {note && (
                 <p className="keep mt-3 whitespace-pre-line rounded-md border border-(--doc-tint-line) border-l-4 border-l-(--doc-brand) bg-(--doc-tint) px-4 py-3 text-[13px] text-(--doc-ink-2)">
-                  <b className="text-(--doc-ink)">Ghi chú:</b> {note}
+                  <b className="text-(--doc-ink)">{tr().meetingPrint.note}</b> {note}
                 </p>
               )}
             </Section>
@@ -143,12 +144,12 @@ function ItemsTable({ section, rows, tasks }: { section: MeetingItem["section"];
       <thead>
         <tr className="bg-(--doc-brand) text-left text-[10.5px] font-semibold uppercase tracking-wide text-white">
           <th className="w-[13mm] px-4 py-3">STT</th>
-          <th className="w-[34mm] px-3 py-3">Phân hệ</th>
+          <th className="w-[34mm] px-3 py-3">{tr().meetingPrint.module}</th>
           <th className="px-3 py-3">{meta.contentLabel}</th>
-          {showOwner && <th className="w-[30mm] px-3 py-3">Phụ trách</th>}
-          {showDue && <th className="w-[24mm] px-3 py-3">Hạn</th>}
-          {showStatus && <th className="w-[28mm] px-3 py-3">Trạng thái</th>}
-          {showPriority && <th className="w-[22mm] px-3 py-3">Ưu tiên</th>}
+          {showOwner && <th className="w-[30mm] px-3 py-3">{tr().meetingPrint.owner}</th>}
+          {showDue && <th className="w-[24mm] px-3 py-3">{tr().meetingPrint.due}</th>}
+          {showStatus && <th className="w-[28mm] px-3 py-3">{tr().meetingPrint.status}</th>}
+          {showPriority && <th className="w-[22mm] px-3 py-3">{tr().meetingPrint.priority}</th>}
         </tr>
       </thead>
       <tbody>
@@ -174,7 +175,7 @@ function ItemsTable({ section, rows, tasks }: { section: MeetingItem["section"];
               {showStatus && <Td className="text-[12.5px]">{meta.status![r.status === "done" ? 1 : 0]}</Td>}
               {showPriority && (
                 <Td>
-                  {r.priority && <span className="inline-block whitespace-nowrap rounded-full bg-(--doc-brand) px-2.5 py-0.5 text-[11px] font-semibold text-white">Ưu tiên</span>}
+                  {r.priority && <span className="inline-block whitespace-nowrap rounded-full bg-(--doc-brand) px-2.5 py-0.5 text-[11px] font-semibold text-white">{tr().meetingPrint.priority}</span>}
                 </Td>
               )}
             </tr>

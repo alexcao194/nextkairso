@@ -17,6 +17,7 @@ import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 import { EmptyState, Skeleton } from "@/components/ui/feedback";
 import { useConfirm } from "@/components/ui/Confirm";
 import { IconEdit, IconExternal, IconFile, IconLink, IconNote, IconPlus, IconTrash } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 type Tab = "notes" | "meetings" | "links" | "files";
 const TABS: Tab[] = ["notes", "meetings", "links", "files"];
@@ -31,15 +32,15 @@ export function ResourcePanel({ scope, className = "" }: { scope: ResourceScope;
   const links = useLinks(scope);
   const files = useFiles(scope);
   return (
-    <section aria-label="Tài nguyên" className={`rounded-lg border border-line bg-surface ${className}`}>
+    <section aria-label={tr().resources.title} className={`rounded-lg border border-line bg-surface ${className}`}>
       <Tabs
-        label="Loại tài nguyên"
+        label={tr().resources.kind}
         value={tab}
         onChange={setTab}
         className="px-2"
         tabs={[
-          { value: "notes", label: "Ghi chú", count: notes.data?.length },
-          { value: "meetings", label: "Biên bản họp", count: meetings.data?.length },
+          { value: "notes", label: tr().resources.notes, count: notes.data?.length },
+          { value: "meetings", label: tr().resources.meetings, count: meetings.data?.length },
           { value: "links", label: "Link", count: links.data?.length },
           { value: "files", label: "File", count: files.data?.length },
         ]}
@@ -69,22 +70,22 @@ function Notes({ scope, q }: { scope: ResourceScope; q: ReturnType<typeof useNot
   const [edit, setEdit] = useState<Note | "new" | null>(null);
   return (
     <div>
-      <List q={q} empty="Chưa có ghi chú">
+      <List q={q} empty={tr().resources.noNotes}>
         {(q.data ?? []).map((n) => (
           <Row key={n.id}>
             <IconNote size={14} className="shrink-0 text-ink-faint" />
             <button type="button" onClick={() => setEdit(n)} className="min-w-0 flex-1 text-left">
-              <span className="block truncate text-[13px] font-medium text-ink">{n.title || "Không tiêu đề"}</span>
+              <span className="block truncate text-[13px] font-medium text-ink">{n.title || tr().resources.untitled}</span>
               <span className="block truncate text-[11.5px] text-ink-faint">{n.createdBy?.name} · {fmtRelative(n.updatedAt)}</span>
             </button>
-            <IconButton label={`Xoá ghi chú ${n.title}`} variant="ghost" size="sm" onClick={async () => { if (await confirm({ title: "Xoá ghi chú?", message: n.title, danger: true })) deleteNote.mutate(n.id, { onError: (e) => toast.error(e) }); }}>
+            <IconButton label={tr().resources.deleteNote(n.title)} variant="ghost" size="sm" onClick={async () => { if (await confirm({ title: tr().resources.confirmDeleteNote, message: n.title, danger: true })) deleteNote.mutate(n.id, { onError: (e) => toast.error(e) }); }}>
               <IconTrash size={13} />
             </IconButton>
           </Row>
         ))}
       </List>
-      <div className="border-t border-line p-2"><Button size="sm" variant="ghost" onClick={() => setEdit("new")}><IconPlus size={13} /> Ghi chú mới</Button></div>
-      <Modal open={!!edit} onClose={() => setEdit(null)} title={edit === "new" ? "Ghi chú mới" : "Sửa ghi chú"} width={900}>
+      <div className="border-t border-line p-2"><Button size="sm" variant="ghost" onClick={() => setEdit("new")}><IconPlus size={13} /> {tr().resources.newNote}</Button></div>
+      <Modal open={!!edit} onClose={() => setEdit(null)} title={edit === "new" ? tr().resources.newNote : tr().resources.editNote} width={900}>
         {edit && (
           <NoteForm
             scope={scope}
@@ -109,22 +110,22 @@ function NoteForm({ scope, note, busy, onSave, onCancel }: { scope: ResourceScop
   const submit = () => title.trim() && onSave(title.trim(), content);
   return (
     <form onSubmit={(e) => (e.preventDefault(), submit())} className="flex flex-col gap-3">
-      <Field label="Tiêu đề" required>{(p) => <Input {...p} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} />}</Field>
+      <Field label={tr().resources.noteTitle} required>{(p) => <Input {...p} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} />}</Field>
       <div className="flex flex-col gap-1">
-        <span className="text-[12px] font-medium text-ink-2">Nội dung</span>
+        <span className="text-[12px] font-medium text-ink-2">{tr().resources.content}</span>
         <MarkdownEditor
-          label="Nội dung ghi chú"
+          label={tr().resources.contentLabel}
           height={380}
           value={content}
           onChange={setContent}
           onSubmit={submit}
-          placeholder="Viết bằng Markdown. Dán hoặc kéo ảnh vào để chèn."
+          placeholder={tr().resources.mdHint}
           onUploadImage={async (f) => (await uploadFile(f, scope.projectId ? "project_file" : "workspace_file", scope.projectId ?? scope.ws)).fileUrl}
         />
       </div>
       <div className="flex justify-end gap-2">
-        <Button onClick={onCancel}>Huỷ</Button>
-        <Button type="submit" variant="primary" loading={busy} disabled={!title.trim()}>Lưu</Button>
+        <Button onClick={onCancel}>{tr().resources.cancel}</Button>
+        <Button type="submit" variant="primary" loading={busy} disabled={!title.trim()}>{tr().resources.save}</Button>
       </div>
     </form>
   );
@@ -136,7 +137,7 @@ function Links({ scope, q }: { scope: ResourceScope; q: ReturnType<typeof useLin
   const [edit, setEdit] = useState<LinkItem | "new" | null>(null);
   return (
     <div>
-      <List q={q} empty="Chưa có link">
+      <List q={q} empty={tr().resources.noLinks}>
         {(q.data ?? []).map((l) => (
           <Row key={l.id}>
             <IconLink size={14} className="shrink-0 text-ink-faint" />
@@ -145,13 +146,13 @@ function Links({ scope, q }: { scope: ResourceScope; q: ReturnType<typeof useLin
               <span className="block truncate font-mono text-[11px] text-ink-faint">{l.url}</span>
             </a>
             <IconExternal size={12} className="shrink-0 text-ink-faint" />
-            {scope.projectId && <IconButton label={`Sửa ${l.title}`} variant="ghost" size="sm" onClick={() => setEdit(l)}><IconEdit size={13} /></IconButton>}
-            <IconButton label={`Xoá ${l.title}`} variant="ghost" size="sm" onClick={() => deleteLink.mutate(l.id, { onError: (e) => toast.error(e) })}><IconTrash size={13} /></IconButton>
+            {scope.projectId && <IconButton label={tr().resources.editOf(l.title)} variant="ghost" size="sm" onClick={() => setEdit(l)}><IconEdit size={13} /></IconButton>}
+            <IconButton label={tr().resources.deleteOf(l.title)} variant="ghost" size="sm" onClick={() => deleteLink.mutate(l.id, { onError: (e) => toast.error(e) })}><IconTrash size={13} /></IconButton>
           </Row>
         ))}
       </List>
-      <div className="border-t border-line p-2"><Button size="sm" variant="ghost" onClick={() => setEdit("new")}><IconPlus size={13} /> Thêm link</Button></div>
-      <Modal open={!!edit} onClose={() => setEdit(null)} title={edit === "new" ? "Thêm link" : "Sửa link"} width={480}>
+      <div className="border-t border-line p-2"><Button size="sm" variant="ghost" onClick={() => setEdit("new")}><IconPlus size={13} /> {tr().resources.addLink}</Button></div>
+      <Modal open={!!edit} onClose={() => setEdit(null)} title={edit === "new" ? tr().resources.addLink : tr().resources.editLink} width={480}>
         {edit && (
           <LinkForm
             link={edit === "new" ? null : edit}
@@ -175,11 +176,11 @@ function LinkForm({ link, busy, onSave, onCancel }: { link: LinkItem | null; bus
   const valid = /^https?:\/\/\S+$/i.test(url.trim());
   return (
     <form onSubmit={(e) => (e.preventDefault(), valid && onSave(title.trim() || url.trim(), url.trim()))} className="flex flex-col gap-3">
-      <Field label="Tiêu đề">{(p) => <Input {...p} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} />}</Field>
-      <Field label="Đường dẫn" required error={url && !valid ? "Cần bắt đầu bằng http:// hoặc https://" : null}>{(p) => <Input {...p} type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" />}</Field>
+      <Field label={tr().resources.noteTitle}>{(p) => <Input {...p} autoFocus value={title} onChange={(e) => setTitle(e.target.value)} />}</Field>
+      <Field label={tr().resources.url} required error={url && !valid ? tr().resources.urlHint : null}>{(p) => <Input {...p} type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" />}</Field>
       <div className="flex justify-end gap-2">
-        <Button onClick={onCancel}>Huỷ</Button>
-        <Button type="submit" variant="primary" loading={busy} disabled={!valid}>Lưu</Button>
+        <Button onClick={onCancel}>{tr().resources.cancel}</Button>
+        <Button type="submit" variant="primary" loading={busy} disabled={!valid}>{tr().resources.save}</Button>
       </div>
     </form>
   );
@@ -210,7 +211,7 @@ function Files({ scope, q }: { scope: ResourceScope; q: ReturnType<typeof useFil
 
   return (
     <div>
-      <List q={q} empty="Chưa có file">
+      <List q={q} empty={tr().resources.noFiles}>
         {(q.data ?? []).map((f) => (
           <Row key={f.id}>
             <IconFile size={14} className="shrink-0 text-ink-faint" />
@@ -218,13 +219,13 @@ function Files({ scope, q }: { scope: ResourceScope; q: ReturnType<typeof useFil
               <span className="block truncate text-[13px] font-medium text-ink hover:text-accent-ink">{f.title || f.fileName}</span>
               <span className="block truncate text-[11.5px] text-ink-faint">{fmtBytes(f.sizeBytes)} · {f.createdBy?.name} · {fmtRelative(f.updatedAt)}</span>
             </a>
-            <IconButton label={`Xoá ${f.fileName}`} variant="ghost" size="sm" onClick={() => deleteFile.mutate(f.id, { onError: (e) => toast.error(e) })}><IconTrash size={13} /></IconButton>
+            <IconButton label={tr().resources.deleteOf(f.fileName)} variant="ghost" size="sm" onClick={() => deleteFile.mutate(f.id, { onError: (e) => toast.error(e) })}><IconTrash size={13} /></IconButton>
           </Row>
         ))}
       </List>
       <div className="border-t border-line p-2">
-        <input ref={ref} type="file" multiple className="sr-only" aria-label="Chọn file tải lên" onChange={(e) => onFiles(e.target.files)} />
-        <Button size="sm" variant="ghost" loading={busy} onClick={() => ref.current?.click()}><IconPlus size={13} /> Tải file lên</Button>
+        <input ref={ref} type="file" multiple className="sr-only" aria-label={tr().resources.pickFile} onChange={(e) => onFiles(e.target.files)} />
+        <Button size="sm" variant="ghost" loading={busy} onClick={() => ref.current?.click()}><IconPlus size={13} /> {tr().resources.upload}</Button>
       </div>
     </div>
   );

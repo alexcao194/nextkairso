@@ -12,6 +12,7 @@ import { EmptyState, ErrorState, Skeleton } from "@/components/ui/feedback";
 import { useConfirm } from "@/components/ui/Confirm";
 import { IconCalendar, IconPlus, IconTrash } from "@/components/icons";
 import { MeetingEditor } from "./MeetingEditor";
+import { tr } from "@/lib/i18n";
 
 export function MeetingList({ scope }: { scope: ResourceScope }) {
   const q = useMeetings(scope);
@@ -27,7 +28,7 @@ export function MeetingList({ scope }: { scope: ResourceScope }) {
       ) : q.isError ? (
         <ErrorState error={q.error} onRetry={() => q.refetch()} />
       ) : !q.data?.length ? (
-        <EmptyState title="Chưa có biên bản họp" description="Ghi lại hạng mục đã triển khai, yêu cầu mới và việc cần làm theo từng phân hệ." className="py-8" />
+        <EmptyState title={tr().meetingList.none} description={tr().meetingList.noneDesc} className="py-8" />
       ) : (
         <ul>
           {q.data.map((m) => (
@@ -41,11 +42,11 @@ export function MeetingList({ scope }: { scope: ResourceScope }) {
                 <span className="block truncate text-[11.5px] text-ink-faint">{meetingSummary(m)}</span>
               </button>
               <IconButton
-                label={`Xoá biên bản ${m.title}`}
+                label={tr().meetingList.deleteOf(m.title)}
                 variant="ghost"
                 size="sm"
                 onClick={async () => {
-                  if (await confirm({ title: "Xoá biên bản họp?", message: m.title, danger: true })) remove.mutate(m.id, { onError: (e) => toast.error(e) });
+                  if (await confirm({ title: tr().meetingList.confirmDelete, message: m.title, danger: true })) remove.mutate(m.id, { onError: (e) => toast.error(e) });
                 }}
               >
                 <IconTrash size={13} />
@@ -55,7 +56,7 @@ export function MeetingList({ scope }: { scope: ResourceScope }) {
         </ul>
       )}
       <div className="border-t border-line p-2">
-        <Button size="sm" variant="ghost" onClick={() => setOpen("new")}><IconPlus size={13} /> Biên bản mới</Button>
+        <Button size="sm" variant="ghost" onClick={() => setOpen("new")}><IconPlus size={13} /> {tr().meetingList.new}</Button>
       </div>
       <MeetingDialog scope={scope} id={open || null} onOpen={setOpen} onClose={() => setOpen(null)} />
     </div>
@@ -66,7 +67,7 @@ function MeetingDialog({ scope, id, onOpen, onClose }: { scope: ResourceScope; i
   const isNew = id === "new";
   const q = useMeeting(isNew ? null : id);
   return (
-    <Modal open={!!id} onClose={onClose} title={isNew ? "Biên bản họp mới" : q.data?.title ?? "Biên bản họp"} width={1180}>
+    <Modal open={!!id} onClose={onClose} title={isNew ? tr().meetingList.newTitle : q.data?.title ?? tr().meetingList.title} width={1180}>
       {isNew ? (
         <MeetingEditor scope={scope} meeting={null} onClose={onClose} onCreated={onOpen} />
       ) : q.isLoading ? (

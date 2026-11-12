@@ -21,6 +21,7 @@ import { Popover } from "@/components/ui/Popover";
 import { Button } from "@/components/ui/Button";
 import { SearchInput, Select } from "@/components/ui/form";
 import { IconArrowRight, IconChevronDown, IconColumns, IconFilter, IconList, IconPlus, IconClose } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 type SetParams = ReturnType<typeof useTaskViewState>["setParams"];
 
@@ -99,36 +100,36 @@ export function ProjectToolbar({
 
   return (
     <div className="flex h-toolbar shrink-0 items-center gap-2 overflow-x-auto border-b border-line bg-surface px-4">
-      <SearchInput value={q} onChange={setQ} placeholder="Tìm task…" label="Tìm task" className="w-[220px] shrink-0 max-sm:w-[150px]" />
+      <SearchInput value={q} onChange={setQ} placeholder={tr().toolbar.searchPh} label={tr().toolbar.search} className="w-[220px] shrink-0 max-sm:w-[150px]" />
 
       <Popover
         trigger={({ ref, open: _o, ...p }) => (
           <button ref={ref} type="button" {...p} className={`${chip} ${nFilters ? "border-accent-border bg-accent-soft text-accent-ink" : ""}`}>
-            <IconFilter size={13} /> Lọc{nFilters > 0 && <span className="font-mono text-[11px]">{nFilters}</span>}
+            <IconFilter size={13} /> {tr().toolbar.filter}{nFilters > 0 && <span className="font-mono text-[11px]">{nFilters}</span>}
           </button>
         )}
       >
         {() => (
           <div className="w-[340px] max-w-[90vw]">
-            <CheckGroup title="Trạng thái" value={view.status} onChange={(v) => setParams({ status: listParam(v) })} options={TASK_STATUSES.map((s) => ({ value: s, label: STATUS_META[s].label }))} />
-            <CheckGroup title="Ưu tiên" value={view.priority} onChange={(v) => setParams({ priority: listParam(v) })} options={PRIORITY_LEVELS.map((l) => ({ value: String(PRIORITY_META[l].api), label: `${PRIORITY_META[l].tag} ${PRIORITY_META[l].label}` }))} />
-            <CheckGroup title="Module" value={view.module} onChange={(v) => setParams({ module: listParam(v) })} options={[{ value: "none", label: "Không có module" }, ...modules.map((m) => ({ value: m.id, label: m.name }))]} />
-            <CheckGroup title="Người làm" value={view.worker} onChange={(v) => setParams({ worker: listParam(v) })} options={[{ value: "none", label: "Chưa giao" }, ...members.map((m) => ({ value: m.userId, label: m.userName }))]} />
-            <CheckGroup title="Nhãn" value={view.label} onChange={(v) => setParams({ label: listParam(v) })} options={labels.map((l) => ({ value: l.id, label: l.name }))} />
+            <CheckGroup title={tr().toolbar.status} value={view.status} onChange={(v) => setParams({ status: listParam(v) })} options={TASK_STATUSES.map((s) => ({ value: s, label: STATUS_META[s].label }))} />
+            <CheckGroup title={tr().toolbar.priority} value={view.priority} onChange={(v) => setParams({ priority: listParam(v) })} options={PRIORITY_LEVELS.map((l) => ({ value: String(PRIORITY_META[l].api), label: `${PRIORITY_META[l].tag} ${PRIORITY_META[l].label}` }))} />
+            <CheckGroup title="Module" value={view.module} onChange={(v) => setParams({ module: listParam(v) })} options={[{ value: "none", label: tr().toolbar.noModule }, ...modules.map((m) => ({ value: m.id, label: m.name }))]} />
+            <CheckGroup title={tr().toolbar.workers} value={view.worker} onChange={(v) => setParams({ worker: listParam(v) })} options={[{ value: "none", label: tr().toolbar.unassigned }, ...members.map((m) => ({ value: m.userId, label: m.userName }))]} />
+            <CheckGroup title={tr().toolbar.labels} value={view.label} onChange={(v) => setParams({ label: listParam(v) })} options={labels.map((l) => ({ value: l.id, label: l.name }))} />
             <div className="flex items-center gap-2 px-2 py-1.5">
               <label htmlFor="flt-arch" className="text-[12px] text-ink-2">
-                Lưu trữ
+                {tr().toolbar.archive}
               </label>
               <Select id="flt-arch" small className="w-36" value={view.archived} onChange={(e) => setParams({ archived: e.target.value === "active" ? null : e.target.value })}>
-                <option value="active">Đang hoạt động</option>
-                <option value="archived">Đã lưu trữ</option>
-                <option value="all">Tất cả</option>
+                <option value="active">{tr().toolbar.active}</option>
+                <option value="archived">{tr().toolbar.archived}</option>
+                <option value="all">{tr().toolbar.all}</option>
               </Select>
             </div>
             {nFilters > 0 && (
               <div className="border-t border-line px-2 pb-1 pt-2">
                 <Button size="sm" variant="ghost" onClick={() => setParams({ status: null, priority: null, module: null, worker: null, label: null, archived: null })}>
-                  <IconClose size={12} /> Xoá bộ lọc
+                  <IconClose size={12} /> {tr().toolbar.clearFilters}
                 </Button>
               </div>
             )}
@@ -141,7 +142,7 @@ export function ProjectToolbar({
           role="menu"
           trigger={({ ref, open: _o, ...p }) => (
             <button ref={ref} type="button" {...p} className={chip}>
-              <IconList size={13} /> Nhóm: {GROUP_LABEL[view.group]} <IconChevronDown size={11} className="text-ink-faint" />
+              <IconList size={13} /> {tr().toolbar.groupBy} {GROUP_LABEL[view.group]} <IconChevronDown size={11} className="text-ink-faint" />
             </button>
           )}
         >
@@ -170,7 +171,7 @@ export function ProjectToolbar({
       <Popover
         trigger={({ ref, open: _o, ...p }) => (
           <button ref={ref} type="button" {...p} className={chip}>
-            <IconArrowRight size={13} className="rotate-90" /> Sắp xếp
+            <IconArrowRight size={13} className="rotate-90" /> {tr().toolbar.sort}
           </button>
         )}
       >
@@ -180,7 +181,7 @@ export function ProjectToolbar({
               <div key={i} className="mb-1.5 flex items-center gap-1.5">
                 <Select
                   small
-                  aria-label={`Tiêu chí ${i + 1}`}
+                  aria-label={tr().toolbar.rule(i + 1)}
                   value={r.field}
                   onChange={(e) => setParams({ sort: serializeSort(view.sort.map((x, j) => (j === i ? { ...x, field: e.target.value as SortField } : x))) })}
                 >
@@ -192,14 +193,14 @@ export function ProjectToolbar({
                 </Select>
                 <Button
                   size="sm"
-                  aria-label={r.dir === "asc" ? "Tăng dần" : "Giảm dần"}
+                  aria-label={r.dir === "asc" ? tr().toolbar.asc : tr().toolbar.desc}
                   onClick={() => setParams({ sort: serializeSort(view.sort.map((x, j) => (j === i ? { ...x, dir: x.dir === "asc" ? "desc" : "asc" } : x))) })}
                 >
                   {r.dir === "asc" ? "A→Z" : "Z→A"}
                 </Button>
                 <button
                   type="button"
-                  aria-label="Bỏ tiêu chí"
+                  aria-label={tr().toolbar.removeRule}
                   disabled={view.sort.length === 1}
                   onClick={() => setParams({ sort: serializeSort(view.sort.filter((_, j) => j !== i)) })}
                   className="text-ink-faint hover:text-ink disabled:opacity-30"
@@ -214,10 +215,10 @@ export function ProjectToolbar({
                 const f = (Object.keys(SORT_LABEL) as SortField[]).find((x) => !used.has(x));
                 if (f) setParams({ sort: serializeSort([...view.sort, { field: f, dir: "asc" }]) });
               }}>
-                <IconPlus size={12} /> Thêm tiêu chí
+                <IconPlus size={12} /> {tr().toolbar.addRule}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setParams({ sort: null })}>
-                Mặc định
+                {tr().toolbar.default}
               </Button>
             </div>
           </div>
@@ -228,7 +229,7 @@ export function ProjectToolbar({
         <Popover
           trigger={({ ref, open: _o, ...p }) => (
             <button ref={ref} type="button" {...p} className={chip}>
-              <IconColumns size={13} /> Cột
+              <IconColumns size={13} /> {tr().toolbar.columns}
             </button>
           )}
         >
@@ -248,7 +249,7 @@ export function ProjectToolbar({
               ))}
               <div className="border-t border-line pt-1">
                 <Button size="sm" variant="ghost" onClick={() => setColumns(DEFAULT_COLUMNS)}>
-                  Cột mặc định
+                  {tr().toolbar.defaultColumns}
                 </Button>
               </div>
             </div>

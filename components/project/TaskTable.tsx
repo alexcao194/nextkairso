@@ -15,6 +15,7 @@ import { ModuleChip } from "@/components/kairso/ModuleChip";
 import { LabelChip } from "@/components/kairso/LabelChip";
 import { PriorityPicker, StatusPicker } from "@/components/kairso/pickers";
 import { IconAlert, IconChat, IconChevronDown, IconChevronRight, IconPlus } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 const H_GROUP = 28;
 const H_ROW = 36;
@@ -32,7 +33,7 @@ export function TaskTable({
   selectedId,
   onOpen,
   onAdd,
-  emptyMessage = "Chưa có task nào",
+  emptyMessage = tr().taskTable.none,
 }: {
   groups: TaskGroup[];
   columns: ColumnKey[];
@@ -98,7 +99,7 @@ export function TaskTable({
         setViewH(e.currentTarget.clientHeight);
       }}
       role="table"
-      aria-label="Danh sách task"
+      aria-label={tr().taskTable.list}
       aria-rowcount={total}
       className="min-h-0 flex-1 overflow-auto bg-surface"
     >
@@ -212,8 +213,8 @@ function renderCell(
           </button>
           {/* Chỉ dấu quá hạn luôn hiện, không phụ thuộc cột "Hạn" có bật hay không. */}
           {isOverdue(t) && (
-            <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-danger-bg px-1.5 py-[1px] text-[10.5px] font-semibold text-danger" title="Quá hạn — chưa xong và đã quá ngày hết hạn">
-              <IconAlert size={10} /> Quá hạn
+            <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-danger-bg px-1.5 py-[1px] text-[10.5px] font-semibold text-danger" title={tr().taskTable.overdueHint}>
+              <IconAlert size={10} /> {tr().taskTable.overdue}
             </span>
           )}
         </span>
@@ -257,7 +258,7 @@ function renderCell(
     case "alert":
       return isOverdue(t) ? (
         <Badge tone="danger">
-          <IconAlert size={11} /> Quá hạn
+          <IconAlert size={11} /> {tr().taskTable.overdue}
         </Badge>
       ) : (
         <span className="text-ink-disabled">—</span>
@@ -267,7 +268,7 @@ function renderCell(
     case "comments":
       return t.unreadCommentCount > 0 ? (
         <Badge tone="accent">
-          <IconChat size={11} /> {t.unreadCommentCount} mới
+          <IconChat size={11} /> {tr().taskTable.newComments(t.unreadCommentCount ?? 0)}
         </Badge>
       ) : (
         <span className="text-ink-disabled">—</span>
@@ -291,7 +292,7 @@ function ReturnCountCell({ value, onCommit }: { value: number; onCommit: (n: num
       <button
         type="button"
         onClick={(e) => (e.stopPropagation(), setEditing(true))}
-        aria-label="Sửa số lần trả lại"
+        aria-label={tr().taskTable.editReturns}
         className="block w-full rounded px-1 -mx-1 text-left font-mono text-[12px] text-ink-muted hover:bg-hover hover:text-ink"
       >
         {value || "—"}
@@ -303,7 +304,7 @@ function ReturnCountCell({ value, onCommit }: { value: number; onCommit: (n: num
       autoFocus
       type="number"
       min={0}
-      aria-label="Số lần trả lại"
+      aria-label={tr().taskTable.returns}
       value={v}
       onFocus={(e) => e.currentTarget.select()}
       onClick={(e) => e.stopPropagation()}
@@ -337,7 +338,7 @@ function AddRow({ onAdd }: { onAdd: (title: string) => Promise<void> }) {
   if (!editing) {
     return (
       <button type="button" onClick={() => setEditing(true)} className="flex h-full w-full items-center gap-2 px-3 text-left text-[13px] text-ink-faint hover:bg-row-hover hover:text-ink">
-        <IconPlus size={13} /> Thêm task
+        <IconPlus size={13} /> {tr().taskTable.add}
       </button>
     );
   }
@@ -345,7 +346,7 @@ function AddRow({ onAdd }: { onAdd: (title: string) => Promise<void> }) {
     <div className="flex h-full items-center gap-2 px-3">
       <IconPlus size={13} className="text-ink-faint" />
       <label htmlFor="inline-add" className="sr-only">
-        Tiêu đề task mới
+        {tr().taskTable.newTitle}
       </label>
       <input
         id="inline-add"
@@ -358,7 +359,7 @@ function AddRow({ onAdd }: { onAdd: (title: string) => Promise<void> }) {
           if (e.key === "Escape") (setEditing(false), setTitle(""));
         }}
         onBlur={() => !title.trim() && setEditing(false)}
-        placeholder="Tiêu đề task — Enter để tạo, Esc để huỷ"
+        placeholder={tr().taskTable.newTitlePh}
         className="h-7 min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-ink-placeholder"
       />
     </div>

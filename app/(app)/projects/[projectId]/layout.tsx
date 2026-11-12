@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/feedback";
 import { TaskDetailPanel } from "@/components/kairso/TaskDetailPanel";
 import { useDialogs } from "@/components/dialogs/DialogProvider";
 import { IconPlus, IconSettings } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 export default function ProjectLayout({ children, params }: { children: React.ReactNode; params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
@@ -57,9 +58,9 @@ export default function ProjectLayout({ children, params }: { children: React.Re
       <div className="p-6"><Skeleton className="h-6 w-56" /></div>
     ) : (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
-        <p className="text-[15px] font-semibold">Không tìm thấy dự án</p>
-        <p className="max-w-[360px] text-[13px] text-ink-muted">Dự án không tồn tại, đã bị xoá, hoặc bạn chưa là thành viên.</p>
-        <LinkButton href="/">Về tổng quan</LinkButton>
+        <p className="text-[15px] font-semibold">{tr().projLayout.notFound}</p>
+        <p className="max-w-[360px] text-[13px] text-ink-muted">{tr().projLayout.notFoundDesc}</p>
+        <LinkButton href="/">{tr().projLayout.backHome}</LinkButton>
       </div>
     );
   }
@@ -77,25 +78,25 @@ export default function ProjectLayout({ children, params }: { children: React.Re
         <div className="max-sm:hidden">
           <ViewTabs
             tabs={[
-              { href: `${base}/tasks`, label: "Task" },
+              { href: `${base}/tasks`, label: tr().sidebar.tabs.tasks },
               { href: `${base}/board`, label: "Board" },
               { href: `${base}/timeline`, label: "Timeline" },
             ]}
           />
         </div>
         <TopBarSpacer />
-        <IconButton label="Cài đặt dự án" variant="ghost" onClick={() => router.push(`${base}/settings`)}>
+        <IconButton label={tr().projLayout.settings} variant="ghost" onClick={() => router.push(`${base}/settings`)}>
           <IconSettings size={15} />
         </IconButton>
         <Button variant="primary" onClick={() => openCreateTask({ projectId })} className="max-sm:hidden">
-          <IconPlus size={14} /> Tạo task
+          <IconPlus size={14} /> {tr().projLayout.newTask}
         </Button>
       </TopBar>
       {/* Mobile: tab Task/Board/Timeline nằm dưới thanh trên. */}
       <div className="border-b border-line bg-surface px-3 py-1.5 sm:hidden">
         <ViewTabs
           tabs={[
-            { href: `${base}/tasks`, label: "Task" },
+            { href: `${base}/tasks`, label: tr().sidebar.tabs.tasks },
             { href: `${base}/board`, label: "Board" },
             { href: `${base}/timeline`, label: "Timeline" },
           ]}
@@ -110,7 +111,7 @@ export default function ProjectLayout({ children, params }: { children: React.Re
         onClick={() => openCreateTask({ projectId })}
         className="fixed bottom-[76px] right-4 z-30 inline-flex h-12 items-center gap-2 rounded-full bg-accent px-5 text-[14px] font-medium text-accent-on shadow-overlay sm:hidden"
       >
-        <IconPlus size={16} /> Tạo task
+        <IconPlus size={16} /> {tr().projLayout.newTask}
       </button>
     </>
   );

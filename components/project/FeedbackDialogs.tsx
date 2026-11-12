@@ -16,10 +16,11 @@ import { Field, Input, SearchInput, Select, Textarea } from "@/components/ui/for
 import { Badge } from "@/components/ui/feedback";
 import { IconClose, IconPlus } from "@/components/icons";
 import { StatusChip } from "@/components/kairso/StatusChip";
+import { tr } from "@/lib/i18n";
 
 export function CreateFeedbackDialog({ open, projectId, onClose }: { open: boolean; projectId: string; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="Thêm feedback" width={520}>
+    <Modal open={open} onClose={onClose} title={tr().fbDialog.addTitle} width={520}>
       <CreateForm projectId={projectId} onClose={onClose} />
     </Modal>
   );
@@ -40,34 +41,34 @@ function CreateForm({ projectId, onClose }: { projectId: string; onClose: () => 
         if (!ok) return;
         create.mutate(
           { ...f, featureName: f.featureName.trim(), content: f.content.trim(), submitterName: f.submitterName.trim(), submitterCompany: f.submitterCompany.trim() },
-          { onSuccess: () => (toast.success("Đã thêm feedback"), onClose()), onError: (e) => toast.error(e) },
+          { onSuccess: () => (toast.success(tr().fbDialog.added), onClose()), onError: (e) => toast.error(e) },
         );
       }}
       className="flex flex-col gap-3.5"
     >
-      <Field label="Tính năng / chức năng" required>{(p) => <Input {...p} autoFocus value={f.featureName} onChange={(e) => set("featureName", e.target.value)} />}</Field>
-      <Field label="Nội dung" required>{(p) => <Textarea {...p} rows={4} value={f.content} onChange={(e) => set("content", e.target.value)} />}</Field>
+      <Field label={tr().fbDialog.feature} required>{(p) => <Input {...p} autoFocus value={f.featureName} onChange={(e) => set("featureName", e.target.value)} />}</Field>
+      <Field label={tr().fbDialog.content} required>{(p) => <Textarea {...p} rows={4} value={f.content} onChange={(e) => set("content", e.target.value)} />}</Field>
       <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-        <Field label="Loại">
+        <Field label={tr().fbDialog.type}>
           {(p) => (
             <Select {...p} value={f.feedbackType} onChange={(e) => set("feedbackType", e.target.value)}>
               {FEEDBACK_TYPES.map((t) => <option key={t} value={t}>{FEEDBACK_TYPE_LABEL[t]}</option>)}
             </Select>
           )}
         </Field>
-        <Field label="Mức ưu tiên">
+        <Field label={tr().fbDialog.priority}>
           {(p) => (
             <Select {...p} value={f.priority} onChange={(e) => set("priority", Number(e.target.value))}>
               {PRIORITY_LEVELS.map((l) => <option key={l} value={PRIORITY_META[l].api}>{PRIORITY_META[l].tag} · {PRIORITY_META[l].label}</option>)}
             </Select>
           )}
         </Field>
-        <Field label="Người gửi" required>{(p) => <Input {...p} value={f.submitterName} onChange={(e) => set("submitterName", e.target.value)} />}</Field>
-        <Field label="Công ty">{(p) => <Input {...p} value={f.submitterCompany} onChange={(e) => set("submitterCompany", e.target.value)} />}</Field>
+        <Field label={tr().fbDialog.submitter} required>{(p) => <Input {...p} value={f.submitterName} onChange={(e) => set("submitterName", e.target.value)} />}</Field>
+        <Field label={tr().fbDialog.company}>{(p) => <Input {...p} value={f.submitterCompany} onChange={(e) => set("submitterCompany", e.target.value)} />}</Field>
       </div>
       <div className="flex justify-end gap-2 border-t border-line pt-3">
-        <Button onClick={onClose}>Huỷ</Button>
-        <Button type="submit" variant="primary" loading={create.isPending} disabled={!ok}>Thêm</Button>
+        <Button onClick={onClose}>{tr().fbDialog.cancel}</Button>
+        <Button type="submit" variant="primary" loading={create.isPending} disabled={!ok}>{tr().fbDialog.add}</Button>
       </div>
     </form>
   );
@@ -112,45 +113,45 @@ function Detail({ feedback: f, projectId, onClose }: { feedback: ProjectFeedback
           {(f.images ?? []).map((src) => (
             <a key={src} href={src} target="_blank" rel="noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={src} alt="Ảnh đính kèm" className="h-24 rounded-md border border-line object-cover" />
+              <img src={src} alt={tr().fbDialog.images} className="h-24 rounded-md border border-line object-cover" />
             </a>
           ))}
         </div>
       )}
 
-      <Field label="Trạng thái">
+      <Field label={tr().fbDialog.status}>
         {(p) => (
-          <Select {...p} value={f.status} onChange={(e) => setStatus.mutate({ id: f.id, status: e.target.value as ProjectFeedbackResponse["status"] }, { onSuccess: () => toast.success("Đã đổi trạng thái"), ...err })}>
+          <Select {...p} value={f.status} onChange={(e) => setStatus.mutate({ id: f.id, status: e.target.value as ProjectFeedbackResponse["status"] }, { onSuccess: () => toast.success(tr().fbDialog.statusChanged), ...err })}>
             {FEEDBACK_STATUSES.map((s) => <option key={s} value={s}>{FEEDBACK_STATUS_LABEL[s]}</option>)}
           </Select>
         )}
       </Field>
 
       <div className="flex flex-col gap-2 rounded-lg border border-line p-3">
-        <p className="text-[12px] font-medium text-ink-2">Phản hồi hiển thị cho khách</p>
-        <Textarea aria-label="Phản hồi cho khách" rows={3} value={response} onChange={(e) => setResponse(e.target.value)} placeholder="Chưa có phản hồi…" />
+        <p className="text-[12px] font-medium text-ink-2">{tr().fbDialog.responseVisible}</p>
+        <Textarea aria-label={tr().fbDialog.response} rows={3} value={response} onChange={(e) => setResponse(e.target.value)} placeholder={tr().fbDialog.responsePh} />
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-2 text-[12px] text-ink-muted">
-            Dự kiến xong
+            {tr().fbDialog.expected}
             <input type="date" value={fixDate} onChange={(e) => setFixDate(e.target.value)} className="h-ctl-sm rounded-md border border-line-strong bg-surface px-2 font-mono text-[12px] text-ink" />
           </label>
           <span className="flex-1" />
-          {f.respondedAt && <span className="text-[11.5px] text-ink-faint">Đã phản hồi {fmtDate(f.respondedAt)}{f.respondedBy ? ` bởi ${f.respondedBy.name}` : ""}</span>}
+          {f.respondedAt && <span className="text-[11.5px] text-ink-faint">{tr().fbDialog.responded(fmtDate(f.respondedAt), f.respondedBy?.name ?? "")}</span>}
           <Button
             size="sm"
             variant="primary"
             loading={respond.isPending}
             disabled={!response.trim()}
-            onClick={() => respond.mutate({ id: f.id, body: { response: response.trim(), expectedFixDate: fixDate ? new Date(`${fixDate}T00:00:00`).toISOString() : undefined } }, { onSuccess: () => toast.success("Đã lưu phản hồi"), ...err })}
+            onClick={() => respond.mutate({ id: f.id, body: { response: response.trim(), expectedFixDate: fixDate ? new Date(`${fixDate}T00:00:00`).toISOString() : undefined } }, { onSuccess: () => toast.success(tr().fbDialog.responseSaved), ...err })}
           >
-            Lưu phản hồi
+            {tr().fbDialog.saveResponse}
           </Button>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <p className="text-[12px] font-medium text-ink-2">Task liên quan</p>
+          <p className="text-[12px] font-medium text-ink-2">{tr().fbDialog.tasks}</p>
           <span className="flex-1" />
           <Button
             size="sm"
@@ -159,11 +160,11 @@ function Detail({ feedback: f, projectId, onClose }: { feedback: ProjectFeedback
               openCreateTask({ projectId, feedbackId: f.id });
             }}
           >
-            <IconPlus size={13} /> Tạo task từ phản hồi
+            <IconPlus size={13} /> {tr().fbDialog.createTask}
           </Button>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {(f.tasks ?? []).length === 0 && <span className="text-ink-muted">Chưa liên kết task nào.</span>}
+          {(f.tasks ?? []).length === 0 && <span className="text-ink-muted">{tr().fbDialog.noTasks}</span>}
           {(f.tasks ?? []).map((t) => {
             const full = byCode.get(t.code);
             return (
@@ -171,7 +172,7 @@ function Detail({ feedback: f, projectId, onClose }: { feedback: ProjectFeedback
                 <span className="font-mono text-ink-faint">{t.code}</span>
                 <StatusChip status={t.status as TaskResponse["status"]} size="sm" />
                 {full && (
-                  <button type="button" aria-label={`Bỏ liên kết ${t.code}`} onClick={() => unlink.mutate({ id: f.id, taskId: full.id }, err)} className="text-ink-faint hover:text-danger">
+                  <button type="button" aria-label={tr().fbDialog.unlink(t.code)} onClick={() => unlink.mutate({ id: f.id, taskId: full.id }, err)} className="text-ink-faint hover:text-danger">
                     <IconClose size={11} />
                   </button>
                 )}
@@ -179,7 +180,7 @@ function Detail({ feedback: f, projectId, onClose }: { feedback: ProjectFeedback
             );
           })}
         </div>
-        <SearchInput value={q} onChange={setQ} placeholder="Tìm task để liên kết…" label="Tìm task để liên kết" />
+        <SearchInput value={q} onChange={setQ} placeholder={tr().fbDialog.searchPh} label={tr().fbDialog.search} />
         {q && (
           <ul className="flex flex-col">
             {candidates.map((t) => (
@@ -190,7 +191,7 @@ function Detail({ feedback: f, projectId, onClose }: { feedback: ProjectFeedback
                 </button>
               </li>
             ))}
-            {candidates.length === 0 && <li className="px-2 py-2 text-ink-muted">Không có task phù hợp</li>}
+            {candidates.length === 0 && <li className="px-2 py-2 text-ink-muted">{tr().fbDialog.noMatch}</li>}
           </ul>
         )}
       </div>

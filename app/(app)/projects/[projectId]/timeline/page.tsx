@@ -9,6 +9,7 @@ import { Gantt, type GanttRow } from "@/components/project/Gantt";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/ui/feedback";
 import { Badge } from "@/components/ui/feedback";
 import { IconTimeline } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 export default function ProjectTimelinePage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
@@ -64,12 +65,12 @@ export default function ProjectTimelinePage({ params }: { params: Promise<{ proj
         <>
           {unscheduled > 0 && (
             <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-1.5 text-[12px] text-ink-muted">
-              <Badge>{unscheduled}</Badge> task chưa có ngày bắt đầu/hạn nên không hiện trên timeline.
+              <Badge>{unscheduled}</Badge> {tr().timeline.unscheduled}
             </div>
           )}
           <Gantt
             rows={rows}
-            empty={<EmptyState icon={<IconTimeline size={28} />} title="Chưa có task nào được lên lịch" description="Đặt ngày bắt đầu hoặc hạn cho task để thấy chúng trên timeline." className="flex-1" />}
+            empty={<EmptyState icon={<IconTimeline size={28} />} title={tr().timeline.none} description={tr().timeline.noneDesc} className="flex-1" />}
           />
         </>
       )}

@@ -14,6 +14,8 @@ import { EmptyState, Skeleton } from "@/components/ui/feedback";
 import { AttachmentLink } from "@/components/kairso/TaskComments";
 import { IconArrowRight, IconClose, IconEdit, IconUpload } from "@/components/icons";
 import { ModuleSprints } from "./ModuleSprints";
+import { tr } from "@/lib/i18n";
+import { liveLabels } from "@/lib/i18n/live";
 
 export type ModuleDetailTab = "sprints" | "files" | "history";
 
@@ -42,7 +44,7 @@ function Body({ module, initialTab, onEdit }: { module: ModuleResponse; initialT
     if (!list?.length) return;
     try {
       const n = await upload(list);
-      toast.success(`Đã tải lên ${n} tài liệu`);
+      toast.success(tr().moduleDetail.uploaded(n));
     } catch (e) {
       toast.error(e);
     } finally {
@@ -59,7 +61,7 @@ function Body({ module, initialTab, onEdit }: { module: ModuleResponse; initialT
         </span>
         <span className="text-ink-muted">{sprintSummary(module)}</span>
         <span className={overdue ? "font-medium text-danger" : "text-ink-muted"}>
-          Phát hành {module.status === "released" && module.releasedAt ? `${fmtDate(module.releasedAt)}` : module.endDate ? `dự kiến ${fmtDate(module.endDate)}${overdue ? " · trễ" : ""}` : "chưa đặt ngày"}
+          {tr().moduleDetail.release} {module.status === "released" && module.releasedAt ? `${fmtDate(module.releasedAt)}` : module.endDate ? `${tr().moduleDetail.planned} ${fmtDate(module.endDate)}${overdue ? tr().moduleDetail.late : ""}` : tr().moduleDetail.noDate}
         </span>
         <span className="flex-1" />
         {next && (
@@ -73,24 +75,24 @@ function Body({ module, initialTab, onEdit }: { module: ModuleResponse; initialT
           </Button>
         )}
         <Button size="sm" onClick={() => onEdit(module)}>
-          <IconEdit size={13} /> Sửa
+          <IconEdit size={13} /> {tr().moduleDetail.edit}
         </Button>
       </div>
       <Tabs
-        label="Chi tiết module"
+        label={tr().moduleDetail.title}
         value={tab}
         onChange={setTab}
         tabs={[
           { value: "sprints", label: "Sprint", count: (module.sprints ?? []).length },
-          { value: "files", label: "Tài liệu", count: files.data?.length ?? module.attachmentCount },
-          { value: "history", label: "Lịch sử" },
+          { value: "files", label: tr().moduleDetail.docs, count: files.data?.length ?? module.attachmentCount },
+          { value: "history", label: tr().moduleDetail.history },
         ]}
       />
       {tab === "sprints" ? (
         <ModuleSprints module={module} />
       ) : tab === "files" ? (
         <div className="flex flex-col gap-2">
-          <input ref={ref} type="file" multiple className="sr-only" aria-label="Chọn file" onChange={(e) => onFiles(e.target.files)} />
+          <input ref={ref} type="file" multiple className="sr-only" aria-label={tr().moduleDetail.pickFile} onChange={(e) => onFiles(e.target.files)} />
           <button
             type="button"
             onClick={() => ref.current?.click()}
@@ -105,16 +107,16 @@ function Body({ module, initialTab, onEdit }: { module: ModuleResponse; initialT
             className={`flex flex-col items-center gap-1 rounded-lg border border-dashed px-4 py-5 text-center transition-colors ${over ? "border-accent bg-accent-soft" : "border-line-strong hover:bg-hover"} disabled:cursor-wait`}
           >
             <IconUpload size={18} className="text-ink-faint" />
-            <span className="text-[13px] font-medium text-ink">{busy ? "Đang tải lên…" : "Kéo thả tài liệu vào đây hoặc bấm để chọn"}</span>
-            <span className="text-[11.5px] text-ink-faint">Nhiều file cùng lúc · PDF, Word, Excel, ảnh…</span>
+            <span className="text-[13px] font-medium text-ink">{busy ? tr().moduleDetail.uploading : tr().moduleDetail.drop}</span>
+            <span className="text-[11.5px] text-ink-faint">{tr().moduleDetail.dropHint}</span>
           </button>
           {files.isLoading && <Skeleton className="h-9" />}
-          {files.data?.length === 0 && <EmptyState title="Chưa có tài liệu" className="py-6" />}
+          {files.data?.length === 0 && <EmptyState title={tr().moduleDetail.noDocs} className="py-6" />}
           <ul className="flex flex-col gap-1.5">
             {(files.data ?? []).map((a) => (
               <li key={a.id} className="flex items-center gap-2">
                 <AttachmentLink url={a.fileUrl} name={a.fileName} type={a.contentType} size={a.sizeBytes} />
-                <button type="button" aria-label={`Xoá ${a.fileName}`} onClick={() => remove.mutate(a.id, { onError: (e) => toast.error(e) })} className="text-ink-faint hover:text-danger">
+                <button type="button" aria-label={tr().moduleDetail.deleteOf(a.fileName)} onClick={() => remove.mutate(a.id, { onError: (e) => toast.error(e) })} className="text-ink-faint hover:text-danger">
                   <IconClose size={12} />
                 </button>
               </li>
@@ -124,7 +126,7 @@ function Body({ module, initialTab, onEdit }: { module: ModuleResponse; initialT
       ) : (
         <ul className="flex flex-col gap-2.5 text-[12.5px]">
           {history.isLoading && <Skeleton className="h-16" />}
-          {history.data?.length === 0 && <EmptyState title="Chưa có thay đổi" className="py-6" />}
+          {history.data?.length === 0 && <EmptyState title={tr().moduleDetail.noHistory} className="py-6" />}
           {(history.data ?? []).map((h) => (
             <li key={h.id}>
               <span className="font-medium">{h.changedBy.name}</span> {describeChange(h)}
@@ -137,24 +139,24 @@ function Body({ module, initialTab, onEdit }: { module: ModuleResponse; initialT
   );
 }
 
-const FIELD_LABEL: Record<string, string> = { name: "tên", startDate: "ngày bắt đầu", endDate: "ngày phát hành mục tiêu", currentPhase: "giai đoạn" };
+const FIELD_LABEL: Record<string, string> = liveLabels(() => tr().moduleField);
 
 function describeChange(h: ModuleHistoryResponse) {
   const from = h.oldValue ?? "";
   const to = h.newValue ?? "";
   if (h.field === "sprint") {
-    if (!from) return <>thêm <span className="font-medium">{to}</span></>;
-    if (!to) return <>xoá <span className="font-medium">{from}</span></>;
-    return <>cập nhật sprint <span className="text-ink-muted">{from}</span> → <span>{to}</span></>;
+    if (!from) return <>{tr().moduleDetail.added} <span className="font-medium">{to}</span></>;
+    if (!to) return <>{tr().moduleDetail.removed} <span className="font-medium">{from}</span></>;
+    return <>{tr().moduleDetail.updatedSprint} <span className="text-ink-muted">{from}</span> → <span>{to}</span></>;
   }
   const label = (v: string) =>
     h.field === "status" ? MODULE_STATUS_LABEL[v as ModuleStatus] ?? v
     : h.field === "startDate" || h.field === "endDate" ? (v ? fmtDate(v) : "")
     : v;
-  const name = h.field === "status" ? "trạng thái" : FIELD_LABEL[h.field] ?? h.field;
+  const name = FIELD_LABEL[h.field] ?? h.field;
   return (
     <>
-      đổi <span className="font-medium">{name}</span> từ <span className="text-ink-muted">{label(from) || "—"}</span> sang <span>{label(to) || "—"}</span>
+      {tr().moduleDetail.changed} <span className="font-medium">{name}</span> {tr().moduleDetail.from} <span className="text-ink-muted">{label(from) || "—"}</span> {tr().moduleDetail.to} <span>{label(to) || "—"}</span>
     </>
   );
 }

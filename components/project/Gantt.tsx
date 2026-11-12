@@ -4,10 +4,12 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { addDays, startOfWeek } from "@/lib/domain/format";
 import { localDateKey } from "@/lib/domain/task";
 import { SegmentedControl } from "@/components/ui/form";
+import { tr } from "@/lib/i18n";
+import { liveLabels } from "@/lib/i18n/live";
 
 type Zoom = "day" | "week" | "month" | "quarter" | "year";
 const PX: Record<Zoom, number> = { day: 44, week: 16, month: 6, quarter: 2.2, year: 0.6 };
-const ZOOM_LABEL: Record<Zoom, string> = { day: "Ngày", week: "Tuần", month: "Tháng", quarter: "Quý", year: "Năm" };
+const ZOOM_LABEL: Record<Zoom, string> = liveLabels(() => ({ day: tr().gantt.day, week: tr().gantt.week, month: tr().gantt.month, quarter: tr().gantt.quarter, year: tr().gantt.year }));
 const ROW_H = 36;
 const LABEL_W = 240;
 const DAY = 86400000;
@@ -91,13 +93,13 @@ export function Gantt({ rows, defaultZoom = "week", empty, scrollToToday = false
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-surface">
       <div className="flex h-toolbar shrink-0 items-center gap-2 border-b border-line px-4">
-        <SegmentedControl label="Mức thu phóng" size="sm" value={zoom} onChange={setZoom} options={(Object.keys(ZOOM_LABEL) as Zoom[]).map((z) => ({ value: z, label: ZOOM_LABEL[z] }))} />
+        <SegmentedControl label={tr().gantt.zoom} size="sm" value={zoom} onChange={setZoom} options={(Object.keys(ZOOM_LABEL) as Zoom[]).map((z) => ({ value: z, label: ZOOM_LABEL[z] }))} />
         <button
           type="button"
           onClick={() => scroller.current?.scrollTo({ left: Math.max(0, todayX - 200), behavior: "smooth" })}
           className="h-ctl-sm rounded-md border border-line-strong px-2.5 text-[12px] text-ink-2 hover:bg-hover"
         >
-          Hôm nay
+          {tr().gantt.today}
         </button>
       </div>
       <div ref={scroller} className="min-h-0 flex-1 overflow-auto">
@@ -154,7 +156,7 @@ export function Gantt({ rows, defaultZoom = "week", empty, scrollToToday = false
           </div>
         </div>
       </div>
-      <p className="sr-only">Hôm nay là {localDateKey()}</p>
+      <p className="sr-only">{tr().gantt.todayIs(localDateKey())}</p>
     </div>
   );
 }

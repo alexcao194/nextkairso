@@ -15,6 +15,7 @@ import { Badge, EmptyState, ErrorState, SkeletonRows } from "@/components/ui/fee
 import { useConfirm } from "@/components/ui/Confirm";
 import { CreateFeedbackDialog, FeedbackDetailDialog } from "@/components/project/FeedbackDialogs";
 import { IconChat, IconCopy, IconGlobe, IconPlus, IconRefresh } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 export default function ProjectFeedbackPage({ params }: { params: Promise<{ projectId: string }> }) {
   const { projectId } = use(params);
@@ -38,23 +39,23 @@ export default function ProjectFeedbackPage({ params }: { params: Promise<{ proj
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <section aria-label="Link công khai" className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-surface px-4 py-2.5">
-        <span className="flex items-center gap-2 text-[13px] font-medium"><IconGlobe size={14} className="text-ink-faint" /> Trang phản hồi công khai</span>
+      <section aria-label={tr().fbPage.publicLink} className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-surface px-4 py-2.5">
+        <span className="flex items-center gap-2 text-[13px] font-medium"><IconGlobe size={14} className="text-ink-faint" /> {tr().fbPage.publicPage}</span>
         {isManager ? (
           <Switch
-            label="Bật trang phản hồi công khai"
+            label={tr().fbPage.enablePublic}
             checked={!!settings.data?.enabled}
             disabled={settings.isLoading || sm.enable.isPending || sm.disable.isPending}
             onChange={(v) => (v ? sm.enable : sm.disable).mutate(undefined, fail)}
           />
         ) : (
-          <Badge tone={settings.data?.enabled ? "success" : "neutral"}>{settings.data?.enabled ? "Đang bật" : "Đang tắt"}</Badge>
+          <Badge tone={settings.data?.enabled ? "success" : "neutral"}>{settings.data?.enabled ? tr().fbPage.on : tr().fbPage.off}</Badge>
         )}
         {settings.data?.enabled && publicUrl && (
           <>
             <code className="max-w-[320px] truncate rounded bg-hover px-2 py-1 font-mono text-[11.5px] text-ink-2">{publicUrl}</code>
-            <Button size="sm" onClick={() => navigator.clipboard.writeText(publicUrl).then(() => toast.success("Đã sao chép link"), () => toast.error("Không sao chép được"))}>
-              <IconCopy size={13} /> Sao chép
+            <Button size="sm" onClick={() => navigator.clipboard.writeText(publicUrl).then(() => toast.success(tr().fbPage.copied), () => toast.error(tr().fbPage.copyFailed))}>
+              <IconCopy size={13} /> {tr().fbPage.copy}
             </Button>
             {isManager && (
               <>
@@ -63,14 +64,14 @@ export default function ProjectFeedbackPage({ params }: { params: Promise<{ proj
                   variant="ghost"
                   loading={sm.regenerate.isPending}
                   onClick={async () => {
-                    if (await confirm({ title: "Tạo lại link?", message: "Link cũ sẽ ngừng hoạt động ngay.", confirmLabel: "Tạo lại link", danger: true })) sm.regenerate.mutate(undefined, fail);
+                    if (await confirm({ title: tr().fbPage.regenTitle, message: tr().fbPage.regenDesc, confirmLabel: tr().fbPage.regen, danger: true })) sm.regenerate.mutate(undefined, fail);
                   }}
                 >
-                  <IconRefresh size={13} /> Tạo lại link
+                  <IconRefresh size={13} /> {tr().fbPage.regen}
                 </Button>
                 <label className="flex items-center gap-2 text-[12.5px] text-ink-2">
-                  <Switch label="Hiện timeline module cho khách" checked={!!settings.data.showModuleTimeline} onChange={(v) => sm.showTimeline.mutate(v, fail)} />
-                  Hiện timeline module
+                  <Switch label={tr().fbPage.showTimelineLabel} checked={!!settings.data.showModuleTimeline} onChange={(v) => sm.showTimeline.mutate(v, fail)} />
+                  {tr().fbPage.showTimeline}
                 </label>
               </>
             )}
@@ -79,18 +80,18 @@ export default function ProjectFeedbackPage({ params }: { params: Promise<{ proj
       </section>
 
       <div className="flex h-toolbar shrink-0 items-center gap-2 overflow-x-auto border-b border-line bg-surface px-4">
-        <SearchInput value={q} onChange={(v) => setQ(v || null)} placeholder="Tìm phản hồi…" label="Tìm phản hồi" className="w-[220px] shrink-0" />
-        <Select small aria-label="Lọc trạng thái" className="w-40 shrink-0" value={status} onChange={(e) => setStatus(e.target.value || null)}>
-          <option value="">Mọi trạng thái</option>
+        <SearchInput value={q} onChange={(v) => setQ(v || null)} placeholder={tr().fbPage.searchPh} label={tr().fbPage.search} className="w-[220px] shrink-0" />
+        <Select small aria-label={tr().fbPage.filterStatus} className="w-40 shrink-0" value={status} onChange={(e) => setStatus(e.target.value || null)}>
+          <option value="">{tr().fbPage.allStatuses}</option>
           {FEEDBACK_STATUSES.map((s) => <option key={s} value={s}>{FEEDBACK_STATUS_LABEL[s]}</option>)}
         </Select>
-        <Select small aria-label="Lọc loại" className="w-36 shrink-0" value={type} onChange={(e) => setType(e.target.value || null)}>
-          <option value="">Mọi loại</option>
+        <Select small aria-label={tr().fbPage.filterType} className="w-36 shrink-0" value={type} onChange={(e) => setType(e.target.value || null)}>
+          <option value="">{tr().fbPage.allTypes}</option>
           {FEEDBACK_TYPES.map((t) => <option key={t} value={t}>{FEEDBACK_TYPE_LABEL[t]}</option>)}
         </Select>
         <span className="flex-1" />
-        <span className="shrink-0 font-mono text-[12px] text-ink-muted">{list.data?.stats?.totalCount ?? items.length} phản hồi</span>
-        <Button size="sm" variant="primary" onClick={() => setCreating(true)}><IconPlus size={13} /> Thêm</Button>
+        <span className="shrink-0 font-mono text-[12px] text-ink-muted">{tr().fbPage.count(list.data?.stats?.totalCount ?? items.length)}</span>
+        <Button size="sm" variant="primary" onClick={() => setCreating(true)}><IconPlus size={13} /> {tr().fbPage.add}</Button>
       </div>
 
       {list.isLoading ? (
@@ -98,7 +99,7 @@ export default function ProjectFeedbackPage({ params }: { params: Promise<{ proj
       ) : list.isError ? (
         <ErrorState error={list.error} onRetry={() => list.refetch()} />
       ) : items.length === 0 ? (
-        <EmptyState icon={<IconChat size={28} />} title="Chưa có phản hồi" description="Bật trang công khai và gửi link cho khách, hoặc thêm phản hồi thủ công." className="flex-1" />
+        <EmptyState icon={<IconChat size={28} />} title={tr().fbPage.none} description={tr().fbPage.noneDesc} className="flex-1" />
       ) : (
         <ul className="min-h-0 flex-1 overflow-y-auto bg-surface">
           {items.map((f) => {

@@ -19,6 +19,7 @@ import { Field, Input, Textarea } from "@/components/ui/form";
 import { EmptyState } from "@/components/ui/feedback";
 import { useConfirm } from "@/components/ui/Confirm";
 import { IconEdit, IconPlay, IconPlus, IconTrash, IconCheck } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 const ddmm = (k: string) => `${k.slice(8, 10)}/${k.slice(5, 7)}`;
 
@@ -36,7 +37,7 @@ export function ModuleSprints({ module }: { module: ModuleResponse }) {
   return (
     <div className="flex flex-col gap-2">
       {sprints.length === 0 && editing?.kind !== "new" && (
-        <EmptyState title="Chưa có sprint" description="Chia module thành các sprint ngắn (thường 2 tuần, tối đa 1 tháng), mỗi sprint có một Sprint Goal." className="py-6" />
+        <EmptyState title={tr().sprints.none} description={tr().sprints.noneDesc} className="py-6" />
       )}
       <ol className="flex flex-col gap-2">
         {sprints.map((s) =>
@@ -51,7 +52,7 @@ export function ModuleSprints({ module }: { module: ModuleResponse }) {
                 onSave={(body) =>
                   update.mutate(
                     { id: s.id, body: editing.kind === "finish" ? { ...body, status: "completed" } : body },
-                    { onSuccess: () => (setEditing(null), toast.success(editing.kind === "finish" ? `Đã kết thúc ${s.name}` : "Đã lưu sprint")), onError: err },
+                    { onSuccess: () => (setEditing(null), toast.success(editing.kind === "finish" ? tr().sprints.ended(s.name) : tr().sprints.saved)), onError: err },
                   )
                 }
               />
@@ -60,12 +61,12 @@ export function ModuleSprints({ module }: { module: ModuleResponse }) {
             <SprintCard
               key={s.id}
               sprint={s}
-              blockedStart={running && running.id !== s.id ? `${running.name} đang chạy — kết thúc trước` : null}
-              onStart={() => update.mutate({ id: s.id, body: { status: "active" } }, { onSuccess: () => toast.success(`Đã bắt đầu ${s.name}`), onError: err })}
+              blockedStart={running && running.id !== s.id ? tr().sprints.running(running.name) : null}
+              onStart={() => update.mutate({ id: s.id, body: { status: "active" } }, { onSuccess: () => toast.success(tr().sprints.started(s.name)), onError: err })}
               onFinish={() => setEditing({ kind: "finish", id: s.id })}
               onEdit={() => setEditing({ kind: "edit", id: s.id })}
               onDelete={async () => {
-                if (await confirm({ title: `Xoá ${s.name}?`, message: s.goal || undefined, danger: true })) remove.mutate(s.id, { onError: err });
+                if (await confirm({ title: tr().sprints.confirmDelete(s.name), message: s.goal || undefined, danger: true })) remove.mutate(s.id, { onError: err });
               }}
             />
           ),
@@ -77,11 +78,11 @@ export function ModuleSprints({ module }: { module: ModuleResponse }) {
           all={sprints}
           busy={create.isPending}
           onCancel={() => setEditing(null)}
-          onSave={(b) => create.mutate({ name: b.name, goal: b.goal, startDate: b.startDate, endDate: b.endDate }, { onSuccess: () => (setEditing(null), toast.success("Đã thêm sprint")), onError: err })}
+          onSave={(b) => create.mutate({ name: b.name, goal: b.goal, startDate: b.startDate, endDate: b.endDate }, { onSuccess: () => (setEditing(null), toast.success(tr().sprints.added)), onError: err })}
         />
       ) : (
         <div>
-          <Button size="sm" variant="ghost" onClick={() => setEditing({ kind: "new" })}><IconPlus size={13} /> Thêm sprint</Button>
+          <Button size="sm" variant="ghost" onClick={() => setEditing({ kind: "new" })}><IconPlus size={13} /> {tr().sprints.add}</Button>
         </div>
       )}
     </div>
@@ -113,23 +114,23 @@ function SprintCard({
           {SPRINT_STATUS_LABEL[s.status]}
         </span>
         <span className={`font-mono text-[12px] ${overdue ? "font-medium text-danger" : "text-ink-muted"}`}>
-          {ddmm(s.startDate)} → {ddmm(s.endDate)} · {sprintDays(s)} ngày{overdue && " · quá hạn, cần kết thúc"}
+          {ddmm(s.startDate)} → {ddmm(s.endDate)} · {tr().sprints.days(sprintDays(s))}{overdue && tr().sprints.overdueSuffix}
         </span>
         <span className="flex-1" />
         {s.status === "planned" && (
           <Button size="sm" variant="primary" disabled={!!blockedStart} title={blockedStart ?? undefined} onClick={onStart}>
-            <IconPlay size={12} /> Bắt đầu sprint
+            <IconPlay size={12} /> {tr().sprints.start}
           </Button>
         )}
         {s.status === "active" && (
           <Button size="sm" variant="primary" onClick={onFinish}>
-            <IconCheck size={13} /> Kết thúc sprint
+            <IconCheck size={13} /> {tr().sprints.end}
           </Button>
         )}
-        <IconButton label={`Sửa ${s.name}`} variant="ghost" size="sm" onClick={onEdit}><IconEdit size={13} /></IconButton>
-        <IconButton label={`Xoá ${s.name}`} variant="ghost" size="sm" onClick={onDelete}><IconTrash size={13} /></IconButton>
+        <IconButton label={tr().sprints.editOf(s.name)} variant="ghost" size="sm" onClick={onEdit}><IconEdit size={13} /></IconButton>
+        <IconButton label={tr().sprints.deleteOf(s.name)} variant="ghost" size="sm" onClick={onDelete}><IconTrash size={13} /></IconButton>
       </div>
-      {s.goal ? <p className="text-[12.5px] text-ink-2"><span className="text-ink-faint">Sprint Goal:</span> {s.goal}</p> : s.status !== "completed" && <p className="text-[12px] text-ink-faint">Chưa có Sprint Goal.</p>}
+      {s.goal ? <p className="text-[12.5px] text-ink-2"><span className="text-ink-faint">Sprint Goal:</span> {s.goal}</p> : s.status !== "completed" && <p className="text-[12px] text-ink-faint">{tr().sprints.noGoal}</p>}
       {s.reviewNote && <p className="whitespace-pre-line text-[12.5px] text-ink-2"><span className="text-ink-faint">Review:</span> {s.reviewNote}</p>}
       {s.retroNote && <p className="whitespace-pre-line text-[12.5px] text-ink-2"><span className="text-ink-faint">Retrospective:</span> {s.retroNote}</p>}
     </li>
@@ -175,30 +176,30 @@ function SprintForm({
       }}
       className="flex flex-col gap-3 rounded-lg border border-accent-border bg-accent-soft/30 p-3"
     >
-      {finishing && <p className="text-[12.5px] font-medium">Kết thúc {sprint.name}: ghi lại Sprint Review và Retrospective.</p>}
+      {finishing && <p className="text-[12.5px] font-medium">{tr().sprints.finishing(sprint.name)}</p>}
       <div className="grid grid-cols-[1fr_140px_140px] gap-2 max-sm:grid-cols-1">
-        <Field label="Tên sprint" required>{(p) => <Input {...p} small value={d.name} onChange={(e) => set("name", e.target.value)} maxLength={120} />}</Field>
-        <Field label="Bắt đầu" required>{(p) => <Input {...p} small type="date" value={d.startDate} onChange={(e) => set("startDate", e.target.value)} />}</Field>
-        <Field label="Kết thúc" required>{(p) => <Input {...p} small type="date" min={d.startDate} value={d.endDate} onChange={(e) => set("endDate", e.target.value)} />}</Field>
+        <Field label={tr().sprints.name} required>{(p) => <Input {...p} small value={d.name} onChange={(e) => set("name", e.target.value)} maxLength={120} />}</Field>
+        <Field label={tr().sprints.startDate} required>{(p) => <Input {...p} small type="date" value={d.startDate} onChange={(e) => set("startDate", e.target.value)} />}</Field>
+        <Field label={tr().sprints.endDate} required>{(p) => <Input {...p} small type="date" min={d.startDate} value={d.endDate} onChange={(e) => set("endDate", e.target.value)} />}</Field>
       </div>
-      <Field label="Sprint Goal" hint="Mục tiêu duy nhất của sprint, chốt ở Sprint Planning.">
-        {(p) => <Textarea {...p} rows={2} autoFocus={!finishing} value={d.goal} onChange={(e) => set("goal", e.target.value)} placeholder="VD: QC tự điền nguyên nhân NCR trên hệ thống" />}
+      <Field label="Sprint Goal" hint={tr().sprints.goalHint}>
+        {(p) => <Textarea {...p} rows={2} autoFocus={!finishing} value={d.goal} onChange={(e) => set("goal", e.target.value)} placeholder={tr().sprints.goalPh} />}
       </Field>
       {showNotes && (
         <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-          <Field label="Sprint Review" hint="Đã demo gì, khách/PO phản hồi gì.">
+          <Field label="Sprint Review" hint={tr().sprints.reviewHint}>
             {(p) => <Textarea {...p} rows={3} autoFocus={finishing} value={d.reviewNote} onChange={(e) => set("reviewNote", e.target.value)} />}
           </Field>
-          <Field label="Retrospective" hint="Giữ gì, bỏ gì, thử gì ở sprint sau.">
+          <Field label="Retrospective" hint={tr().sprints.retroHint}>
             {(p) => <Textarea {...p} rows={3} value={d.retroNote} onChange={(e) => set("retroNote", e.target.value)} />}
           </Field>
         </div>
       )}
       {problem && <p role="alert" className="text-[12px] text-danger">{problem}</p>}
       <div className="flex justify-end gap-2">
-        <Button size="sm" onClick={onCancel}>Huỷ</Button>
+        <Button size="sm" onClick={onCancel}>{tr().sprints.cancel}</Button>
         <Button size="sm" type="submit" variant="primary" loading={busy} disabled={!ok}>
-          {finishing ? "Kết thúc sprint" : sprint.id ? "Lưu" : "Thêm sprint"}
+          {finishing ? tr().sprints.end : sprint.id ? tr().sprints.save : tr().sprints.add}
         </Button>
       </div>
     </form>

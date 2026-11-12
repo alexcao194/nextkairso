@@ -53,27 +53,10 @@ import {
   IconPlus,
   IconTrash,
 } from "@/components/icons";
+import { tr } from "@/lib/i18n";
+import { liveLabels } from "@/lib/i18n/live";
 
-const FIELD_LABEL: Record<string, string> = {
-  title: "Tiêu đề",
-  description: "Mô tả",
-  status: "Trạng thái",
-  priority: "Ưu tiên",
-  module_id: "Module",
-  moduleId: "Module",
-  estimation: "Ước tính",
-  start_date: "Ngày bắt đầu",
-  startDate: "Ngày bắt đầu",
-  end_date: "Hạn",
-  endDate: "Hạn",
-  archived: "Lưu trữ",
-  parent_id: "Task cha",
-  fault_holder_id: "Người chịu lỗi",
-  return_count: "Số lần trả lại",
-  workers: "Người làm",
-  fault_holders: "Người chịu lỗi",
-  labels: "Nhãn",
-};
+const FIELD_LABEL: Record<string, string> = liveLabels(() => tr().taskField);
 
 const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="flex min-h-8 items-start gap-3 max-sm:flex-col max-sm:gap-1">
@@ -102,7 +85,7 @@ export function TaskDetailPanel({
   if (task.isError || !task.data)
     return (
       <Shell variant={variant} onClose={onClose}>
-        <ErrorState error={task.error ?? new Error("Không tìm thấy task")} onRetry={() => task.refetch()} />
+        <ErrorState error={task.error ?? new Error(tr().taskDetail.notFound)} onRetry={() => task.refetch()} />
       </Shell>
     );
   return <Loaded task={task.data} variant={variant} onClose={onClose} onPrev={onPrev} onNext={onNext} />;
@@ -111,7 +94,7 @@ export function TaskDetailPanel({
 function Shell({ variant, children, onClose }: { variant: "panel" | "page"; children: React.ReactNode; onClose?: () => void }) {
   return (
     <aside
-      aria-label="Chi tiết task"
+      aria-label={tr().taskDetail.title}
       className={
         variant === "panel"
           ? "flex h-full w-panel shrink-0 flex-col border-l border-line bg-surface max-lg:fixed max-lg:inset-y-0 max-lg:right-0 max-lg:z-40 max-lg:w-full max-lg:max-w-[480px] max-lg:shadow-overlay max-sm:max-w-none"
@@ -120,7 +103,7 @@ function Shell({ variant, children, onClose }: { variant: "panel" | "page"; chil
     >
       {onClose && (
         <div className="flex justify-end p-2">
-          <IconButton label="Đóng" variant="ghost" size="sm" onClick={onClose}>
+          <IconButton label={tr().taskDetail.close} variant="ghost" size="sm" onClick={onClose}>
             <IconClose size={14} />
           </IconButton>
         </div>
@@ -131,7 +114,7 @@ function Shell({ variant, children, onClose }: { variant: "panel" | "page"; chil
 }
 
 const PanelSkeleton = () => (
-  <div className="flex flex-col gap-4 p-5" role="status" aria-label="Đang tải">
+  <div className="flex flex-col gap-4 p-5" role="status" aria-label={tr().taskDetail.loading}>
     <Skeleton className="h-4 w-24" />
     <Skeleton className="h-7 w-4/5" />
     <Skeleton className="h-8 w-full" />
@@ -192,7 +175,7 @@ function Loaded({
         {project && <span className="truncate text-[12px] text-ink-faint">· {project.name}</span>}
         <span className="flex-1" />
         {onPrev && (
-          <IconButton label="Task trước" variant="ghost" size="sm" onClick={onPrev}>
+          <IconButton label={tr().taskDetail.prev} variant="ghost" size="sm" onClick={onPrev}>
             <IconChevronUp size={14} />
           </IconButton>
         )}
@@ -202,44 +185,44 @@ function Loaded({
           </IconButton>
         )}
         <IconButton
-          label="Sao chép liên kết"
+          label={tr().taskDetail.copyLink}
           variant="ghost"
           size="sm"
-          onClick={() => navigator.clipboard.writeText(link).then(() => toast.success("Đã sao chép liên kết"), () => toast.error("Không sao chép được"))}
+          onClick={() => navigator.clipboard.writeText(link).then(() => toast.success(tr().taskDetail.copied), () => toast.error(tr().taskDetail.copyFailed))}
         >
           <IconCopy size={14} />
         </IconButton>
         {variant === "panel" && (
-          <IconButton label="Mở trang đầy đủ" variant="ghost" size="sm" onClick={() => router.push(`/projects/${task.projectId}/tasks/${task.id}`)}>
+          <IconButton label={tr().taskDetail.openFull} variant="ghost" size="sm" onClick={() => router.push(`/projects/${task.projectId}/tasks/${task.id}`)}>
             <IconMaximize size={14} />
           </IconButton>
         )}
         <Menu
           align="end"
           trigger={({ ref, open: _o, ...p }) => (
-            <IconButton ref={ref} label="Thêm thao tác" variant="ghost" size="sm" {...p}>
+            <IconButton ref={ref} label={tr().taskDetail.more} variant="ghost" size="sm" {...p}>
               <IconMore size={14} />
             </IconButton>
           )}
           items={[
-            { label: "Tạo task con", icon: <IconPlus size={14} />, onSelect: () => openCreateTask({ projectId: task.projectId, parentId: task.id, moduleId: task.moduleId }) },
-            { label: task.archived ? "Bỏ lưu trữ" : "Lưu trữ", icon: <IconArchive size={14} />, onSelect: () => patch({ archived: !task.archived }) },
+            { label: tr().taskDetail.newSubtask, icon: <IconPlus size={14} />, onSelect: () => openCreateTask({ projectId: task.projectId, parentId: task.id, moduleId: task.moduleId }) },
+            { label: task.archived ? tr().taskDetail.unarchive : tr().taskDetail.archive, icon: <IconArchive size={14} />, onSelect: () => patch({ archived: !task.archived }) },
             ...(isManager
               ? [{
-                  label: "Xoá task",
+                  label: tr().taskDetail.delete,
                   icon: <IconTrash size={14} />,
                   danger: true,
                   separated: true,
                   onSelect: async () => {
-                    if (!(await confirm({ title: `Xoá ${task.code}?`, message: "Task và toàn bộ bình luận sẽ bị xoá vĩnh viễn.", danger: true }))) return;
-                    del.mutate(task.id, { onSuccess: () => { toast.success("Đã xoá task"); onClose ? onClose() : router.replace(`/projects/${task.projectId}/tasks`); }, ...fail });
+                    if (!(await confirm({ title: tr().taskDetail.confirmDelete(task.code), message: tr().taskDetail.deleteDesc, danger: true }))) return;
+                    del.mutate(task.id, { onSuccess: () => { toast.success(tr().taskDetail.deleted); onClose ? onClose() : router.replace(`/projects/${task.projectId}/tasks`); }, ...fail });
                   },
                 }]
               : []),
           ]}
         />
         {onClose && (
-          <IconButton label="Đóng" variant="ghost" size="sm" onClick={onClose}>
+          <IconButton label={tr().taskDetail.close} variant="ghost" size="sm" onClick={onClose}>
             <IconClose size={14} />
           </IconButton>
         )}
@@ -247,10 +230,10 @@ function Loaded({
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="flex flex-col gap-4 p-5">
-          {task.archived && <Badge tone="warning">Đã lưu trữ</Badge>}
+          {task.archived && <Badge tone="warning">{tr().taskDetail.archived}</Badge>}
           <div>
             <label htmlFor="task-title" className="sr-only">
-              Tiêu đề task
+              {tr().taskDetail.taskTitle}
             </label>
             <textarea
               id="task-title"
@@ -275,25 +258,25 @@ function Loaded({
             <StatusPicker value={task.status} onChange={(status) => patch({ status })} />
             <PriorityPicker value={task.priority} onChange={(priority) => patch({ priority })} />
             <PeoplePicker
-              title="Người làm"
-              emptyLabel="Chưa giao"
+              title={tr().taskDetail.workers}
+              emptyLabel={tr().taskDetail.unassigned}
               people={people}
               value={asMap(task.workers)}
               onChange={(v) => syncWorkers.mutate({ task, people: v }, fail)}
             />
             {overdue && (
               <Badge tone="danger">
-                <IconAlert size={11} /> Quá hạn
+                <IconAlert size={11} /> {tr().taskDetail.overdue}
               </Badge>
             )}
-            {task.returnCount > 0 && <Badge tone="warning">Trả lại ×{task.returnCount}</Badge>}
+            {task.returnCount > 0 && <Badge tone="warning">{tr().taskDetail.returned(task.returnCount)}</Badge>}
           </div>
 
           <div className="flex flex-col gap-1">
             <Row label="Module">
               <ModulePicker bare modules={modules.data ?? []} value={task.moduleId} onChange={(id) => patch({ moduleId: id })} />
             </Row>
-            <Row label="Nhãn">
+            <Row label={tr().taskDetail.labels}>
               <LabelPicker
                 bare
                 labels={labels.data ?? []}
@@ -308,23 +291,23 @@ function Loaded({
                 }}
               />
             </Row>
-            <Row label="Người chịu lỗi">
+            <Row label={tr().taskDetail.faultHolders}>
               <PeoplePicker
                 bare
-                title="Người chịu lỗi"
-                emptyLabel="Chưa chỉ định"
+                title={tr().taskDetail.faultHolders}
+                emptyLabel={tr().taskDetail.noneSet}
                 people={people}
                 value={asMap(task.faultHolders)}
                 onChange={(v) => syncFault.mutate({ task, people: v }, fail)}
               />
             </Row>
-            <Row label="Bắt đầu">
-              <DateField label="Ngày bắt đầu" value={dateKey(task.startDate)} onChange={(v) => patch({ startDate: v ? startOfDayISO(v) : null })} />
+            <Row label={tr().taskDetail.start}>
+              <DateField label={tr().taskDetail.startDate} value={dateKey(task.startDate)} onChange={(v) => patch({ startDate: v ? startOfDayISO(v) : null })} />
             </Row>
-            <Row label="Hạn">
-              <DateField label="Hạn hoàn thành" value={dateKey(task.endDate)} min={dateKey(task.startDate) || undefined} onChange={(v) => patch({ endDate: v ? endOfDayISO(v) : null })} />
+            <Row label={tr().taskDetail.dueShort}>
+              <DateField label={tr().taskDetail.due} value={dateKey(task.endDate)} min={dateKey(task.startDate) || undefined} onChange={(v) => patch({ endDate: v ? endOfDayISO(v) : null })} />
             </Row>
-            <Row label="Ước tính (giờ)">
+            <Row label={tr().taskDetail.estimate}>
               <EstimateField value={task.estimation} onCommit={(n) => patch({ estimation: n })} />
             </Row>
           </div>
@@ -335,14 +318,14 @@ function Loaded({
         </div>
 
         <Tabs
-          label="Chi tiết task"
+          label={tr().taskDetail.title}
           value={tab}
           onChange={setTab}
           className="sticky top-0 z-10 bg-surface px-3"
           tabs={[
-            { value: "comments", label: "Bình luận" },
+            { value: "comments", label: tr().taskDetail.comments },
             { value: "subtasks", label: "Task con" },
-            { value: "history", label: "Lịch sử" },
+            { value: "history", label: tr().taskDetail.history },
           ]}
         />
         {tab === "comments" && <CommentList taskId={task.id} />}
@@ -362,7 +345,7 @@ function EstimateField({ value, onCommit }: { value: number; onCommit: (n: numbe
       small
       type="number"
       min={0}
-      aria-label="Ước tính (giờ)"
+      aria-label={tr().taskDetail.estimate}
       className="w-24 font-mono"
       value={v}
       placeholder="0"
@@ -385,33 +368,33 @@ function Description({ task, onSave }: { task: TaskResponse; onSave: (d: string)
   if (editing)
     return (
       <div className="flex flex-col gap-2">
-        <p className="text-[12px] font-medium text-ink-2">Mô tả</p>
+        <p className="text-[12px] font-medium text-ink-2">{tr().taskDetail.description}</p>
         <MarkdownEditor
           autoFocus
-          label="Mô tả task"
+          label={tr().taskDetail.descriptionLabel}
           height={260}
           value={text}
           onChange={setText}
           onSubmit={save}
-          placeholder="Hỗ trợ Markdown: **đậm**, danh sách, `code`, liên kết… Dán ảnh để chèn."
+          placeholder={tr().taskDetail.mdHint}
           onUploadImage={async (f) => (await uploadFile(f, "task_file", task.id)).fileUrl}
         />
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="primary" onClick={save}>Lưu</Button>
-          <Button size="sm" onClick={() => (setText(task.description ?? ""), setEditing(false))}>Huỷ</Button>
-          <span className="ml-auto text-[11px] text-ink-faint max-sm:hidden">Ctrl/⌘ + Enter để lưu</span>
+          <Button size="sm" variant="primary" onClick={save}>{tr().taskDetail.save}</Button>
+          <Button size="sm" onClick={() => (setText(task.description ?? ""), setEditing(false))}>{tr().taskDetail.cancel}</Button>
+          <span className="ml-auto text-[11px] text-ink-faint max-sm:hidden">{tr().taskDetail.saveShortcut}</span>
         </div>
       </div>
     );
   return (
     <div>
       <div className="mb-1 flex items-center">
-        <p className="text-[12px] font-medium text-ink-2">Mô tả</p>
+        <p className="text-[12px] font-medium text-ink-2">{tr().taskDetail.description}</p>
         <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setEditing(true)}>
-          <IconEdit size={12} /> {task.description ? "Sửa" : "Thêm mô tả"}
+          <IconEdit size={12} /> {task.description ? tr().taskDetail.edit : tr().taskDetail.addDescription}
         </Button>
       </div>
-      <MarkdownView source={task.description} placeholder="Chưa có mô tả." />
+      <MarkdownView source={task.description} placeholder={tr().taskDetail.noDescription} />
     </div>
   );
 }
@@ -443,10 +426,10 @@ function Attachments({ taskId }: { taskId: string }) {
   return (
     <div>
       <div className="mb-1.5 flex items-center gap-2">
-        <p className="text-[12px] font-medium text-ink-2">Đính kèm{list.data?.length ? ` (${list.data.length})` : ""}</p>
-        <input ref={ref} type="file" multiple className="sr-only" aria-label="Chọn file đính kèm" onChange={(e) => onFiles(e.target.files)} />
+        <p className="text-[12px] font-medium text-ink-2">{tr().taskDetail.attachments(list.data?.length ?? 0)}</p>
+        <input ref={ref} type="file" multiple className="sr-only" aria-label={tr().taskDetail.pickFile} onChange={(e) => onFiles(e.target.files)} />
         <Button size="sm" variant="ghost" loading={busy} onClick={() => ref.current?.click()}>
-          <IconPaperclip size={13} /> Thêm file
+          <IconPaperclip size={13} /> {tr().taskDetail.addFile}
         </Button>
       </div>
       {list.data && list.data.length > 0 && (
@@ -456,9 +439,9 @@ function Attachments({ taskId }: { taskId: string }) {
               <AttachmentLink url={a.fileUrl} name={a.fileName} type={a.contentType} size={a.sizeBytes} />
               <button
                 type="button"
-                aria-label={`Xoá ${a.fileName}`}
+                aria-label={tr().taskDetail.deleteOf(a.fileName)}
                 onClick={async () => {
-                  if (await confirm({ title: "Xoá đính kèm?", message: a.fileName, danger: true })) remove.mutate(a.id, { onError: (e) => toast.error(e) });
+                  if (await confirm({ title: tr().taskDetail.deleteAttachment, message: a.fileName, danger: true })) remove.mutate(a.id, { onError: (e) => toast.error(e) });
                 }}
                 className="text-ink-faint opacity-0 hover:text-danger focus:opacity-100 group-hover:opacity-100"
               >
@@ -480,7 +463,7 @@ function LinkedFeedback({ task }: { task: TaskResponse }) {
     <div>
       <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="flex items-center gap-1.5 text-[12.5px] font-medium text-accent-ink">
         {open ? <IconChevronUp size={12} /> : <IconChevronDown size={12} />}
-        {task.linkedFeedbackCount} feedback khách hàng liên quan
+        {tr().taskDetail.linkedFeedback(task.linkedFeedbackCount)}
       </button>
       {open && (
         <ul className="mt-2 flex flex-col gap-2">
@@ -508,7 +491,7 @@ function Subtasks({ task }: { task: TaskResponse }) {
   return (
     <div className="p-4">
       {q.isLoading && <Skeleton className="h-9" />}
-      {q.data?.length === 0 && <EmptyState title="Chưa có task con" className="py-6" />}
+      {q.data?.length === 0 && <EmptyState title={tr().taskDetail.noSubtasks} className="py-6" />}
       <ul className="flex flex-col">
         {(q.data ?? []).map((s) => (
           <li key={s.id}>
@@ -522,7 +505,7 @@ function Subtasks({ task }: { task: TaskResponse }) {
         ))}
       </ul>
       <Button size="sm" className="mt-2" onClick={() => openCreateTask({ projectId: task.projectId, parentId: task.id, moduleId: task.moduleId })}>
-        <IconPlus size={13} /> Thêm task con
+        <IconPlus size={13} /> {tr().taskDetail.addSubtask}
       </Button>
     </div>
   );
@@ -533,12 +516,12 @@ function History({ taskId }: { taskId: string }) {
   const q = useTaskHistory(taskId);
   if (q.isLoading) return <div className="p-4"><Skeleton className="h-24" /></div>;
   if (q.isError) return <ErrorState error={q.error} onRetry={() => q.refetch()} />;
-  if (!q.data?.length) return <EmptyState title="Chưa có lịch sử thay đổi" className="py-8" />;
+  if (!q.data?.length) return <EmptyState title={tr().taskDetail.noHistory} className="py-8" />;
 
   const show = (field: string, v?: string) => {
     if (!v) return "—";
-    if (field === "workers" || field === "fault_holders") return memberById(v)?.userName ?? "Một thành viên";
-    if (field === "status") return (v === "in_progress" ? "Đang làm" : v);
+    if (field === "workers" || field === "fault_holders") return memberById(v)?.userName ?? tr().taskDetail.aMember;
+    if (field === "status") return tr().taskStatus[v as keyof ReturnType<typeof tr>["taskStatus"]] ?? v;
     if (/date/i.test(field)) return fmtDateTime(v);
     return v.length > 60 ? `${v.slice(0, 60)}…` : v;
   };
@@ -550,12 +533,12 @@ function History({ taskId }: { taskId: string }) {
           <Avatar person={{ id: h.changedBy.id, name: h.changedBy.name, avatar: h.changedBy.avatar }} />
           <div className="min-w-0 flex-1">
             <p className="text-ink-2">
-              <span className="font-medium text-ink">{h.changedBy.name}</span> đã đổi{" "}
+              <span className="font-medium text-ink">{h.changedBy.name}</span> {tr().taskDetail.changed}{" "}
               <span className="font-medium">{FIELD_LABEL[h.field] ?? h.field}</span>
               {h.field === "workers" || h.field === "fault_holders" ? (
-                <> — {h.newValue ? "thêm" : "bỏ"} <span className="font-medium">{show(h.field, h.newValue ?? h.oldValue)}</span></>
+                <> — {h.newValue ? tr().taskDetail.added : tr().taskDetail.removed} <span className="font-medium">{show(h.field, h.newValue ?? h.oldValue)}</span></>
               ) : h.field === "description" ? null : (
-                <> từ <span className="text-ink-muted">{show(h.field, h.oldValue)}</span> sang <span className="font-medium">{show(h.field, h.newValue)}</span></>
+                <> {tr().taskDetail.from} <span className="text-ink-muted">{show(h.field, h.oldValue)}</span> {tr().taskDetail.to} <span className="font-medium">{show(h.field, h.newValue)}</span></>
               )}
             </p>
             <p className="text-[11.5px] text-ink-faint">{fmtRelative(h.createdAt)}</p>

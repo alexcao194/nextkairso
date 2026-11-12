@@ -18,6 +18,7 @@ import { useImagePaste } from "@/components/ui/useImagePaste";
 import { Menu } from "@/components/ui/Popover";
 import { useConfirm } from "@/components/ui/Confirm";
 import { IconClose, IconEdit, IconFile, IconMore, IconPaperclip, IconSend, IconTrash } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 export function AttachmentLink({ url, name, type, size }: { url: string; name: string; type?: string; size?: number }) {
   if (isImage(type, name)) {
@@ -57,24 +58,24 @@ function CommentItem({ c, taskId, members }: { c: TaskCommentResponse; taskId: s
         <div className="flex items-center gap-2">
           <span className="text-[13px] font-semibold text-ink">{c.authorName ?? c.authorAlias}</span>
           <span className="text-[11.5px] text-ink-faint">{fmtRelative(c.createdAt)}</span>
-          {edited && <span className="text-[11px] text-ink-faint">(đã sửa)</span>}
+          {edited && <span className="text-[11px] text-ink-faint">{tr().comments.edited}</span>}
           {mine && !editing && (
             <span className="ml-auto">
               <Menu
                 align="end"
                 trigger={({ ref, open: _o, ...p }) => (
-                  <IconButton ref={ref} label="Tuỳ chọn bình luận" variant="ghost" size="sm" {...p}>
+                  <IconButton ref={ref} label={tr().comments.options} variant="ghost" size="sm" {...p}>
                     <IconMore size={14} />
                   </IconButton>
                 )}
                 items={[
-                  { label: "Sửa", icon: <IconEdit size={14} />, onSelect: () => (setText(collapseMentionTokens(c.content, members)), setEditing(true)) },
+                  { label: tr().comments.edit, icon: <IconEdit size={14} />, onSelect: () => (setText(collapseMentionTokens(c.content, members)), setEditing(true)) },
                   {
-                    label: "Xoá",
+                    label: tr().comments.delete,
                     icon: <IconTrash size={14} />,
                     danger: true,
                     onSelect: async () => {
-                      if (await confirm({ title: "Xoá bình luận?", message: "Không thể khôi phục sau khi xoá.", danger: true })) {
+                      if (await confirm({ title: tr().comments.confirmDelete, message: tr().comments.cantUndo, danger: true })) {
                         remove.mutate(c.id, { onError: (e) => toast.error(e) });
                       }
                     },
@@ -86,7 +87,7 @@ function CommentItem({ c, taskId, members }: { c: TaskCommentResponse; taskId: s
         </div>
         {editing ? (
           <div className="mt-1 flex flex-col gap-2">
-            <Textarea aria-label="Sửa bình luận" value={text} onChange={(e) => setText(e.target.value)} rows={3} autoFocus {...pasteHandlers} />
+            <Textarea aria-label={tr().comments.editLabel} value={text} onChange={(e) => setText(e.target.value)} rows={3} autoFocus {...pasteHandlers} />
             <div className="flex gap-2">
               <Button
                 size="sm"
@@ -100,10 +101,10 @@ function CommentItem({ c, taskId, members }: { c: TaskCommentResponse; taskId: s
                   )
                 }
               >
-                Lưu
+                {tr().comments.save}
               </Button>
               <Button size="sm" onClick={() => setEditing(false)}>
-                Huỷ
+                {tr().comments.cancel}
               </Button>
             </div>
           </div>
@@ -129,7 +130,7 @@ export function CommentList({ taskId }: { taskId: string }) {
   const q = useTaskComments(taskId);
   if (q.isLoading) return <div className="flex flex-col gap-3 p-4">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}</div>;
   if (q.isError) return <ErrorState error={q.error} onRetry={() => q.refetch()} />;
-  if (!q.data?.length) return <EmptyState title="Chưa có bình luận" description="Bắt đầu thảo luận — dùng @alias để nhắc ai đó." className="py-8" />;
+  if (!q.data?.length) return <EmptyState title={tr().comments.none} description={tr().comments.noneDesc} className="py-8" />;
   return (
     <ul className="flex flex-col gap-4 p-4">
       {q.data.map((c) => (
@@ -201,7 +202,7 @@ export function CommentComposer({ taskId }: { taskId: string }) {
   return (
     <div className="relative border-t border-line bg-surface p-3">
       {suggestions.length > 0 && (
-        <ul role="listbox" aria-label="Gợi ý thành viên" className="absolute inset-x-3 bottom-full mb-1 overflow-hidden rounded-lg border border-line-strong bg-surface shadow-overlay">
+        <ul role="listbox" aria-label={tr().comments.suggestions} className="absolute inset-x-3 bottom-full mb-1 overflow-hidden rounded-lg border border-line-strong bg-surface shadow-overlay">
           {suggestions.map((m, i) => (
             <li key={m.userId} role="presentation">
               <button
@@ -224,7 +225,7 @@ export function CommentComposer({ taskId }: { taskId: string }) {
           {files.map((f, i) => (
             <span key={f.fileUrl} className="inline-flex items-center gap-1 rounded-md border border-line bg-hover px-2 py-0.5 text-[12px]">
               <span className="max-w-[160px] truncate">{f.fileName}</span>
-              <button type="button" aria-label={`Bỏ ${f.fileName}`} onClick={() => setFiles((p) => p.filter((_, j) => j !== i))} className="text-ink-faint hover:text-ink">
+              <button type="button" aria-label={tr().comments.removeFile(f.fileName)} onClick={() => setFiles((p) => p.filter((_, j) => j !== i))} className="text-ink-faint hover:text-ink">
                 <IconClose size={11} />
               </button>
             </span>
@@ -233,14 +234,14 @@ export function CommentComposer({ taskId }: { taskId: string }) {
       )}
       <div className="flex items-end gap-2">
         <label htmlFor={`cmt-${taskId}`} className="sr-only">
-          Viết bình luận
+          {tr().comments.write}
         </label>
         <Textarea
           id={`cmt-${taskId}`}
           ref={areaRef}
           rows={2}
           value={text}
-          placeholder="Viết bình luận… (Markdown, @ để nhắc người khác, dán ảnh để chèn)"
+          placeholder={tr().comments.writePh}
           onChange={(e) => (setText(e.target.value), setCursor(e.target.selectionStart))}
           onSelect={(e) => setCursor(e.currentTarget.selectionStart)}
           {...pasteHandlers}
@@ -254,11 +255,11 @@ export function CommentComposer({ taskId }: { taskId: string }) {
           }}
           className="min-h-[52px] flex-1"
         />
-        <input ref={fileRef} type="file" multiple className="sr-only" aria-label="Đính kèm file" onChange={(e) => onFiles(e.target.files)} />
-        <IconButton label="Đính kèm file" onClick={() => fileRef.current?.click()} disabled={uploading}>
+        <input ref={fileRef} type="file" multiple className="sr-only" aria-label={tr().comments.attach} onChange={(e) => onFiles(e.target.files)} />
+        <IconButton label={tr().comments.attach} onClick={() => fileRef.current?.click()} disabled={uploading}>
           <IconPaperclip size={15} />
         </IconButton>
-        <Button variant="primary" onClick={send} loading={add.isPending} disabled={uploading || pending > 0 || (!text.trim() && files.length === 0)} aria-label="Gửi bình luận">
+        <Button variant="primary" onClick={send} loading={add.isPending} disabled={uploading || pending > 0 || (!text.trim() && files.length === 0)} aria-label={tr().comments.send}>
           <IconSend size={14} />
         </Button>
       </div>

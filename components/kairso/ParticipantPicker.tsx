@@ -5,6 +5,7 @@ import type { MeetingParticipant } from "@/lib/api/schema";
 import { useWorkspace } from "@/lib/workspace/WorkspaceContext";
 import { Avatar } from "@/components/ui/Avatar";
 import { IconClose, IconPlus, IconUsers } from "@/components/icons";
+import { tr } from "@/lib/i18n";
 
 const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().trim();
 
@@ -22,7 +23,7 @@ export function ParticipantPicker({
   value,
   onChange,
   groups = [],
-  placeholder = "Chọn hoặc gõ tên…",
+  placeholder = tr().participants.placeholder,
 }: {
   label: string;
   value: MeetingParticipant[];
@@ -48,8 +49,8 @@ export function ParticipantPicker({
       out.push({ key: k, value: { kind: "group", name: name.trim() }, hint });
     };
     if (workspace) group(workspace.name, "Workspace");
-    for (const p of projects) group(p.name, "Dự án");
-    for (const g of groups) group(g, "Đã dùng");
+    for (const p of projects) group(p.name, tr().participants.project);
+    for (const g of groups) group(g, tr().participants.used);
     return out;
   }, [members, projects, workspace, groups]);
 
@@ -85,7 +86,7 @@ export function ParticipantPicker({
           <span
             key={keyOf(p)}
             draggable
-            title="Kéo để đổi thứ tự"
+            title={tr().participants.drag}
             onDragStart={(e) => {
               e.dataTransfer.effectAllowed = "move";
               setDrag(i);
@@ -106,7 +107,7 @@ export function ParticipantPicker({
           >
             {p.userId ? <Avatar person={{ name: p.name, avatar: members.find((m) => m.userId === p.userId)?.userAvatar }} size="xs" /> : <IconUsers size={12} className="text-ink-faint" />}
             {p.name}
-            <button type="button" aria-label={`Bỏ ${p.name}`} onClick={() => onChange(value.filter((v) => keyOf(v) !== keyOf(p)))} className="grid size-4 place-items-center rounded text-ink-faint hover:text-danger">
+            <button type="button" aria-label={tr().participants.remove(p.name)} onClick={() => onChange(value.filter((v) => keyOf(v) !== keyOf(p)))} className="grid size-4 place-items-center rounded text-ink-faint hover:text-danger">
               <IconClose size={10} />
             </button>
           </span>
@@ -169,7 +170,7 @@ export function ParticipantPicker({
               className={`flex h-8 cursor-pointer items-center gap-2 rounded-md px-2 text-[13px] ${active === options.length ? "bg-hover" : ""}`}
             >
               <IconPlus size={13} className="text-ink-faint" />
-              Thêm “{q.trim()}”
+              {tr().participants.addName(q.trim())}
             </li>
           )}
         </ul>

@@ -12,6 +12,7 @@ import { IconCheck, IconChevronDown, IconPlus } from "@/components/icons";
 import { StatusChip } from "./StatusChip";
 import { PriorityTag } from "./PriorityTag";
 import { LabelChip } from "./LabelChip";
+import { tr } from "@/lib/i18n";
 
 function PickerTrigger({
   children,
@@ -110,7 +111,7 @@ export function PriorityPicker({
       role="menu"
       trigger={({ ref, open: _o, ...p }) => (
         <PickerTrigger ref={ref} disabled={disabled} bare={bare} {...p}>
-          {cur === null ? <span className="text-[12.5px] text-ink-muted">Ưu tiên</span> : <PriorityTag priority={value} />}
+          {cur === null ? <span className="text-[12.5px] text-ink-muted">{tr().pickers.priority}</span> : <PriorityTag priority={value} />}
         </PickerTrigger>
       )}
     >
@@ -177,7 +178,7 @@ export function PeoplePicker({
           ) : (
             <>
               <AvatarGroup people={selected} />
-              <span className="text-[12.5px] text-ink-2">{selected.length} người</span>
+              <span className="text-[12.5px] text-ink-2">{tr().pickers.people(selected.length)}</span>
             </>
           )}
         </PickerTrigger>
@@ -208,7 +209,7 @@ function PeopleEditor({
     <div className="w-[300px]">
       <p className="px-2 pb-1 pt-1.5 text-[11px] font-medium uppercase tracking-wide text-ink-faint">{title}</p>
       <div className="px-1 pb-1.5">
-        <Input small placeholder="Tìm người…" aria-label="Tìm người" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Input small placeholder={tr().pickers.searchPeoplePh} aria-label={tr().pickers.searchPeople} value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
       <ul className="max-h-[240px] overflow-y-auto">
         {list.map((p) => {
@@ -235,7 +236,7 @@ function PeopleEditor({
               </label>
               {on && (
                 <label className="flex items-center gap-1 text-[11px] text-ink-faint">
-                  <span>Tỉ trọng</span>
+                  <span>{tr().pickers.weight}</span>
                   <input
                     type="number"
                     min={1}
@@ -249,14 +250,14 @@ function PeopleEditor({
             </li>
           );
         })}
-        {list.length === 0 && <li className="px-2 py-3 text-center text-[12px] text-ink-muted">Không có ai</li>}
+        {list.length === 0 && <li className="px-2 py-3 text-center text-[12px] text-ink-muted">{tr().pickers.nobody}</li>}
       </ul>
       <div className="flex justify-end gap-1.5 border-t border-line px-1 pb-1 pt-2">
         <Button size="sm" onClick={onCancel}>
-          Huỷ
+          {tr().pickers.cancel}
         </Button>
         <Button size="sm" variant="primary" onClick={() => onApply(draft)}>
-          Áp dụng
+          {tr().pickers.apply}
         </Button>
       </div>
     </div>
@@ -284,7 +285,7 @@ export function LabelPicker({
       trigger={({ ref, open: _o, ...p }) => (
         <PickerTrigger ref={ref} disabled={disabled} bare={bare} {...p}>
           {selected.length === 0 ? (
-            <span className="text-[12.5px] text-ink-muted">Thêm nhãn</span>
+            <span className="text-[12.5px] text-ink-muted">{tr().pickers.addLabel}</span>
           ) : (
             <span className="flex flex-wrap gap-1">
               {selected.map((l) => (
@@ -353,31 +354,31 @@ function LabelEditor({
             </label>
           </li>
         ))}
-        {labels.length === 0 && <li className="px-2 py-3 text-center text-[12px] text-ink-muted">Dự án chưa có nhãn</li>}
+        {labels.length === 0 && <li className="px-2 py-3 text-center text-[12px] text-ink-muted">{tr().pickers.noLabels}</li>}
       </ul>
       {onCreate && (
         <div className="mt-1 flex flex-col gap-1.5 border-t border-line px-1 pt-2">
           <div className="flex items-center gap-1.5">
             <Input
               small
-              placeholder="Nhãn mới…"
-              aria-label="Tên nhãn mới"
+              placeholder={tr().pickers.newLabelPh}
+              aria-label={tr().pickers.newLabel}
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), create())}
             />
-            <Button size="sm" onClick={create} loading={busy} disabled={!name.trim()} aria-label="Tạo nhãn">
+            <Button size="sm" onClick={create} loading={busy} disabled={!name.trim()} aria-label={tr().pickers.createLabel}>
               <IconPlus size={13} />
             </Button>
           </div>
-          <div className="flex gap-1" role="radiogroup" aria-label="Màu nhãn">
+          <div className="flex gap-1" role="radiogroup" aria-label={tr().pickers.labelColor}>
             {LABEL_COLORS.map((c) => (
               <button
                 key={c}
                 type="button"
                 role="radio"
                 aria-checked={c === color}
-                aria-label={`Màu ${c}`}
+                aria-label={tr().pickers.color(c)}
                 onClick={() => setColor(c)}
                 className={`size-5 rounded-full ${c === color ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}`}
                 style={{ background: c }}
@@ -388,10 +389,10 @@ function LabelEditor({
       )}
       <div className="mt-2 flex justify-end gap-1.5 border-t border-line px-1 pb-1 pt-2">
         <Button size="sm" onClick={onCancel}>
-          Huỷ
+          {tr().pickers.cancel}
         </Button>
         <Button size="sm" variant="primary" onClick={() => onApply([...draft])}>
-          Áp dụng
+          {tr().pickers.apply}
         </Button>
       </div>
     </div>
@@ -417,7 +418,7 @@ export function ModulePicker({
       role="menu"
       trigger={({ ref, open: _o, ...p }) => (
         <PickerTrigger ref={ref} disabled={disabled} bare={bare} {...p}>
-          <span className={`truncate text-[13px] ${cur ? "text-ink" : "text-ink-muted"}`}>{cur?.name ?? "Chưa có module"}</span>
+          <span className={`truncate text-[13px] ${cur ? "text-ink" : "text-ink-muted"}`}>{cur?.name ?? tr().pickers.noModules}</span>
         </PickerTrigger>
       )}
     >
@@ -430,7 +431,7 @@ export function ModulePicker({
               if (value) onChange(null);
             }}
           >
-            <span className="text-ink-muted">Không thuộc module nào</span>
+            <span className="text-ink-muted">{tr().pickers.noModule}</span>
           </OptionRow>
           {modules.map((m) => (
             <OptionRow

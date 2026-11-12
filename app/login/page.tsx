@@ -420,7 +420,7 @@ const t = useT();
             {t.login.and}{" "}
             <a href="#" className="text-ink-2 hover:underline">
               {t.login.privacy}
-            </a>{" "}
+            </a>
             {t.login.termsSuffix}
           </p>
         </div>

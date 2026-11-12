@@ -51,7 +51,7 @@ export const authPages = defineMessages({
       terms: "Điều khoản dịch vụ",
       and: "và",
       privacy: "Chính sách bảo mật",
-      termsSuffix: "của Kairso.",
+      termsSuffix: " của Kairso.",
     },
     forgot: {
       back: "Quay lại đăng nhập",

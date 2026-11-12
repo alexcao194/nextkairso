@@ -20,6 +20,7 @@ import { CommentComposer, CommentList } from "@/components/kairso/TaskComments";
 import { StatusChip } from "@/components/kairso/StatusChip";
 import { IconArrowLeft, IconChat, IconExternal } from "@/components/icons";
 import { IconButton } from "@/components/ui/Button";
+import { tr } from "@/lib/i18n";
 
 const plain = (s: string) => markdownToPlain(parseMentionSegments(s).map((x) => x.text).join(""));
 
@@ -36,9 +37,9 @@ export default function ThreadsPage() {
   return (
     <>
       <TopBar>
-        <Breadcrumb items={[{ label: "Thảo luận" }]} />
+        <Breadcrumb items={[{ label: tr().threads.title }]} />
         <TopBarSpacer />
-        <span className="font-mono text-[12px] text-ink-muted">{threads.length} chủ đề</span>
+        <span className="font-mono text-[12px] text-ink-muted">{tr().threads.count(threads.length)}</span>
       </TopBar>
       <div className="flex min-h-0 flex-1">
         <div className={`flex w-[400px] shrink-0 flex-col border-r border-line bg-surface max-lg:w-full ${id ? "max-lg:hidden" : ""}`}>
@@ -47,7 +48,7 @@ export default function ThreadsPage() {
           ) : q.isError ? (
             <ErrorState error={q.error} onRetry={() => q.refetch()} />
           ) : threads.length === 0 ? (
-            <EmptyState icon={<IconChat size={28} />} title="Không có thảo luận mới" description="Chủ đề xuất hiện khi task của bạn có bình luận chưa đọc hoặc bạn được @nhắc." className="flex-1" />
+            <EmptyState icon={<IconChat size={28} />} title={tr().threads.none} description={tr().threads.noneDesc} className="flex-1" />
           ) : (
             <ul className="min-h-0 flex-1 overflow-y-auto">
               {threads.map((t) => {
@@ -66,14 +67,14 @@ export default function ThreadsPage() {
                         <span className="font-mono text-[11px] text-ink-faint">{t.code}</span>
                         <span className="truncate text-[11.5px] text-ink-faint">{projectById(t.projectId)?.name}</span>
                         <span className="flex-1" />
-                        {t.mentioned && <Badge tone="accent">@ Nhắc bạn</Badge>}
-                        {!!t.unreadCommentCount && <Badge tone="danger">{t.unreadCommentCount} mới</Badge>}
+                        {t.mentioned && <Badge tone="accent">{tr().threads.mentioned}</Badge>}
+                        {!!t.unreadCommentCount && <Badge tone="danger">{tr().threads.newCount(t.unreadCommentCount)}</Badge>}
                       </span>
                       <span className="truncate text-[13px] font-semibold text-ink">{t.title}</span>
                       {c && (
                         <span className="flex items-start gap-2">
                           <Avatar person={{ id: c.authorId, name: c.authorName, avatar: c.authorAvatar }} size="xs" />
-                          <span className="line-clamp-2 min-w-0 flex-1 text-[12.5px] text-ink-2"><span className="font-medium">{c.authorName}: </span>{plain(c.content ?? "") || "Đính kèm file"}</span>
+                          <span className="line-clamp-2 min-w-0 flex-1 text-[12.5px] text-ink-2"><span className="font-medium">{c.authorName}: </span>{plain(c.content ?? "") || tr().threads.attachment}</span>
                           <span className="shrink-0 text-[11px] text-ink-faint">{fmtRelative(c.createdAt)}</span>
                         </span>
                       )}
@@ -86,7 +87,7 @@ export default function ThreadsPage() {
         </div>
 
         <div className={`flex min-w-0 flex-1 flex-col bg-surface ${id ? "" : "max-lg:hidden"}`}>
-          {id ? <ThreadPane taskId={id} onBack={() => setId(null)} /> : <EmptyState icon={<IconChat size={28} />} title="Chọn một chủ đề" description="Bình luận sẽ hiện ở đây." className="flex-1" />}
+          {id ? <ThreadPane taskId={id} onBack={() => setId(null)} /> : <EmptyState icon={<IconChat size={28} />} title={tr().threads.pick} description={tr().threads.pickDesc} className="flex-1" />}
         </div>
       </div>
     </>
@@ -99,7 +100,7 @@ function ThreadPane({ taskId, onBack }: { taskId: string; onBack: () => void }) 
   return (
     <>
       <header className="flex min-h-14 shrink-0 items-center gap-3 border-b border-line px-4 py-2">
-        <IconButton label="Quay lại danh sách" variant="ghost" size="sm" onClick={onBack} className="lg:hidden"><IconArrowLeft size={14} /></IconButton>
+        <IconButton label={tr().threads.back} variant="ghost" size="sm" onClick={onBack} className="lg:hidden"><IconArrowLeft size={14} /></IconButton>
         {task.isLoading ? <Skeleton className="h-8 w-64" /> : t ? (
           <>
             <div className="min-w-0 flex-1">
@@ -107,10 +108,10 @@ function ThreadPane({ taskId, onBack }: { taskId: string; onBack: () => void }) 
               <h2 className="truncate text-[14px] font-semibold">{t.title}</h2>
             </div>
             <Link href={`/projects/${t.projectId}/tasks?task=${t.id}`} className="inline-flex h-ctl-sm items-center gap-1.5 rounded-md border border-line-strong px-2.5 text-[12px] text-ink-2 hover:bg-hover">
-              <IconExternal size={12} /> Mở task
+              <IconExternal size={12} /> {tr().threads.openTask}
             </Link>
           </>
-        ) : <span className="text-[13px] text-danger">Không tải được task</span>}
+        ) : <span className="text-[13px] text-danger">{tr().threads.loadFailed}</span>}
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto"><CommentList taskId={taskId} /></div>
       <CommentComposer taskId={taskId} />

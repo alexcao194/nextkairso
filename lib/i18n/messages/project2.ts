@@ -55,7 +55,7 @@ export const project2 = defineMessages({
       "delete": "Xoá dự án",
       "cancel": "Huỷ",
       "deleteForever": "Xoá vĩnh viễn",
-      "members": "Members",
+      "members": "Thành viên",
       "roleOf": (n: string) => `Vai trò của ${n}`,
       "removeOf": (n: string) => `Gỡ ${n}`,
       "confirmTitle": (n: string) => `Xoá dự án "${n}"?`,

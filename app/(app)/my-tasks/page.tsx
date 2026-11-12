@@ -26,6 +26,7 @@ import { TaskDetailPanel } from "@/components/kairso/TaskDetailPanel";
 import { useDialogs } from "@/components/dialogs/DialogProvider";
 import { IconCheckSquare, IconPlus } from "@/components/icons";
 import { useRouter } from "next/navigation";
+import { tr } from "@/lib/i18n";
 
 type Tab = "assigned" | "review" | "created" | "done";
 
@@ -35,11 +36,11 @@ function bucketize(tasks: TaskResponse[]): TaskGroup[] {
   const today = localDateKey();
   const weekEnd = localDateKey(addDays(new Date(), 7));
   const buckets: TaskGroup[] = [
-    { key: "overdue", label: "Quá hạn", dot: "var(--danger)", tasks: [] },
-    { key: "today", label: "Hôm nay", dot: "var(--accent)", tasks: [] },
-    { key: "week", label: "7 ngày tới", tasks: [] },
-    { key: "later", label: "Sau đó", tasks: [] },
-    { key: "none", label: "Không có hạn", tasks: [] },
+    { key: "overdue", label: tr().myTasks.overdue, dot: "var(--danger)", tasks: [] },
+    { key: "today", label: tr().myTasks.today, dot: "var(--accent)", tasks: [] },
+    { key: "week", label: tr().myTasks.next7, tasks: [] },
+    { key: "later", label: tr().myTasks.later, tasks: [] },
+    { key: "none", label: tr().myTasks.noDue, tasks: [] },
   ];
   for (const t of tasks) {
     const k = !t.endDate ? "none" : isClosedStatus(t.status) ? "later" : isOverdue(t) ? "overdue" : localDateKey(new Date(t.endDate)) === today ? "today" : localDateKey(new Date(t.endDate)) <= weekEnd ? "week" : "later";
@@ -95,7 +96,7 @@ export default function MyTasksPage() {
   }, [source, tab, q, project, hideDone]);
 
   const groups = useMemo<TaskGroup[]>(() => {
-    if (group === "none") return [{ key: "all", label: "Tất cả", tasks: list }];
+    if (group === "none") return [{ key: "all", label: tr().myTasks.all, tasks: list }];
     if (group === "project")
       return projects.map((p) => ({ key: p.id, label: p.name, dot: projectColor(p.id), tasks: list.filter((t) => t.projectId === p.id) })).filter((g) => g.tasks.length);
     if (group === "status") return TASK_STATUSES.map((s) => ({ key: s, label: STATUS_META[s].label, dot: STATUS_META[s].dot, tasks: list.filter((t) => t.status === s) })).filter((g) => g.tasks.length);
@@ -126,37 +127,37 @@ export default function MyTasksPage() {
   return (
     <>
       <TopBar>
-        <Breadcrumb items={[{ label: "Task của tôi" }]} />
+        <Breadcrumb items={[{ label: tr().myTasks.title }]} />
         <TopBarSpacer />
-        <Button variant="primary" onClick={() => openCreateTask()} className="max-sm:hidden"><IconPlus size={14} /> Tạo task</Button>
+        <Button variant="primary" onClick={() => openCreateTask()} className="max-sm:hidden"><IconPlus size={14} /> {tr().myTasks.newTask}</Button>
       </TopBar>
       <Tabs
-        label="Nhóm task"
+        label={tr().myTasks.tabs}
         value={tab as Tab}
         onChange={(v) => setTab(v === "assigned" ? null : v)}
         className="bg-surface px-3"
         tabs={[
-          { value: "assigned", label: "Được giao", count: counts.assigned },
-          { value: "review", label: "Chờ duyệt", count: counts.review },
-          { value: "created", label: "Tôi tạo" },
-          { value: "done", label: "Hoàn thành" },
+          { value: "assigned", label: tr().myTasks.assigned, count: counts.assigned },
+          { value: "review", label: tr().myTasks.review, count: counts.review },
+          { value: "created", label: tr().myTasks.created },
+          { value: "done", label: tr().myTasks.done },
         ]}
       />
       <div className="flex h-toolbar shrink-0 items-center gap-2 overflow-x-auto border-b border-line bg-surface px-4">
-        <SearchInput value={q} onChange={setQ} placeholder="Tìm task…" label="Tìm task" className="w-[220px] shrink-0 max-sm:w-[150px]" />
-        <Select small aria-label="Lọc dự án" className="w-44 shrink-0" value={project} onChange={(e) => setProject(e.target.value || null)}>
-          <option value="">Mọi dự án</option>
+        <SearchInput value={q} onChange={setQ} placeholder={tr().myTasks.searchPh} label={tr().myTasks.search} className="w-[220px] shrink-0 max-sm:w-[150px]" />
+        <Select small aria-label={tr().myTasks.filterProject} className="w-44 shrink-0" value={project} onChange={(e) => setProject(e.target.value || null)}>
+          <option value="">{tr().myTasks.allProjects}</option>
           {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </Select>
-        <Select small aria-label="Nhóm theo" className="w-36 shrink-0" value={group} onChange={(e) => setGroup(e.target.value === "due" ? null : e.target.value)}>
-          <option value="due">Nhóm: Hạn</option>
-          <option value="project">Nhóm: Dự án</option>
-          <option value="status">Nhóm: Trạng thái</option>
-          <option value="none">Không nhóm</option>
+        <Select small aria-label={tr().myTasks.groupBy} className="w-36 shrink-0" value={group} onChange={(e) => setGroup(e.target.value === "due" ? null : e.target.value)}>
+          <option value="due">{tr().myTasks.groupDue}</option>
+          <option value="project">{tr().myTasks.groupProject}</option>
+          <option value="status">{tr().myTasks.groupStatus}</option>
+          <option value="none">{tr().myTasks.noGroup}</option>
         </Select>
-        {tab === "created" && <Checkbox label="Ẩn đã xong" checked={hideDone} onChange={(e) => setHideDone(e.target.checked)} className="shrink-0" />}
+        {tab === "created" && <Checkbox label={tr().myTasks.hideDone} checked={hideDone} onChange={(e) => setHideDone(e.target.checked)} className="shrink-0" />}
         <span className="flex-1" />
-        <span className="hidden sm:block"><SegmentedControl label="Kiểu xem" size="sm" value={view === "timeline" ? "timeline" : "table"} onChange={(v) => setView(v === "table" ? null : v)} options={[{ value: "table", label: "Bảng" }, { value: "timeline", label: "Timeline" }]} /></span>
+        <span className="hidden sm:block"><SegmentedControl label={tr().myTasks.view} size="sm" value={view === "timeline" ? "timeline" : "table"} onChange={(v) => setView(v === "table" ? null : v)} options={[{ value: "table", label: tr().myTasks.table }, { value: "timeline", label: "Timeline" }]} /></span>
         <span className="shrink-0 font-mono text-[12px] text-ink-muted">{list.length} task</span>
       </div>
 
@@ -167,9 +168,9 @@ export default function MyTasksPage() {
           ) : error ? (
             <ErrorState error={error} onRetry={() => (tab === "created" ? created.forEach((c) => c.refetch()) : assigned.refetch())} />
           ) : list.length === 0 ? (
-            <EmptyState icon={<IconCheckSquare size={28} />} title="Không có task nào" description={tab === "assigned" ? "Bạn chưa được giao task nào đang mở." : "Không có task khớp bộ lọc."} className="flex-1" />
+            <EmptyState icon={<IconCheckSquare size={28} />} title={tr().myTasks.none} description={tab === "assigned" ? tr().myTasks.noneAssigned : tr().myTasks.noMatch} className="flex-1" />
           ) : view === "timeline" ? (
-            <Gantt rows={rows} empty={<EmptyState title="Không task nào có ngày" className="flex-1" />} />
+            <Gantt rows={rows} empty={<EmptyState title={tr().myTasks.noDated} className="flex-1" />} />
           ) : (
             <>
               <div className="hidden min-h-0 flex-1 flex-col sm:flex">

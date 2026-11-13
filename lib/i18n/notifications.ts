@@ -117,5 +117,9 @@ export function renderNotification(
     params.role = (key.startsWith("project_") ? ROLE_PROJECT : ROLE_WS)[lang][d.role] ?? d.role;
   }
   if (d.status) params.status = TASK_STATUS[lang][d.status] ?? d.status;
+  // Notifications stored before params were recorded (or sent by an older
+  // server) lack some fields: show the server's own text instead of "{name}".
+  const needed = [...`${tmpl.title} ${tmpl.body}`.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
+  if (needed.some((k) => !params[k])) return fallback;
   return { title: apply(tmpl.title, params), body: apply(tmpl.body, params) };
 }

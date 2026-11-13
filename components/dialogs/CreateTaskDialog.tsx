@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { getMeeting, patchMeeting } from "@/lib/api/endpoints";
+import { getMeeting, patchMeeting, postTaskAttachments } from "@/lib/api/endpoints";
 import type { MeetingItem, MeetingMinutesResponse, ModuleResponse, ProjectFeedbackResponse, TaskResponse, TaskStatus } from "@/lib/api/schema";
 import { useWorkspace } from "@/lib/workspace/WorkspaceContext";
 import { useToast } from "@/lib/toast/ToastProvider";
@@ -20,12 +20,13 @@ import { useFeedbackMutations, useProjectFeedbacks } from "@/lib/hooks/feedback"
 import { useMeeting } from "@/lib/hooks/meetings";
 import { fmtDate } from "@/lib/domain/format";
 import { priorityToApi } from "@/lib/domain/task";
-import { uploadFile } from "@/lib/upload";
+import { fmtBytes, uploadFile } from "@/lib/upload";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select } from "@/components/ui/form";
 import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 import { DateField, LabelPicker, ModulePicker, PeoplePicker, PriorityPicker, StatusPicker } from "@/components/kairso/pickers";
+import { IconClose, IconPaperclip } from "@/components/icons";
 import { tr } from "@/lib/i18n";
 
 export interface CreateTaskDefaults {
@@ -127,6 +128,9 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
   const [labelIds, setLabelIds] = useState<string[]>([]);
   const [workers, setWorkers] = useState<Record<string, number>>({});
   const [faultHolders, setFaultHolders] = useState<Record<string, number>>({});
+  const [files, setFiles] = useState<File[]>([]);
+  const [attaching, setAttaching] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const members = useProjectMembers(workspaceId, projectId);
   const labels = useProjectLabels(workspaceId, projectId);
@@ -140,8 +144,27 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
   const dateError = start && end && end < start ? tr().createTask.dueAfterStart : null;
   const canSubmit = !!projectId && title.trim().length > 0 && !dateError;
 
+  // Upload the picked files and attach them to the new task. Failures are
+  // reported but do not undo the task.
+  const attachFiles = async (taskId: string) => {
+    if (files.length === 0) return;
+    setAttaching(true);
+    const failed: string[] = [];
+    for (const f of files) {
+      try {
+        const up = await uploadFile(f, "task_file", taskId);
+        await postTaskAttachments(taskId, { fileName: up.fileName, fileUrl: up.fileUrl, contentType: up.contentType, sizeBytes: up.sizeBytes });
+      } catch {
+        failed.push(f.name);
+      }
+    }
+    setAttaching(false);
+    qc.invalidateQueries({ queryKey: ["task-attachments", taskId] });
+    if (failed.length) toast.error(tr().createTask.attachFailed(failed.join(", ")));
+  };
+
   const submit = () => {
-    if (!canSubmit) return;
+    if (!canSubmit || attaching) return;
     create.mutate(
       {
         body: {
@@ -161,6 +184,7 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
       },
       {
         onSuccess: async (task) => {
+          await attachFiles(task.id);
           if (defaults.feedbackId) {
             try {
               await link.mutateAsync({ id: defaults.feedbackId, taskId: task.id });
@@ -266,12 +290,39 @@ function Form({ defaults, seed, onClose }: { defaults: CreateTaskDefaults; seed?
         </div>
         <label htmlFor="ct-est" className="text-[12px] text-ink-muted">{tr().createTask.estimate}</label>
         <div><Input id="ct-est" small type="number" min={0} inputMode="numeric" className="w-24 font-mono" value={estimation} onChange={(e) => setEstimation(e.target.value)} placeholder="0" /></div>
+        <span className="text-[12px] text-ink-muted">{tr().createTask.attachments}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            multiple
+            className="sr-only"
+            aria-label={tr().createTask.pickFiles}
+            onChange={(e) => {
+              const picked = Array.from(e.target.files ?? []);
+              if (picked.length) setFiles((prev) => [...prev, ...picked]);
+              e.target.value = "";
+            }}
+          />
+          {files.map((f, i) => (
+            <span key={`${f.name}-${i}`} className="inline-flex h-6 max-w-64 items-center gap-1 rounded-md bg-hover pl-2 pr-0.5 text-[12px] text-ink">
+              <span className="truncate">{f.name}</span>
+              <span className="shrink-0 text-ink-faint">{fmtBytes(f.size)}</span>
+              <button type="button" aria-label={tr().createTask.removeFile(f.name)} onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))} className="grid size-5 place-items-center rounded text-ink-faint hover:text-danger">
+                <IconClose size={10} />
+              </button>
+            </span>
+          ))}
+          <Button size="sm" variant="ghost" onClick={() => fileRef.current?.click()}>
+            <IconPaperclip size={13} /> {tr().createTask.addFiles}
+          </Button>
+        </div>
       </div>
 
       <div className="flex items-center justify-end gap-2 border-t border-line pt-3">
         <span className="mr-auto text-[11px] text-ink-faint max-sm:hidden">{tr().createTask.shortcut}</span>
         <Button onClick={onClose}>{tr().createTask.cancel}</Button>
-        <Button type="submit" variant="primary" loading={create.isPending} disabled={!canSubmit}>
+        <Button type="submit" variant="primary" loading={create.isPending || attaching} disabled={!canSubmit}>
           {tr().createTask.create}
         </Button>
       </div>

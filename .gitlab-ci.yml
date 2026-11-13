@@ -93,6 +93,8 @@ deploy:
     - $SCP compose.env "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DIR/.env"
     - $SCP "$WEB_ENV_PRODUCTION" "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DIR/.env.production"
     - $SSH "cd '$DEPLOY_DIR' && docker compose up -d --remove-orphans && docker compose ps"
+    # Keep only the image just deployed so repeated deploys don't fill the disk.
+    - $SSH "docker images --format '{{.Repository}}:{{.Tag}}' | grep '^nextkairso:' | grep -vxF '$WEB_IMAGE' | xargs -r docker rmi; docker image prune -f >/dev/null" || true
 
 # ----------------------------------------------------------------------------
 # Publish image public (multi-arch amd64+arm64) lên Docker Hub khi push tag v*.

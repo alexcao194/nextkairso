@@ -1,5 +1,12 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   kairso-web:
+    logging: *default-logging
     image: ${WEB_IMAGE:-nextkairso:latest}
     container_name: kairso-web
     restart: unless-stopped
@@ -11,6 +18,7 @@ services:
       - NODE_ENV=production
 
   cloudflared:
+    logging: *default-logging
     image: cloudflare/cloudflared:latest
     container_name: nextkairso-cloudflared
     restart: unless-stopped

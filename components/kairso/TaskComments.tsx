@@ -202,7 +202,7 @@ export function CommentComposer({ taskId }: { taskId: string }) {
   return (
     <div className="relative border-t border-line bg-surface p-3">
       {suggestions.length > 0 && (
-        <ul role="listbox" aria-label={tr().comments.suggestions} className="absolute inset-x-3 bottom-full mb-1 overflow-hidden rounded-lg border border-line-strong bg-surface shadow-overlay">
+        <ul role="listbox" aria-label={tr().comments.suggestions} className="absolute inset-x-3 bottom-full z-30 mb-1 max-h-64 overflow-y-auto rounded-lg border border-line-strong bg-surface shadow-overlay">
           {suggestions.map((m, i) => (
             <li key={m.userId} role="presentation">
               <button

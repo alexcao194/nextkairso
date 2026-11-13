@@ -163,7 +163,7 @@ export function MeetingEditor({ scope, meeting, onClose, onCreated }: { scope: R
         />
       ))}
 
-      <div className="sticky bottom-0 -mx-5 -mb-4 flex flex-wrap items-center gap-2 border-t border-line bg-surface px-5 py-3">
+      <div className="sticky -bottom-4 z-10 -mx-5 -mb-4 flex flex-wrap items-center gap-2 border-t border-line bg-surface px-5 py-3">
         {meeting && <span className="text-[11.5px] text-ink-faint max-sm:hidden">{tr().meetingEd.editedAgo(meeting.createdBy?.name ?? "", fmtRelative(meeting.updatedAt))}</span>}
         {missingContent && <span role="alert" className="text-[12px] text-danger">{tr().meetingEd.emptyRow}</span>}
         <span className="flex-1" />

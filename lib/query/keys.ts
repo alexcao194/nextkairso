@@ -36,6 +36,7 @@ export const qk = {
   customers: (ws: string) => ["customers", ws] as const,
   quoteSettings: (ws: string) => ["quote-settings", ws] as const,
   currencies: () => ["currencies"] as const,
+  webhooks: (ws: string) => ["webhooks", ws] as const,
   meeting: (id: string) => ["meetings", "detail", id] as const,
   history: (ws: string, p?: string) => ["history", ws, p ?? "workspace"] as const,
   stats: (ws: string, scope: string, params?: object) => ["stats", ws, scope, params ?? {}] as const,

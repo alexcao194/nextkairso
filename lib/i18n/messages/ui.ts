@@ -86,7 +86,7 @@ export const ui = defineMessages({
         members: "Thành viên", invites: "Lời mời", roles: "Vai trò & quyền",
         workspace: "Thông tin chung", resources: "Tài nguyên", labels: "Nhãn",
         attendance: "Chấm công", shifts: "Ca làm việc", kpi: "KPI",
-        notifications: "Thông báo", integrations: "Tích hợp", audit: "Nhật ký thay đổi", "whats-new": "Có gì mới",
+        notifications: "Thông báo", integrations: "Tích hợp", webhooks: "Webhook", audit: "Nhật ký thay đổi", "whats-new": "Có gì mới",
       },
     },
     sidebarExtra: {
@@ -183,7 +183,7 @@ export const ui = defineMessages({
         members: "Members", invites: "Invitations", roles: "Roles & permissions",
         workspace: "General", resources: "Resources", labels: "Labels",
         attendance: "Attendance", shifts: "Shifts", kpi: "KPI",
-        notifications: "Notifications", integrations: "Integrations", audit: "Audit log", "whats-new": "What's new",
+        notifications: "Notifications", integrations: "Integrations", webhooks: "Webhooks", audit: "Audit log", "whats-new": "What's new",
       },
     },
     sidebarExtra: {

@@ -1721,6 +1721,40 @@ export interface UserSummary {
   name: string;
 }
 
+export interface WebhookDeliveryResponse {
+  attempts: number;
+  createdAt: string;
+  durationMs: number;
+  error?: string;
+  eventId: string;
+  eventType: string;
+  id?: string;
+  statusCode: number;
+  success: boolean;
+}
+
+export interface WebhookRequest {
+  enabled?: boolean;
+  name: string;
+  /** Token authenticates deliveries. Left empty on create, one is generated. */
+  token: string;
+  url: string;
+}
+
+export interface WebhookResponse {
+  createdAt: string;
+  enabled: boolean;
+  failureCount: number;
+  id: string;
+  lastDeliveredAt?: string;
+  lastError?: string;
+  lastStatus?: number;
+  name: string;
+  token: string;
+  updatedAt: string;
+  url: string;
+}
+
 export interface WhatsNewNoteResponse {
   content: string;
   id: string;

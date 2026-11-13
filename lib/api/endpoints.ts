@@ -1358,6 +1358,41 @@ export const getWorkspaceThreads = (workspaceId: string, query?: GetWorkspaceThr
 export const getWorkspaceThreadsCount = (workspaceId: string, opts?: RequestOptions): Promise<S.ThreadsCountResponse> =>
   request<S.ThreadsCountResponse>("GET", `/v1/workspaces/${enc(workspaceId)}/threads/count`, { ...opts });
 
+/** GET /v1/workspaces/{workspaceId}/webhooks
+ * List webhooks
+ * Outgoing webhooks of a workspace (holder/admin only) */
+export const getWorkspaceWebhooks = (workspaceId: string, opts?: RequestOptions): Promise<S.WebhookResponse[]> =>
+  request<S.WebhookResponse[]>("GET", `/v1/workspaces/${enc(workspaceId)}/webhooks`, { ...opts });
+
+/** POST /v1/workspaces/{workspaceId}/webhooks
+ * Create webhook
+ * Every workspace event is POSTed to the URL as a Payload, with "Authorization: Bearer <token>" and an "X-Kairso-Signature: sha256=<HMAC-SHA256(token, body)>" header */
+export const postWorkspaceWebhooks = (workspaceId: string, body: S.WebhookRequest, opts?: RequestOptions): Promise<S.WebhookResponse> =>
+  request<S.WebhookResponse>("POST", `/v1/workspaces/${enc(workspaceId)}/webhooks`, { body, ...opts });
+
+/** PUT /v1/workspaces/{workspaceId}/webhooks/{webhookId}
+ * Update webhook
+ * An empty token keeps the current one; re-enabling resets the failure counter */
+export const putWorkspaceWebhook = (workspaceId: string, webhookId: string, body: S.WebhookRequest, opts?: RequestOptions): Promise<S.WebhookResponse> =>
+  request<S.WebhookResponse>("PUT", `/v1/workspaces/${enc(workspaceId)}/webhooks/${enc(webhookId)}`, { body, ...opts });
+
+/** DELETE /v1/workspaces/{workspaceId}/webhooks/{webhookId}
+ * Delete webhook */
+export const deleteWorkspaceWebhook = (workspaceId: string, webhookId: string, opts?: RequestOptions): Promise<void> =>
+  request<void>("DELETE", `/v1/workspaces/${enc(workspaceId)}/webhooks/${enc(webhookId)}`, { ...opts });
+
+/** GET /v1/workspaces/{workspaceId}/webhooks/{webhookId}/deliveries
+ * Recent deliveries
+ * The latest 50 deliveries of a webhook (kept for 7 days) */
+export const getWorkspaceWebhookDeliveries = (workspaceId: string, webhookId: string, opts?: RequestOptions): Promise<S.WebhookDeliveryResponse[]> =>
+  request<S.WebhookDeliveryResponse[]>("GET", `/v1/workspaces/${enc(workspaceId)}/webhooks/${enc(webhookId)}/deliveries`, { ...opts });
+
+/** POST /v1/workspaces/{workspaceId}/webhooks/{webhookId}/test
+ * Send a test event
+ * Sends one "webhook.test" event immediately and returns the endpoint's answer */
+export const postWorkspaceWebhookTest = (workspaceId: string, webhookId: string, opts?: RequestOptions): Promise<S.WebhookDeliveryResponse> =>
+  request<S.WebhookDeliveryResponse>("POST", `/v1/workspaces/${enc(workspaceId)}/webhooks/${enc(webhookId)}/test`, { ...opts });
+
 /** PUT /v1/workspaces/{workspaceId}/work/schedules
  * Create or update own work schedules */
 export const putWorkspaceWorkSchedules = (workspaceId: string, body: S.UpsertWorkSchedulesRequest, opts?: RequestOptions): Promise<S.WorkScheduleDayResponse[]> =>

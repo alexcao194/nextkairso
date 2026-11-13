@@ -7,7 +7,7 @@ const NAV: Array<{ group: GroupId; items: Array<{ slug: Slug; managerOnly?: bool
   { group: "people", items: [{ slug: "members" }, { slug: "invites" }, { slug: "roles" }] },
   { group: "workspace", items: [{ slug: "workspace" }, { slug: "resources" }, { slug: "labels" }] },
   { group: "ops", items: [{ slug: "attendance" }, { slug: "shifts" }, { slug: "kpi", managerOnly: true }] },
-  { group: "system", items: [{ slug: "notifications" }, { slug: "integrations" }, { slug: "audit" }, { slug: "whats-new" }] },
+  { group: "system", items: [{ slug: "notifications" }, { slug: "integrations" }, { slug: "webhooks" }, { slug: "audit" }, { slug: "whats-new" }] },
 ];
 
 /** Settings navigation with labels in the current language. */
